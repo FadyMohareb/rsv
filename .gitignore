@@ -2,3 +2,4 @@ services/web/data/
 services/web/work/
 services/web/.nextflow*
 services/frontend/node_modules/
+services/frontend/build/
