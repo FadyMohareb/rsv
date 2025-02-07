@@ -1,0 +1,75 @@
+services:
+    web:
+      build: ./services/web
+      command: gunicorn --worker-class gevent manage:app --bind 0.0.0.0:5000 
+      container_name: web
+      volumes:
+        - ./services/web/:/usr/src/app/
+      ports:
+        - 5000:5000
+      environment:
+        - WEBSITE_NAME=www.ukneqastest.com
+      env_file:
+        - ./.env.dev
+      depends_on:
+        - db
+        - redis
+    db:
+      image: postgres:13
+      volumes:
+        - postgres_data:/var/lib/postgresql/data/
+      environment:
+        - POSTGRES_USER=hello_flask
+        - POSTGRES_PASSWORD=hello_flask
+        - POSTGRES_DB=hello_flask_dev
+    worker:
+      build: ./services/web
+      command: python3 manage.py run_worker
+      volumes:
+        - ./services/web/:/usr/src/app/
+      environment:
+        - WEBSITE_NAME=www.ukneqastest.com
+      env_file:
+        - ./.env.dev
+      depends_on:
+        - redis
+    redis:
+      image: redis:6.2-alpine
+      ports:
+      - "6379:6379"  # Expose Redis on port 6379
+    dashboard:
+      build: ./services/rq-dashboard
+      container_name: rq_dashboard
+      ports:
+        - 9181:9181
+      command: rq-dashboard -u redis://redis:6379/0
+      depends_on:
+        - redis
+      # Front-End Service
+    frontend:
+      build: ./services/frontend  # Build from the frontend directory
+      container_name: frontend
+      environment:
+        - WEBSITE_NAME=www.ukneqastest.com
+      ports:
+        - 3000:3000  # Expose port 80 for the front-end
+      depends_on:
+        - web  # Wait for the web service to be ready
+    nginx:
+      container_name: nginx
+      restart: always
+      build: ./services/nginx
+      environment:
+        - WEBSITE_NAME=www.ukneqastest.com
+        - WEBSITE_ROOT=ukneqastest.com
+      ports:
+        - "80:80"
+      depends_on:
+        - web
+        - frontend
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge

@@ -1,0 +1,14 @@
+Dec-31 12:35:45.663 [main] DEBUG nextflow.cli.Launcher - $> nextflow run main2.nf
+Dec-31 12:35:45.979 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.10.3
+Dec-31 12:35:46.085 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/kevin/.nextflow/plugins; core-plugins: nf-amazon@2.9.2,nf-azure@1.10.2,nf-cloudcache@0.4.2,nf-codecommit@0.2.2,nf-console@1.1.4,nf-google@1.15.3,nf-tower@1.9.3,nf-wave@1.7.4
+Dec-31 12:35:46.149 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Dec-31 12:35:46.150 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Dec-31 12:35:46.162 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Dec-31 12:35:46.210 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Dec-31 12:35:46.248 [main] DEBUG nextflow.scm.ProviderConfig - Using SCM config path: /home/kevin/.nextflow/scm
+Dec-31 12:35:46.281 [main] DEBUG nextflow.cli.Launcher - Operation aborted
+nextflow.exception.AbortOperationException: Cannot find script file: main2.nf
+	at nextflow.cli.CmdRun.getScriptFile(CmdRun.groovy:536)
+	at nextflow.cli.CmdRun.run(CmdRun.groovy:325)
+	at nextflow.cli.Launcher.run(Launcher.groovy:503)
+	at nextflow.cli.Launcher.main(Launcher.groovy:658)

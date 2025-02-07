@@ -1,0 +1,660 @@
+Jan-02 17:48:26.829 [main] DEBUG nextflow.cli.Launcher - $> nextflow -log run_resume.log run main2.nf -dump-hashes json -resume
+Jan-02 17:48:27.572 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.10.3
+Jan-02 17:48:27.746 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/kevin/.nextflow/plugins; core-plugins: nf-amazon@2.9.2,nf-azure@1.10.2,nf-cloudcache@0.4.2,nf-codecommit@0.2.2,nf-console@1.1.4,nf-google@1.15.3,nf-tower@1.9.3,nf-wave@1.7.4
+Jan-02 17:48:27.868 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Jan-02 17:48:27.874 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Jan-02 17:48:27.901 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Jan-02 17:48:27.992 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Jan-02 17:48:28.374 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 by global default
+Jan-02 17:48:28.452 [main] DEBUG nextflow.cli.CmdRun - Launching `main2.nf` [pedantic_meitner] DSL2 - revision: e043ba82bd
+Jan-02 17:48:28.454 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Jan-02 17:48:28.457 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
+Jan-02 17:48:28.724 [main] DEBUG nextflow.Session - Session UUID: d5f1f153-88d1-4d57-a5c3-261df7829ab2
+Jan-02 17:48:28.725 [main] DEBUG nextflow.Session - Run name: pedantic_meitner
+Jan-02 17:48:28.727 [main] DEBUG nextflow.Session - Executor pool size: 2
+Jan-02 17:48:28.761 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Jan-02 17:48:28.791 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=10; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Jan-02 17:48:28.941 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 24.10.3 build 5933
+  Created: 16-12-2024 15:34 UTC (16:34 CEST)
+  System: Linux 5.15.0-125-generic
+  Runtime: Groovy 4.0.23 on OpenJDK 64-Bit Server VM 11.0.25+9-post-Ubuntu-1ubuntu120.04
+  Encoding: UTF-8 (UTF-8)
+  Process: 35919@kevin-VirtualBox [127.0.1.1]
+  CPUs: 1 - Mem: 9.6 GB (1.2 GB) - Swap: 2 GB (1.9 GB)
+Jan-02 17:48:29.170 [main] DEBUG nextflow.Session - Work-dir: /home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work [ext2/ext3]
+Jan-02 17:48:29.174 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/bin
+Jan-02 17:48:29.241 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Jan-02 17:48:29.310 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Jan-02 17:48:29.539 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Jan-02 17:48:29.577 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 2; maxThreads: 1000
+Jan-02 17:48:30.154 [main] DEBUG nextflow.Session - Session start
+Jan-02 17:48:34.481 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Jan-02 17:48:34.540 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/kevin/.nextflow/secrets/store.json
+Jan-02 17:48:34.588 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@4fb64e14] - activable => nextflow.secret.LocalSecretsProvider@4fb64e14
+Jan-02 17:48:35.177 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Jan-02 17:48:35.178 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jan-02 17:48:35.196 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Jan-02 17:48:35.230 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=1; memory=9.6 GB; capacity=1; pollInterval=100ms; dumpInterval=5m
+Jan-02 17:48:35.234 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+Jan-02 17:48:35.774 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Jan-02 17:48:35.774 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jan-02 17:48:35.851 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Jan-02 17:48:35.852 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jan-02 17:48:35.905 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: bbdukTrim, qualimapQC, alignReads
+Jan-02 17:48:35.917 [main] DEBUG nextflow.Session - Igniting dataflow network (4)
+Jan-02 17:48:35.954 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > bbdukTrim
+Jan-02 17:48:35.959 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > alignReads
+Jan-02 17:48:35.961 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > qualimapQC
+Jan-02 17:48:35.970 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_a4745a586779f1cd: /home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/main2.nf
+Jan-02 17:48:35.972 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+Jan-02 17:48:35.974 [main] DEBUG nextflow.Session - Session await
+Jan-02 17:48:35.989 [PathVisitor-1] DEBUG nextflow.file.PathVisitor - files for syntax: glob; folder: data/RSV 2024 Winter/; pattern: **/*/*_R1.fastq*; options: [:]
+Jan-02 17:48:36.773 [Actor Thread 5] INFO  nextflow.processor.TaskProcessor - [bbdukTrim (2)] cache hash: 195a5dac13f381094456c8411579f34a; mode: STANDARD; entries: [
+    {
+        "hash": "290fe25181f912a8f2349b84a0cec9e4",
+        "type": "java.util.UUID",
+        "value": "d5f1f153-88d1-4d57-a5c3-261df7829ab2"
+    },
+    {
+        "hash": "e528968e95d7710e3106c67c603edc43",
+        "type": "java.lang.String",
+        "value": "bbdukTrim"
+    },
+    {
+        "hash": "d672340e5ab0a89ee60f8737737a0d89",
+        "type": "java.lang.String",
+        "value": "    \"\"\"\n    # Run BBDuk for trimming adapters and low-quality bases\n    if [ -n \"$reads2\" ]; then\n        bbduk.sh in1=\"$reads1\" in2=\"$reads2\" out1=\"${outputdir}/${reads1.baseName}_trimmed.fastq.gz\" out2=\"${outputdir}/${reads2.baseName}_trimmed.fastq.gz\" ref=adapters qtrim=rl trimq=20\n    else\n        bbduk.sh in=\"$reads1\" out=\"${outputdir}/${reads1.baseName}_trimmed.fastq.gz\" ref=adapters qtrim=rl trimq=10\n    fi\n    \"\"\"\n"
+    },
+    {
+        "hash": "7ec7cbd71ff757f5fcdbaa760c9ce6de",
+        "type": "java.lang.String",
+        "value": "sample_id"
+    },
+    {
+        "hash": "7da870f4764efbaef0233fa9ce8ca9ea",
+        "type": "org.codehaus.groovy.runtime.GStringImpl",
+        "value": "WR006_2524"
+    },
+    {
+        "hash": "ea4f37a76acc2560eafec7bc7868e728",
+        "type": "java.lang.String",
+        "value": "reads1"
+    },
+    {
+        "hash": "6f04c1cda2caad28120f2e9b7fa1d43d",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2524/2524_R1.fastq.gz, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2524/2524_R1.fastq.gz, stageName:2524_R1.fastq.gz)]"
+    },
+    {
+        "hash": "d3d5e582df7d8942025d7f3226aeea9d",
+        "type": "java.lang.String",
+        "value": "reads2"
+    },
+    {
+        "hash": "3c0a05cca009d5ce561cec4f5ab3d563",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2524/2524_R2.fastq.gz, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2524/2524_R2.fastq.gz, stageName:2524_R2.fastq.gz)]"
+    },
+    {
+        "hash": "5d5316dac386565fbfc29410474a562a",
+        "type": "java.lang.String",
+        "value": "outputdir"
+    },
+    {
+        "hash": "18f17b6a512db9a1a7626c04ae9a4b6b",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2524, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2524, stageName:2524)]"
+    },
+    {
+        "hash": "4f9d4b0d22865056c37fb6d9c2a04a67",
+        "type": "java.lang.String",
+        "value": "$"
+    },
+    {
+        "hash": "16fe7483905cce7a85670e43e4678877",
+        "type": "java.lang.Boolean",
+        "value": "true"
+    }
+]
+Jan-02 17:48:36.777 [Actor Thread 3] INFO  nextflow.processor.TaskProcessor - [bbdukTrim (1)] cache hash: cf994cbbd9f2d999b75ad2950b103650; mode: STANDARD; entries: [
+    {
+        "hash": "290fe25181f912a8f2349b84a0cec9e4",
+        "type": "java.util.UUID",
+        "value": "d5f1f153-88d1-4d57-a5c3-261df7829ab2"
+    },
+    {
+        "hash": "e528968e95d7710e3106c67c603edc43",
+        "type": "java.lang.String",
+        "value": "bbdukTrim"
+    },
+    {
+        "hash": "d672340e5ab0a89ee60f8737737a0d89",
+        "type": "java.lang.String",
+        "value": "    \"\"\"\n    # Run BBDuk for trimming adapters and low-quality bases\n    if [ -n \"$reads2\" ]; then\n        bbduk.sh in1=\"$reads1\" in2=\"$reads2\" out1=\"${outputdir}/${reads1.baseName}_trimmed.fastq.gz\" out2=\"${outputdir}/${reads2.baseName}_trimmed.fastq.gz\" ref=adapters qtrim=rl trimq=20\n    else\n        bbduk.sh in=\"$reads1\" out=\"${outputdir}/${reads1.baseName}_trimmed.fastq.gz\" ref=adapters qtrim=rl trimq=10\n    fi\n    \"\"\"\n"
+    },
+    {
+        "hash": "7ec7cbd71ff757f5fcdbaa760c9ce6de",
+        "type": "java.lang.String",
+        "value": "sample_id"
+    },
+    {
+        "hash": "3968f4060fb4419ca112f04c444f2855",
+        "type": "org.codehaus.groovy.runtime.GStringImpl",
+        "value": "WR006_2526"
+    },
+    {
+        "hash": "ea4f37a76acc2560eafec7bc7868e728",
+        "type": "java.lang.String",
+        "value": "reads1"
+    },
+    {
+        "hash": "d9278ffa3539f7597601f206837e3f25",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2526/2526_R1.fastq.gz, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2526/2526_R1.fastq.gz, stageName:2526_R1.fastq.gz)]"
+    },
+    {
+        "hash": "d3d5e582df7d8942025d7f3226aeea9d",
+        "type": "java.lang.String",
+        "value": "reads2"
+    },
+    {
+        "hash": "ed6240662f19d3743ef55da1bdc7fabc",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2526/2526_R2.fastq.gz, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2526/2526_R2.fastq.gz, stageName:2526_R2.fastq.gz)]"
+    },
+    {
+        "hash": "5d5316dac386565fbfc29410474a562a",
+        "type": "java.lang.String",
+        "value": "outputdir"
+    },
+    {
+        "hash": "451b027bd7df2689296bb12489b6cf7d",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2526, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2526, stageName:2526)]"
+    },
+    {
+        "hash": "4f9d4b0d22865056c37fb6d9c2a04a67",
+        "type": "java.lang.String",
+        "value": "$"
+    },
+    {
+        "hash": "16fe7483905cce7a85670e43e4678877",
+        "type": "java.lang.Boolean",
+        "value": "true"
+    }
+]
+Jan-02 17:48:37.145 [Actor Thread 1] INFO  nextflow.processor.TaskProcessor - [bbdukTrim (3)] cache hash: 3cb21f11f4de15d5911b48aea4d8a502; mode: STANDARD; entries: [
+    {
+        "hash": "290fe25181f912a8f2349b84a0cec9e4",
+        "type": "java.util.UUID",
+        "value": "d5f1f153-88d1-4d57-a5c3-261df7829ab2"
+    },
+    {
+        "hash": "e528968e95d7710e3106c67c603edc43",
+        "type": "java.lang.String",
+        "value": "bbdukTrim"
+    },
+    {
+        "hash": "d672340e5ab0a89ee60f8737737a0d89",
+        "type": "java.lang.String",
+        "value": "    \"\"\"\n    # Run BBDuk for trimming adapters and low-quality bases\n    if [ -n \"$reads2\" ]; then\n        bbduk.sh in1=\"$reads1\" in2=\"$reads2\" out1=\"${outputdir}/${reads1.baseName}_trimmed.fastq.gz\" out2=\"${outputdir}/${reads2.baseName}_trimmed.fastq.gz\" ref=adapters qtrim=rl trimq=20\n    else\n        bbduk.sh in=\"$reads1\" out=\"${outputdir}/${reads1.baseName}_trimmed.fastq.gz\" ref=adapters qtrim=rl trimq=10\n    fi\n    \"\"\"\n"
+    },
+    {
+        "hash": "7ec7cbd71ff757f5fcdbaa760c9ce6de",
+        "type": "java.lang.String",
+        "value": "sample_id"
+    },
+    {
+        "hash": "77688cd2860a21016931c56f0894afdb",
+        "type": "org.codehaus.groovy.runtime.GStringImpl",
+        "value": "WR006_2525"
+    },
+    {
+        "hash": "ea4f37a76acc2560eafec7bc7868e728",
+        "type": "java.lang.String",
+        "value": "reads1"
+    },
+    {
+        "hash": "85dedf187a48a5738a3a80c880518bea",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2525/2525_R1.fastq.gz, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2525/2525_R1.fastq.gz, stageName:2525_R1.fastq.gz)]"
+    },
+    {
+        "hash": "d3d5e582df7d8942025d7f3226aeea9d",
+        "type": "java.lang.String",
+        "value": "reads2"
+    },
+    {
+        "hash": "b9ea655ee4dc282b77e2ed7332b0c9ee",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2525/2525_R2.fastq.gz, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2525/2525_R2.fastq.gz, stageName:2525_R2.fastq.gz)]"
+    },
+    {
+        "hash": "5d5316dac386565fbfc29410474a562a",
+        "type": "java.lang.String",
+        "value": "outputdir"
+    },
+    {
+        "hash": "b54cd1cbb15dc9fe023a689f34270e8c",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2525, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2525, stageName:2525)]"
+    },
+    {
+        "hash": "4f9d4b0d22865056c37fb6d9c2a04a67",
+        "type": "java.lang.String",
+        "value": "$"
+    },
+    {
+        "hash": "16fe7483905cce7a85670e43e4678877",
+        "type": "java.lang.Boolean",
+        "value": "true"
+    }
+]
+Jan-02 17:48:37.389 [Actor Thread 3] INFO  nextflow.processor.TaskProcessor - [66/60388c] Cached process > bbdukTrim (1)
+Jan-02 17:48:37.438 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jan-02 17:48:37.454 [Task submitter] INFO  nextflow.Session - [0b/b4ace0] Submitted process > bbdukTrim (2)
+Jan-02 17:48:37.697 [Actor Thread 4] INFO  nextflow.processor.TaskProcessor - [alignReads (1)] cache hash: d7aa48cebc4274cb43580aec7ad7069a; mode: STANDARD; entries: [
+    {
+        "hash": "290fe25181f912a8f2349b84a0cec9e4",
+        "type": "java.util.UUID",
+        "value": "d5f1f153-88d1-4d57-a5c3-261df7829ab2"
+    },
+    {
+        "hash": "8d95e9db4256d3ac0e2912ecabf7c1b6",
+        "type": "java.lang.String",
+        "value": "alignReads"
+    },
+    {
+        "hash": "8ceb76e2ec8afb11fddfe60e7f98556c",
+        "type": "java.lang.String",
+        "value": "    def idxbase = reference[0].baseName\n    \"\"\"\n    # If R2 exists, perform alignment with both R1 and R2\n    if [ -n \"$trimmed_reads2\" ]; then\n        bwa mem \"${idxbase}\" \"$trimmed_reads1\" \"$trimmed_reads2\" | samtools sort -o \"${outputdir}/${sample_id}.bam\"\n    else\n        # If no R2, perform alignment with only R1\n        bwa mem \"${idxbase}\" \"$trimmed_reads1\" | samtools sort -o \"${outputdir}/${sample_id}.bam\"\n    fi\n    \"\"\"\n"
+    },
+    {
+        "hash": "7ec7cbd71ff757f5fcdbaa760c9ce6de",
+        "type": "java.lang.String",
+        "value": "sample_id"
+    },
+    {
+        "hash": "3968f4060fb4419ca112f04c444f2855",
+        "type": "org.codehaus.groovy.runtime.GStringImpl",
+        "value": "WR006_2526"
+    },
+    {
+        "hash": "e9d57320565afd8a3c959927a2cfb34b",
+        "type": "java.lang.String",
+        "value": "trimmed_reads1"
+    },
+    {
+        "hash": "5aa3f9355458e6807cabf5b9018f16ca",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/66/60388c6ffa662662ab7b2f4341983a/2526/2526_R1.fastq_trimmed.fastq.gz, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2526/2526_R1.fastq_trimmed.fastq.gz, stageName:2526_R1.fastq_trimmed.fastq.gz)]"
+    },
+    {
+        "hash": "69fada5967402720f1f8080e4727dcf4",
+        "type": "java.lang.String",
+        "value": "trimmed_reads2"
+    },
+    {
+        "hash": "12d974a367d8f3db1595b8e2159fcff6",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/66/60388c6ffa662662ab7b2f4341983a/2526/2526_R2.fastq_trimmed.fastq.gz, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2526/2526_R2.fastq_trimmed.fastq.gz, stageName:2526_R2.fastq_trimmed.fastq.gz)]"
+    },
+    {
+        "hash": "fec83c41a7c57f821d28e6b995ac3b35",
+        "type": "java.lang.String",
+        "value": "reference"
+    },
+    {
+        "hash": "3873700a67e3fcf96fd7c4872b4eb5e9",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.ann, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.ann, stageName:EPI_ISL_1653999.fasta.ann), FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.amb, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.amb, stageName:EPI_ISL_1653999.fasta.amb), FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.bwt, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.bwt, stageName:EPI_ISL_1653999.fasta.bwt), FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.sa, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.sa, stageName:EPI_ISL_1653999.fasta.sa), FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.pac, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.pac, stageName:EPI_ISL_1653999.fasta.pac)]"
+    },
+    {
+        "hash": "5d5316dac386565fbfc29410474a562a",
+        "type": "java.lang.String",
+        "value": "outputdir"
+    },
+    {
+        "hash": "63366be31e57f1e504b9e274c8ccb5ba",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/66/60388c6ffa662662ab7b2f4341983a/2526, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2526, stageName:2526)]"
+    },
+    {
+        "hash": "4f9d4b0d22865056c37fb6d9c2a04a67",
+        "type": "java.lang.String",
+        "value": "$"
+    },
+    {
+        "hash": "16fe7483905cce7a85670e43e4678877",
+        "type": "java.lang.Boolean",
+        "value": "true"
+    }
+]
+Jan-02 17:48:37.746 [Actor Thread 4] INFO  nextflow.processor.TaskProcessor - [ee/e2c193] Cached process > alignReads (1)
+Jan-02 17:48:37.811 [Actor Thread 2] INFO  nextflow.processor.TaskProcessor - [qualimapQC (1)] cache hash: 6dae56944672464eda615a85d9b0d586; mode: STANDARD; entries: [
+    {
+        "hash": "290fe25181f912a8f2349b84a0cec9e4",
+        "type": "java.util.UUID",
+        "value": "d5f1f153-88d1-4d57-a5c3-261df7829ab2"
+    },
+    {
+        "hash": "a1b5c88dafbeeda9c950c486c9f58037",
+        "type": "java.lang.String",
+        "value": "qualimapQC"
+    },
+    {
+        "hash": "d89b229c0ba652bd9e9c3ce5eaeecb70",
+        "type": "java.lang.String",
+        "value": "    \"\"\"\n    qualimap bamqc -bam \"$bam_file\" -outdir \"${outputdir}\"\n    \"\"\"\n"
+    },
+    {
+        "hash": "88f3562a45cc9130b8d6fbd07b3a13f2",
+        "type": "java.lang.String",
+        "value": "bam_file"
+    },
+    {
+        "hash": "58ceb8aa3e220bb08adbe259ba010774",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/ee/e2c193350e6fa154ca936f05540d48/2526/WR006_2526.bam, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2526/WR006_2526.bam, stageName:WR006_2526.bam)]"
+    },
+    {
+        "hash": "5d5316dac386565fbfc29410474a562a",
+        "type": "java.lang.String",
+        "value": "outputdir"
+    },
+    {
+        "hash": "815a253bf3d936f6a9be6760f034ea19",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/ee/e2c193350e6fa154ca936f05540d48/2526, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2526, stageName:2526)]"
+    },
+    {
+        "hash": "4f9d4b0d22865056c37fb6d9c2a04a67",
+        "type": "java.lang.String",
+        "value": "$"
+    },
+    {
+        "hash": "16fe7483905cce7a85670e43e4678877",
+        "type": "java.lang.Boolean",
+        "value": "true"
+    }
+]
+Jan-02 17:48:37.943 [Actor Thread 2] INFO  nextflow.processor.TaskProcessor - [a8/6a278f] Cached process > qualimapQC (1)
+Jan-02 17:49:38.768 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: bbdukTrim (2); status: COMPLETED; exit: 0; error: -; workDir: /home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/0b/b4ace063bcf569f6ac9c55ef41094f]
+Jan-02 17:49:38.773 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=10; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Jan-02 17:49:38.873 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jan-02 17:49:38.882 [Task submitter] INFO  nextflow.Session - [65/57fa85] Submitted process > bbdukTrim (3)
+Jan-02 17:49:39.175 [Actor Thread 2] INFO  nextflow.processor.TaskProcessor - [alignReads (2)] cache hash: 1c1b835d03ee54c13e8adc8deef27fd4; mode: STANDARD; entries: [
+    {
+        "hash": "290fe25181f912a8f2349b84a0cec9e4",
+        "type": "java.util.UUID",
+        "value": "d5f1f153-88d1-4d57-a5c3-261df7829ab2"
+    },
+    {
+        "hash": "8d95e9db4256d3ac0e2912ecabf7c1b6",
+        "type": "java.lang.String",
+        "value": "alignReads"
+    },
+    {
+        "hash": "8ceb76e2ec8afb11fddfe60e7f98556c",
+        "type": "java.lang.String",
+        "value": "    def idxbase = reference[0].baseName\n    \"\"\"\n    # If R2 exists, perform alignment with both R1 and R2\n    if [ -n \"$trimmed_reads2\" ]; then\n        bwa mem \"${idxbase}\" \"$trimmed_reads1\" \"$trimmed_reads2\" | samtools sort -o \"${outputdir}/${sample_id}.bam\"\n    else\n        # If no R2, perform alignment with only R1\n        bwa mem \"${idxbase}\" \"$trimmed_reads1\" | samtools sort -o \"${outputdir}/${sample_id}.bam\"\n    fi\n    \"\"\"\n"
+    },
+    {
+        "hash": "7ec7cbd71ff757f5fcdbaa760c9ce6de",
+        "type": "java.lang.String",
+        "value": "sample_id"
+    },
+    {
+        "hash": "7da870f4764efbaef0233fa9ce8ca9ea",
+        "type": "org.codehaus.groovy.runtime.GStringImpl",
+        "value": "WR006_2524"
+    },
+    {
+        "hash": "e9d57320565afd8a3c959927a2cfb34b",
+        "type": "java.lang.String",
+        "value": "trimmed_reads1"
+    },
+    {
+        "hash": "59300c9c1be11e7c560b00d51d46aad6",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/0b/b4ace063bcf569f6ac9c55ef41094f/2524/2524_R1.fastq_trimmed.fastq.gz, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2524/2524_R1.fastq_trimmed.fastq.gz, stageName:2524_R1.fastq_trimmed.fastq.gz)]"
+    },
+    {
+        "hash": "69fada5967402720f1f8080e4727dcf4",
+        "type": "java.lang.String",
+        "value": "trimmed_reads2"
+    },
+    {
+        "hash": "3c6a6bfa23ed2616e0ac98b7d129750b",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/0b/b4ace063bcf569f6ac9c55ef41094f/2524/2524_R2.fastq_trimmed.fastq.gz, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2524/2524_R2.fastq_trimmed.fastq.gz, stageName:2524_R2.fastq_trimmed.fastq.gz)]"
+    },
+    {
+        "hash": "fec83c41a7c57f821d28e6b995ac3b35",
+        "type": "java.lang.String",
+        "value": "reference"
+    },
+    {
+        "hash": "3873700a67e3fcf96fd7c4872b4eb5e9",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.ann, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.ann, stageName:EPI_ISL_1653999.fasta.ann), FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.amb, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.amb, stageName:EPI_ISL_1653999.fasta.amb), FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.bwt, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.bwt, stageName:EPI_ISL_1653999.fasta.bwt), FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.sa, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.sa, stageName:EPI_ISL_1653999.fasta.sa), FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.pac, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.pac, stageName:EPI_ISL_1653999.fasta.pac)]"
+    },
+    {
+        "hash": "5d5316dac386565fbfc29410474a562a",
+        "type": "java.lang.String",
+        "value": "outputdir"
+    },
+    {
+        "hash": "0d04761da82c152ce48f19173a2b7ebe",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/0b/b4ace063bcf569f6ac9c55ef41094f/2524, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2524, stageName:2524)]"
+    },
+    {
+        "hash": "4f9d4b0d22865056c37fb6d9c2a04a67",
+        "type": "java.lang.String",
+        "value": "$"
+    },
+    {
+        "hash": "16fe7483905cce7a85670e43e4678877",
+        "type": "java.lang.Boolean",
+        "value": "true"
+    }
+]
+Jan-02 17:50:30.727 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: bbdukTrim (3); status: COMPLETED; exit: 0; error: -; workDir: /home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/65/57fa8536627fae8f0327567d9f4fa8]
+Jan-02 17:50:30.763 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jan-02 17:50:30.765 [Task submitter] INFO  nextflow.Session - [ca/333247] Submitted process > alignReads (2)
+Jan-02 17:50:30.830 [Actor Thread 6] INFO  nextflow.processor.TaskProcessor - [alignReads (3)] cache hash: b04a908e9d80e4eefb3066845b3e700d; mode: STANDARD; entries: [
+    {
+        "hash": "290fe25181f912a8f2349b84a0cec9e4",
+        "type": "java.util.UUID",
+        "value": "d5f1f153-88d1-4d57-a5c3-261df7829ab2"
+    },
+    {
+        "hash": "8d95e9db4256d3ac0e2912ecabf7c1b6",
+        "type": "java.lang.String",
+        "value": "alignReads"
+    },
+    {
+        "hash": "8ceb76e2ec8afb11fddfe60e7f98556c",
+        "type": "java.lang.String",
+        "value": "    def idxbase = reference[0].baseName\n    \"\"\"\n    # If R2 exists, perform alignment with both R1 and R2\n    if [ -n \"$trimmed_reads2\" ]; then\n        bwa mem \"${idxbase}\" \"$trimmed_reads1\" \"$trimmed_reads2\" | samtools sort -o \"${outputdir}/${sample_id}.bam\"\n    else\n        # If no R2, perform alignment with only R1\n        bwa mem \"${idxbase}\" \"$trimmed_reads1\" | samtools sort -o \"${outputdir}/${sample_id}.bam\"\n    fi\n    \"\"\"\n"
+    },
+    {
+        "hash": "7ec7cbd71ff757f5fcdbaa760c9ce6de",
+        "type": "java.lang.String",
+        "value": "sample_id"
+    },
+    {
+        "hash": "77688cd2860a21016931c56f0894afdb",
+        "type": "org.codehaus.groovy.runtime.GStringImpl",
+        "value": "WR006_2525"
+    },
+    {
+        "hash": "e9d57320565afd8a3c959927a2cfb34b",
+        "type": "java.lang.String",
+        "value": "trimmed_reads1"
+    },
+    {
+        "hash": "ff79fd63e54b385e991f7bb8f48f890c",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/65/57fa8536627fae8f0327567d9f4fa8/2525/2525_R1.fastq_trimmed.fastq.gz, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2525/2525_R1.fastq_trimmed.fastq.gz, stageName:2525_R1.fastq_trimmed.fastq.gz)]"
+    },
+    {
+        "hash": "69fada5967402720f1f8080e4727dcf4",
+        "type": "java.lang.String",
+        "value": "trimmed_reads2"
+    },
+    {
+        "hash": "7e65f48d14b7eeab21ddb1715feee52f",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/65/57fa8536627fae8f0327567d9f4fa8/2525/2525_R2.fastq_trimmed.fastq.gz, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2525/2525_R2.fastq_trimmed.fastq.gz, stageName:2525_R2.fastq_trimmed.fastq.gz)]"
+    },
+    {
+        "hash": "fec83c41a7c57f821d28e6b995ac3b35",
+        "type": "java.lang.String",
+        "value": "reference"
+    },
+    {
+        "hash": "430f073da1d11c8139928d095449ba6d",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.amb, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.amb, stageName:EPI_ISL_412866.fasta.amb), FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.ann, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.ann, stageName:EPI_ISL_412866.fasta.ann), FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.sa, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.sa, stageName:EPI_ISL_412866.fasta.sa), FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.bwt, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.bwt, stageName:EPI_ISL_412866.fasta.bwt), FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.pac, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/project/static/genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.pac, stageName:EPI_ISL_412866.fasta.pac)]"
+    },
+    {
+        "hash": "5d5316dac386565fbfc29410474a562a",
+        "type": "java.lang.String",
+        "value": "outputdir"
+    },
+    {
+        "hash": "69d81608e9c7c8328773e7ea6d47f516",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/65/57fa8536627fae8f0327567d9f4fa8/2525, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2525, stageName:2525)]"
+    },
+    {
+        "hash": "4f9d4b0d22865056c37fb6d9c2a04a67",
+        "type": "java.lang.String",
+        "value": "$"
+    },
+    {
+        "hash": "16fe7483905cce7a85670e43e4678877",
+        "type": "java.lang.Boolean",
+        "value": "true"
+    }
+]
+Jan-02 17:52:05.467 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 6; name: alignReads (2); status: COMPLETED; exit: 0; error: -; workDir: /home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/ca/33324732f2c705a5d78be41b1d6588]
+Jan-02 17:52:05.507 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jan-02 17:52:05.509 [Task submitter] INFO  nextflow.Session - [2d/49cd00] Submitted process > alignReads (3)
+Jan-02 17:52:05.527 [Actor Thread 11] INFO  nextflow.processor.TaskProcessor - [qualimapQC (2)] cache hash: 66c632bf789a8354ba667737b4d59f81; mode: STANDARD; entries: [
+    {
+        "hash": "290fe25181f912a8f2349b84a0cec9e4",
+        "type": "java.util.UUID",
+        "value": "d5f1f153-88d1-4d57-a5c3-261df7829ab2"
+    },
+    {
+        "hash": "a1b5c88dafbeeda9c950c486c9f58037",
+        "type": "java.lang.String",
+        "value": "qualimapQC"
+    },
+    {
+        "hash": "d89b229c0ba652bd9e9c3ce5eaeecb70",
+        "type": "java.lang.String",
+        "value": "    \"\"\"\n    qualimap bamqc -bam \"$bam_file\" -outdir \"${outputdir}\"\n    \"\"\"\n"
+    },
+    {
+        "hash": "88f3562a45cc9130b8d6fbd07b3a13f2",
+        "type": "java.lang.String",
+        "value": "bam_file"
+    },
+    {
+        "hash": "b6e8b9a773968ee3837a5b3a44c009c5",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/ca/33324732f2c705a5d78be41b1d6588/2524/WR006_2524.bam, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2524/WR006_2524.bam, stageName:WR006_2524.bam)]"
+    },
+    {
+        "hash": "5d5316dac386565fbfc29410474a562a",
+        "type": "java.lang.String",
+        "value": "outputdir"
+    },
+    {
+        "hash": "7527230a3f519aca737b700bbf90604d",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/ca/33324732f2c705a5d78be41b1d6588/2524, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2524, stageName:2524)]"
+    },
+    {
+        "hash": "4f9d4b0d22865056c37fb6d9c2a04a67",
+        "type": "java.lang.String",
+        "value": "$"
+    },
+    {
+        "hash": "16fe7483905cce7a85670e43e4678877",
+        "type": "java.lang.Boolean",
+        "value": "true"
+    }
+]
+Jan-02 17:53:35.469 [Task monitor] DEBUG n.processor.TaskPollingMonitor - !! executor local > tasks to be completed: 1 -- submitted tasks are shown below
+~> TaskHandler[id: 7; name: alignReads (3); status: RUNNING; exit: -; error: -; workDir: /home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/2d/49cd000a00ceba4e829d4425bde6bd]
+Jan-02 17:53:37.611 [Task submitter] DEBUG n.processor.TaskPollingMonitor - %% executor local > tasks in the submission queue: 1 -- tasks to be submitted are shown below
+~> TaskHandler[id: 8; name: qualimapQC (2); status: NEW; exit: -; error: -; workDir: /home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/e4/1c6e649885b8619539743932ed3f78]
+Jan-02 17:54:46.506 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 7; name: alignReads (3); status: COMPLETED; exit: 0; error: -; workDir: /home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/2d/49cd000a00ceba4e829d4425bde6bd]
+Jan-02 17:54:46.532 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jan-02 17:54:46.545 [Task submitter] INFO  nextflow.Session - [e4/1c6e64] Submitted process > qualimapQC (2)
+Jan-02 17:54:46.615 [Actor Thread 13] INFO  nextflow.processor.TaskProcessor - [qualimapQC (3)] cache hash: f417d4d5dbcdf6d206d4d4f9871e3403; mode: STANDARD; entries: [
+    {
+        "hash": "290fe25181f912a8f2349b84a0cec9e4",
+        "type": "java.util.UUID",
+        "value": "d5f1f153-88d1-4d57-a5c3-261df7829ab2"
+    },
+    {
+        "hash": "a1b5c88dafbeeda9c950c486c9f58037",
+        "type": "java.lang.String",
+        "value": "qualimapQC"
+    },
+    {
+        "hash": "d89b229c0ba652bd9e9c3ce5eaeecb70",
+        "type": "java.lang.String",
+        "value": "    \"\"\"\n    qualimap bamqc -bam \"$bam_file\" -outdir \"${outputdir}\"\n    \"\"\"\n"
+    },
+    {
+        "hash": "88f3562a45cc9130b8d6fbd07b3a13f2",
+        "type": "java.lang.String",
+        "value": "bam_file"
+    },
+    {
+        "hash": "737d8598216777285429d9bb7f4cf9d9",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/2d/49cd000a00ceba4e829d4425bde6bd/2525/WR006_2525.bam, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2525/WR006_2525.bam, stageName:WR006_2525.bam)]"
+    },
+    {
+        "hash": "5d5316dac386565fbfc29410474a562a",
+        "type": "java.lang.String",
+        "value": "outputdir"
+    },
+    {
+        "hash": "4318f5a64a072d3281eabbc277c2f732",
+        "type": "nextflow.util.ArrayBag",
+        "value": "[FileHolder(sourceObj:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/2d/49cd000a00ceba4e829d4425bde6bd/2525, storePath:/home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/data/RSV 2024 Winter/WR006/2525, stageName:2525)]"
+    },
+    {
+        "hash": "4f9d4b0d22865056c37fb6d9c2a04a67",
+        "type": "java.lang.String",
+        "value": "$"
+    },
+    {
+        "hash": "16fe7483905cce7a85670e43e4678877",
+        "type": "java.lang.Boolean",
+        "value": "true"
+    }
+]
+Jan-02 17:55:05.879 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 8; name: qualimapQC (2); status: COMPLETED; exit: 0; error: -; workDir: /home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/e4/1c6e649885b8619539743932ed3f78]
+Jan-02 17:55:05.899 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jan-02 17:55:05.902 [Task submitter] INFO  nextflow.Session - [0c/a5bc42] Submitted process > qualimapQC (3)
+Jan-02 17:56:22.250 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 9; name: qualimapQC (3); status: COMPLETED; exit: 0; error: -; workDir: /home/kevin/Desktop/uk-neqas/app_authentication_postgresV4/services/web/work/0c/a5bc4228af3fb2b4b1de0cdbb457cf]
+Jan-02 17:56:22.257 [main] DEBUG nextflow.Session - Session await > all processes finished
+Jan-02 17:56:22.357 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
+Jan-02 17:56:22.358 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Jan-02 17:56:22.365 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'TaskFinalizer' shutdown completed (hard=false)
+Jan-02 17:56:22.576 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=6; failedCount=0; ignoredCount=0; cachedCount=3; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=7m 44s; failedDuration=0ms; cachedDuration=1m 57s;loadCpus=0; loadMemory=0; peakRunning=2; peakCpus=2; peakMemory=0; ]
+Jan-02 17:56:22.840 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+Jan-02 17:56:22.902 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
+Jan-02 17:56:22.904 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye

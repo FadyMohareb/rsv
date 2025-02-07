@@ -1,0 +1,55 @@
+# Flask for web application
+Flask==2.3.2
+
+# WeasyPrint for PDF generation
+WeasyPrint==57.2
+
+# Pandas and NumPy for data manipulation and analysis
+pandas==2.1.1
+numpy==1.26.0
+
+# Plotly for interactive plots
+plotly==5.17.0
+
+# Python-docx for Word document creation and manipulation
+python-docx==0.8.11
+
+# Matplotlib for data visualization
+matplotlib==3.8.0
+
+# BUSCO requirements
+biopython==1.84
+requests==2.32.3
+
+# flask-cors to simplify handling of react and flask
+flask-cors==5.0.0
+
+# flask-login to simplify authentication, plus others
+flask-login==0.6.3
+flask-wtf==1.2.0
+
+# Interacting with Postgresql
+Flask-SQLAlchemy==3.0.3
+gunicorn==20.1.0
+psycopg2-binary==2.9.6
+
+# Simple backend queue https://testdriven.io/blog/asynchronous-tasks-with-flask-and-redis-queue/#project-setup
+redis==4.1.1
+rq==1.10.1
+
+# SSE notifications (not working in Firefox)
+flask-sse==1.0.0
+gevent==24.11.1
+rq-scheduler==0.9
+
+# Flask socketio 
+flask-socketio==5.5.1
+
+# mail
+Flask-Mail==0.10.0
+
+# deeptools to generate bigWigs
+deeptools==3.5.0
+
+# file upload validation
+pysam==0.23.0
