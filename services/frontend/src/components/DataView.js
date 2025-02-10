@@ -19,6 +19,7 @@ class DataView extends Component {
             tracks: [],
             viewState: null,
             numParticipants: 0,
+            errorMessage: "",
             role: this.props.role,
             loadFailed: false,  // ✅ New state to track load failures
         };
@@ -79,25 +80,32 @@ class DataView extends Component {
 
     async loadSamplePlotAndData(sample) {
         try {
-            this.setState({ loading: true, loadFailed: false });
+            this.setState({ loading: true, loadFailed: false, errorMessage: '' });
             const { sampleSelect, sampleDetails } = this.state;
-            const reference = sampleDetails[sampleSelect]?.reference || 'EPI_ISL_412866'; // Default to 'EPI_ISL_412866' if no reference found
+            const reference = sampleDetails[sampleSelect]?.reference || 'EPI_ISL_412866'; // Default if no reference found
 
             const response = await fetch(
                 `api/distribution_data/${this.state.distribution}/sample/${sample}`,
                 { credentials: 'include' }
             );
             if (!response.ok) {
-                throw new Error('Failed to fetch plot and table data');
+                let errorMsg = "";
+                try {
+                    const errorData = await response.json();
+                    errorMsg = errorData.error || response.statusText;
+                } catch (err) {
+                    errorMsg = response.statusText || 'Failed to fetch plot and table data';
+                }
+                this.setState({ loading: false, loadFailed: true, errorMessage: errorMsg });
+                throw new Error(errorMsg);
             }
+            
             const data = await response.json();
 
             // Interleave BAM and BigWig tracks by sample
             const tracks = [];
-
             // Assuming data.bams and data.bigwigs are arrays of equal length
             const numTracks = Math.max(data.bams.length, data.bigwigs.length);
-
             for (let i = 0; i < numTracks; i++) {
                 const participant = data.bams[i].split('/').slice(-1)[0];
                 if (data.bams[i]) {
@@ -152,10 +160,10 @@ class DataView extends Component {
                 tracks,
                 loading: false,
             });
-
         } catch (error) {
             console.error('Error fetching plot and table data:', error);
-            this.setState({ loading: false, loadFailed: true });
+            // Save the error message so it can be displayed
+            this.setState({ loading: false, loadFailed: true, errorMessage: error.message });
         }
     }
 
@@ -229,6 +237,7 @@ class DataView extends Component {
             distribution,
             distributions,
             viewState,
+            errorMessage,
             bamTracks,
             numParticipants,
             role,
@@ -353,7 +362,7 @@ class DataView extends Component {
                         </>
                     ) : (
                         <div className="error-message">
-                            Insufficient participant data
+                            {this.state.errorMessage || 'Insufficient participant data'}
                         </div>
                     )}
                 </div>

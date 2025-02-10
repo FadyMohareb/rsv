@@ -588,22 +588,28 @@ def get_sample_details(distribution, selected_sample):
                 "clade":metrics["clade"],
                 "G_clade":metrics["G_clade"]
             })
-            bam_url = f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{lab}"
-            bigwig_url = f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{lab}.bw"
-            bams.append(bam_url)
-            bigwigs.append(bigwig_url)
+            if read_coverage!="N/A":
+                bam_url = f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{lab}"
+                bigwig_url = f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{lab}.bw"
+                bams.append(bam_url)
+                bigwigs.append(bigwig_url)
         if current_user.is_superuser():
             return jsonify({"table": table_data, "bams": bams, "bigwigs": bigwigs})
         else:
             print('non superuser')
             user_lab = current_user.organization
             if user_lab not in sample_details[selected_sample]["metrics"]:
-                return jsonify({"error": "Unauthorized access to this sample"}), 403
+                return jsonify({"error": "You have not submitted data for this sample."}), 404
 
             # Filter user lab data
             user_metrics = sample_details[selected_sample]["metrics"][user_lab]
-            user_bam_url = f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{user_lab}"
-            user_bigwig_url = f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{user_lab}.bw"
+            if user_metrics["coverage"]=="N/A":
+                return jsonify({"error": "You have not submitted data for this sample."}), 404
+            user_bam_url=[]
+            user_bigwig_url=[]
+            if "read_coverage" in user_metrics and user_metrics["read_coverage"]!="N/A":
+                user_bam_url = [f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{user_lab}"]
+                user_bigwig_url = [f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{user_lab}.bw"]
 
 
             # Aggregate metrics from other labs
@@ -698,7 +704,7 @@ def get_sample_details(distribution, selected_sample):
                 }
             ]
 
-            return jsonify({"table": user_table_data, "bams": [user_bam_url], "bigwigs": [user_bigwig_url]})
+            return jsonify({"table": user_table_data, "bams": user_bam_url, "bigwigs": user_bigwig_url})
 
     return jsonify({"error": "Sample not found"}), 404
 

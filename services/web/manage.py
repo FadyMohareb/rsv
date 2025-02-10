@@ -46,6 +46,7 @@ def seed_db():
     db.session.add(User(email="jill@gmail.com", username="jill", password=generate_password_hash("password2"),  organization=org2))
     db.session.add(User(email="joe@gmail.com", username="joe", password=generate_password_hash("password3"),  organization=org3))
     db.session.add(User(email="testOrg@gmail.com", username="testOrg", password=generate_password_hash("testOrg"),  organization=org5, role="superuser"))
+    db.session.add(User(email="testUser@gmail.com", username="testUser", password=generate_password_hash("testUser"),  organization=org5))
     print("sanity check")
     db.session.commit()
 
