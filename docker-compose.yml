@@ -8,7 +8,8 @@ services:
       ports:
         - 5000:5000
       environment:
-        - WEBSITE_NAME=localhost
+        - WEBSITE_NAME=www.ukneqastest.com
+        - REDIS_PORT=6379
       env_file:
         - ./.env.dev
       depends_on:
@@ -28,7 +29,8 @@ services:
       volumes:
         - ./services/web/:/usr/src/app/
       environment:
-        - WEBSITE_NAME=localhost
+        - WEBSITE_NAME=www.ukneqastest.com
+        - REDIS_PORT=6379
       env_file:
         - ./.env.dev
       depends_on:
@@ -49,12 +51,12 @@ services:
     frontend:
       build:
         context: ./services/frontend
-        target: development  # Use the development target defined in your Dockerfile  
+        target: production
       container_name: frontend
       environment:
-        - WEBSITE_NAME=localhost
+        - WEBSITE_NAME=www.ukneqastest.com
       ports:
-        - 3000:3000  # Expose port 80 for the front-end
+        - 3001:3000  # Expose port 80 for the front-end
       depends_on:
         - web  # Wait for the web service to be ready
     nginx:
@@ -62,8 +64,8 @@ services:
       restart: always
       build: ./services/nginx
       environment:
-        - WEBSITE_NAME=localhost
-        - WEBSITE_ROOT=localhost
+        - WEBSITE_NAME=www.ukneqastest.com
+        - WEBSITE_ROOT=ukneqastest.com
       ports:
         - "80:80"
       depends_on:

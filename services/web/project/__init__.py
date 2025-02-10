@@ -36,6 +36,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 UPLOAD_FOLDER = 'data'
 
 website_name = os.environ.get("WEBSITE_NAME", "default_website_name")
+redis_port = os.environ.get("REDIS_PORT", "6379")
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins="*")  # Enable CORS to avoid issues when calling from a different frontend
 #blueprint = Blueprint("foo", __name__, url_prefix="/api/bar")
@@ -47,7 +48,7 @@ app.config.from_object("project.config.Config")
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024  # Set a 50 MB limit (for example)
 app.config['WTF_CSRF_ENABLED'] = True
-app.config['REDIS_URL'] = "redis://redis:6379/0"
+app.config['REDIS_URL'] = f"redis://redis:{redis_port}/0"
 app.config['QUEUES'] = ["default"]
 app.config['SESSION_COOKIE_SAMESITE'] = "Strict"  # Or 'None' for cross-origin requests
 app.config['SESSION_COOKIE_SECURE'] = False
@@ -797,7 +798,7 @@ def create_or_restore_organization_with_user():
             - Password: {random_password}
 
             Please log in and change your password as soon as possible using the link below:
-            http://127.0.0.1:3000/change-password/
+            http://{website_name}/change-password/
 
             Best regards,
             The RSV EQA Team
@@ -861,7 +862,7 @@ def create_or_restore_organization_with_user():
         - Password: {random_password}
 
         If you would like to change your password, please visit the link below:
-        http://127.0.0.1:3000/change-password
+        http://{website_name}/change-password
 
         Best regards,
         The RSV EQA Team
