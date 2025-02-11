@@ -11,6 +11,9 @@ from docx.oxml import parse_xml
 from project.utils.report_parser import process_all_reports
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+import subprocess
+import shutil
 
 def generate_sample_plot_pdf(sample_name, sample_data, role):
     """Generates a Matplotlib stacked bar and line graph with dual y-axes for a single sample."""
@@ -105,7 +108,65 @@ def generate_sample_plot_pdf(sample_name, sample_data, role):
     return f'{sample_name}_metrics_plot.png'  # Path to the saved plot image
 
 
+def create_pygenometracks_plot(reference_genome, annotation, region, bigwig_file, bigwig_consensus_file, output_dir, sample_name, user_lab):
+    """
+    Generate a genome coverage plot using pyGenomeTracks for a specific user_lab.
+    Creates a tracks.ini file that includes:
+      - a reference track (from the provided FASTA),
+      - an annotation track (from the provided GFF3), and
+      - a bigwig track (from the provided BigWig file).
+    The plot is generated for the given region.
+    """
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    tracks_ini = os.path.join(output_dir, f"{user_lab}_{sample_name}_tracks.ini")
+    plot_output = os.path.join(output_dir, f"{user_lab}_{sample_name}_coverage_plot.png")
 
+    # Create tracks.ini configuration with three sections:
+    # Reference, Annotation, and BigWig
+    with open(tracks_ini, "w") as ini:
+        ini.write(f"""
+[annotation]
+file = {annotation}
+title = {reference_genome.split("/")[-1].split(".")[0]} genes
+prefered_name = gene_name
+color = green
+style = UCSC
+height = 3
+file_type = gtf
+merge_transcripts = true
+
+[bigwig]
+file = {bigwig_consensus_file}
+title = Sequence coverage
+color = grey
+height = 3
+file_type = bigwig
+
+[bigwig]
+file = {bigwig_file}
+title = Read Coverage
+color = blue
+height = 3
+file_type = bigwig
+""")
+    
+    # Run pyGenomeTracks to generate the plot for the given region
+    command = [
+        "pyGenomeTracks",
+        "--tracks", tracks_ini,
+        "--region", region,
+        "--outFileName", plot_output,
+        "--dpi", str(300)
+    ]
+    
+    try:
+        subprocess.run(command, check=True)
+        return plot_output  # Return the path to the generated image
+    except subprocess.CalledProcessError as e:
+        print(f"Error generating plot: {e}")
+        return None
 
 
 def create_element(name):
@@ -129,7 +190,7 @@ def add_page_number(run):
     run._r.append(instrText)
     run._r.append(fldChar2)
 
-def generate_docx_report(report_data, base_dir, role, user_lab):
+def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
     """Route for generating the DOCX report."""
     report_data = process_all_reports(base_dir)
     samples_file = f"{base_dir}/samples.txt"
@@ -574,7 +635,6 @@ The summary of the EQA participation, variant call assessment, marking criteria 
     agg_users={}
     if not role == "superuser":
         processed_reports = {}
-
         for sample_name, labs_data in sample_html_reports.items():
             if user_lab not in labs_data:
                 continue  # Skip samples the user has no access to
@@ -948,8 +1008,37 @@ The summary of the EQA participation, variant call assessment, marking criteria 
         # Increment figure and table count
         table_count += 1
 
-        last_paragraph = doc.paragraphs[-1]
-        last_paragraph.add_run().add_break(WD_BREAK.PAGE)
+        if role != "superuser":
+            reference_genome = "project/static/genomes/EPI_ISL_412866/EPI_ISL_412866.fasta" if sample_reference_map[sample]=="EPI_ISL_412866" else "project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta"
+            region="EPI_ISL_412866:1-15225" if sample_reference_map[sample]=="EPI_ISL_412866" else "EPI_ISL_1653999:1-15222"
+            annotation = "project/static/genomes/EPI_ISL_412866/EPI_ISL_412866.gtf" if sample_reference_map[sample]=="EPI_ISL_412866" else "project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.gtf"
+            output_dir = "project/static/plots"
+            print(sample)
+            print(region)
+            print(reference_genome)
+            print(annotation)
+            bigwig_file_path = os.path.join(f"data/{distribution}/{user_lab}/{sample}", f"{user_lab}_{sample}.bw")
+            bigwig_copy=os.path.join(output_dir,f"{user_lab}_{sample}.bw")
+            shutil.copy(bigwig_file_path,bigwig_copy)
+            bigwig_file_path = os.path.join(f"data/{distribution}/{user_lab}/{sample}", f"{user_lab}_{sample}_consensus.bw")
+            bigwig_consensus_copy=os.path.join(output_dir,f"{user_lab}_{sample}_consensus.bw")
+            shutil.copy(bigwig_file_path,bigwig_consensus_copy)
+            output_dir = "project/static/plots"
+            plot_path = create_pygenometracks_plot( reference_genome, annotation, region, bigwig_copy, bigwig_consensus_copy, output_dir, sample, user_lab)
+            
+            # Add the plot image to DOCX with a caption
+            para = doc.add_paragraph()
+            runner = para.add_run(f"Figure {str(figure_count)}. Genomic visualisation of submitted sequence and reads.")
+            runner.bold = True
+            runner.italic = True
+            last_paragraph = doc.paragraphs[-1] 
+            last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            figure_count+=1
+            doc.add_picture(plot_path, width=Inches(7.5))  # Adjust size as needed
+            last_paragraph = doc.paragraphs[-1] 
+            last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            last_paragraph = doc.paragraphs[-1]
+            last_paragraph.add_run().add_break(WD_BREAK.PAGE)
         
         
 

@@ -53,3 +53,7 @@ deeptools==3.5.0
 
 # file upload validation
 pysam==0.23.0
+
+# plots for docx report
+pyGenomeTracks==3.9
+svist4get==1.3.1.1

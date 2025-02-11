@@ -72,12 +72,14 @@ process alignFastas {
 
     output:
     path("${outputdir}/${sample_id}_consensus.bam"), emit: consensus_bam
+    path("${outputdir}/${sample_id}_consensus.bw"), emit: consensus_bw
 
     script:
     """
-    minimap2  -a "${reference}" "${fasta_file}" | \
-    samtools sort -o "${outputdir}/${sample_id}_consensus.bam"
-    samtools index "${outputdir}/${sample_id}_consensus.bam"
+    /usr/bin/minimap2  -a "${reference}" "${fasta_file}" | \
+    /usr/bin/samtools sort -o "${outputdir}/${sample_id}_consensus.bam"
+    /usr/bin/samtools index "${outputdir}/${sample_id}_consensus.bam"
+    bamCoverage --bam "${outputdir}/${sample_id}_consensus.bam" --outFileName "${outputdir}/${sample_id}_consensus.bw" --outFileFormat bigwig
     """
 }
 

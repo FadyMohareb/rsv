@@ -1,0 +1,13 @@
+##gtf-version 2.2
+EPI_ISL_1653999	source	genome	1	15222	.	.	.	gene_id "source"; mol_type "viral cRNA"; organism "Human respiratory syncytial virus B";
+EPI_ISL_1653999	source	gene	57	476	.	.	0	gene_id "NS1"; transcript_id "QPB74302.1"; locus_tag "NS1"; product "nonstructural protein 1";
+EPI_ISL_1653999	source	gene	584	958	.	.	0	gene_id "NS2"; transcript_id "QPB74303.1"; locus_tag "NS2"; product "nonstructural protein 2";
+EPI_ISL_1653999	source	gene	1097	2272	.	.	0	gene_id "N"; transcript_id "QPB74304.1"; locus_tag "N"; product "nucleocapsid protein";
+EPI_ISL_1653999	source	gene	2305	3030	.	.	0	gene_id "P"; transcript_id "QPB74305.1"; locus_tag "P"; product "phosphoprotein";
+EPI_ISL_1653999	source	gene	3220	3990	.	.	0	gene_id "M"; transcript_id "QPB74306.1"; locus_tag "M"; product "matrix protein";
+EPI_ISL_1653999	source	gene	4259	4456	.	.	0	gene_id "SH"; transcript_id "QPB74307.1"; locus_tag "SH"; product "small hydrophobic protein";
+EPI_ISL_1653999	source	gene	4646	5578	.	.	0	gene_id "G"; transcript_id "QPB74308.1"; locus_tag "G"; product "attachment glycoprotein";
+EPI_ISL_1653999	source	gene	5676	7400	.	.	0	gene_id "F"; transcript_id "QPB74309.1"; locus_tag "F"; product "fusion glycoprotein";
+EPI_ISL_1653999	source	gene	7627	8214	.	.	0	gene_id "M2-1"; transcript_id "QPB74310.1"; locus_tag "M2-1"; product "transcription elongation factor M2-1";
+EPI_ISL_1653999	source	gene	8180	8452	.	.	0	gene_id "M2-2"; transcript_id "QPB74311.1"; locus_tag "M2-2"; product "transcription elongation factor M2-2";
+EPI_ISL_1653999	source	gene	8518	15018	.	.	0	gene_id "L"; transcript_id "QPB74312.1"; locus_tag "L"; product "RNA-directed RNA polymerase L";

@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install -y \
     libbz2-dev \
     liblzma-dev \
     netcat \
+    bedtools \
     && apt-get clean
 
 # Make the Conda environment available globally
@@ -92,7 +93,7 @@ RUN export PATH=/usr/bin/htslib-1.21/bin:$PATH
 RUN apt-get install autotools-dev autoconf -y && git clone https://github.com/andersen-lab/ivar.git --branch v1.4.3 && cd ivar && ./autogen.sh && ./configure --with-hts=/usr/bin/htslib-1.21 && make && make install
 
 # Verify installations
-RUN java -version && /opt/qualimap/qualimap --help && nextclade --version && busco --version && nextflow info && /bbmap/bbduk.sh -h && ivar version
+RUN java -version && /opt/qualimap/qualimap --help && nextclade --version && busco --version && nextflow info && /bbmap/bbduk.sh -h && ivar version && bedtools --version
 
 # Copy data folder first (heavy)
 COPY data/ /usr/src/app/

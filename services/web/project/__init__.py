@@ -599,18 +599,19 @@ def get_sample_details(distribution, selected_sample):
             print('non superuser')
             user_lab = current_user.organization
             if user_lab not in sample_details[selected_sample]["metrics"]:
-                return jsonify({"error": "You have not submitted data for this sample."}), 404
+                return jsonify({"error": "You have not submitted valid data for this sample."}), 404
 
             # Filter user lab data
             user_metrics = sample_details[selected_sample]["metrics"][user_lab]
             if user_metrics["coverage"]=="N/A":
-                return jsonify({"error": "You have not submitted data for this sample."}), 404
+                return jsonify({"error": "You have not submitted valid data for this sample."}), 404
+            print(user_metrics)
             user_bam_url=[]
             user_bigwig_url=[]
-            if "read_coverage" in user_metrics and user_metrics["read_coverage"]!="N/A":
+            plot_url=""
+            if "Mean coverage depth" in user_metrics and user_metrics["Mean coverage depth"]!="N/A":
                 user_bam_url = [f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{user_lab}"]
                 user_bigwig_url = [f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{user_lab}.bw"]
-
 
             # Aggregate metrics from other labs
             aggregated_metrics = {
@@ -1249,7 +1250,7 @@ def download_docx(distribution):
     report_data = process_all_reports(base_dir)
 
     # Generate the DOCX file using the refactored function
-    doc = generate_docx_report(report_data, base_dir, current_user.role, current_user.organization)
+    doc = generate_docx_report(report_data, base_dir, current_user.role, current_user.organization, distribution)
 
     # Save the DOCX file to a temporary file
     file_path = "/usr/src/app/project/temp_report.docx"
