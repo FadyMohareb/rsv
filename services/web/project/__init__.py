@@ -279,19 +279,6 @@ class User(db.Model):
     def is_superuser(self):
         return self.role == "superuser"
 
-class Organization(db.Model):
-    __tablename__ = "organizations"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True, nullable=False)
-
-    # Relationship with User
-    users = db.relationship("User", back_populates="organization", cascade="all, delete-orphan")
-
-    
-    def __repr__(self):
-        return f"<Organization(id={self.id}, name={self.name})>"
-    
 # User loader function
 @login_manager.user_loader
 def load_user(user_id):
@@ -400,6 +387,116 @@ def get_user_info():
         "role": current_user.role
     }), 200
 
+
+# Association table for many-to-many relationship between distributions and organizations
+distribution_organization = db.Table(
+    'distribution_organization',
+    db.Column('distribution_id', db.Integer, db.ForeignKey('distributions.id'), primary_key=True),
+    db.Column('organization_id', db.Integer, db.ForeignKey('organizations.id'), primary_key=True)
+)
+
+class Organization(db.Model):
+    __tablename__ = "organizations"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+
+    # Relationship with User
+    users = db.relationship("User", back_populates="organization", cascade="all, delete-orphan")
+
+    # Add the reciprocal relationship to Distribution
+    distributions = db.relationship(
+        "Distribution",
+        secondary=distribution_organization,
+        back_populates="organizations"
+    )
+
+    def __repr__(self):
+        return f"<Organization(id={self.id}, name={self.name})>"
+    
+class Distribution(db.Model):
+    __tablename__ = "distributions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    samples = db.Column(JSON, nullable=True)  # Store list of sample names as JSON
+
+    # Add relationship to Organization via the association table
+    organizations = db.relationship(
+        "Organization",
+        secondary=distribution_organization,
+        back_populates="distributions"
+    )
+
+    def __repr__(self):
+        # For clarity, list organization names in the representation
+        org_names = [org.name for org in self.organizations] if self.organizations else []
+        return f"<Distribution(id={self.id}, name={self.name}, samples={self.samples}, organizations={org_names})>"
+
+@app.route('/api/distributions_participants', methods=['GET'])
+@login_required
+@role_required("superuser")
+def get_all():
+    # Retrieve all distributions and organizations from the database
+    distributions = Distribution.query.all()
+    organizations = Organization.query.all()
+
+    # Serialize distributions, including their associated organizations
+    distribution_list = []
+    for dist in distributions:
+        distribution_list.append({
+            "id": dist.id,
+            "name": dist.name,
+            "samples": dist.samples,
+            "organizations": [
+                {"id": org.id, "name": org.name} for org in dist.organizations
+            ]
+        })
+
+    # Serialize organizations, including their associated distributions
+    organization_list = []
+    for org in organizations:
+        organization_list.append(org.name)
+
+    # Return the data as JSON
+    return jsonify({
+        "distributions": distribution_list,
+        "organizations": organization_list
+    })
+
+@app.route('/api/assign_participant', methods=['POST'])
+@login_required
+@role_required_for_post("superuser")
+def assign_participant():
+    data = request.get_json()
+    print(data)
+
+    participant_name = data.get("participant")
+    distribution_name = data.get("distribution")
+
+    if not participant_name or not distribution_name:
+        return jsonify({"error": "Missing participant or distribution name"}), 400
+
+    # Fetch participant and distribution by name
+    participant = Organization.query.filter_by(name=participant_name).first()
+    distribution = Distribution.query.filter_by(name=distribution_name).first()
+
+    if not participant or not distribution:
+        return jsonify({"error": "Invalid participant or distribution name"}), 404
+
+    # Check if the participant is already assigned
+    if participant in distribution.organizations:
+        return jsonify({"message": "Participant already assigned"}), 200
+
+    # Assign the participant to the distribution
+    distribution.organizations.append(participant)
+    db.session.commit()
+
+    return jsonify({"message": f"Participant {participant.name} assigned to {distribution.name}"}), 200
+
+
+    
 @app.route("/api/distribution_data/<distribution>", methods=["GET"])
 @login_required
 def get_distribution_data(distribution):
@@ -708,20 +805,6 @@ def get_sample_details(distribution, selected_sample):
             return jsonify({"table": user_table_data, "bams": user_bam_url, "bigwigs": user_bigwig_url})
 
     return jsonify({"error": "Sample not found"}), 404
-
-
-
-class Distribution(db.Model):
-    __tablename__ = "distributions"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now)
-    samples = db.Column(JSON, nullable=True)  # Store list of sample names as JSON
-
-    # Custom __repr__ method to include 'samples' in the output
-    def __repr__(self):
-        return f"<Distribution(id={self.id}, name={self.name}, samples={self.samples})>"
 
 @app.route("/api/create_distributions", methods=["GET", "POST"], strict_slashes=False)
 @login_required

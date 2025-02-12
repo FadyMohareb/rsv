@@ -819,3 +819,21 @@ h2 {
   transition: width 0.3s ease-in-out;
 }
 
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.grid-item {
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.assignment-table th,
+.assignment-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}

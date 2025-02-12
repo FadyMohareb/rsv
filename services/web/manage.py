@@ -35,11 +35,12 @@ def seed_db():
     org4 = Organization(name="9999")
     org5 = Organization(name="testOrg")
     org6 = Organization(name="WR090")
-    db.session.add_all([org1, org2, org3, org4, org5, org6])
+    orgList=[org1, org2, org3, org4, org5, org6]
+    db.session.add_all(orgList)
     db.session.flush()  # Ensure IDs are assigned to organizations
 
     # Add Distributions
-    db.session.add(Distribution(name="RSV 2024 Winter", samples=["2524", "2525", "2526"]))
+    db.session.add(Distribution(name="RSV 2024 Winter", samples=["2524", "2525", "2526"], organizations=orgList))
 
     # Add users
     db.session.add(User(email="elon@gmail.com", username="elonmusk", password=generate_password_hash("passwordtesla"), role="superuser", organization=org4))
