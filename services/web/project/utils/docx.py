@@ -108,7 +108,7 @@ def generate_sample_plot_pdf(sample_name, sample_data, role):
     return f'{sample_name}_metrics_plot.png'  # Path to the saved plot image
 
 
-def create_pygenometracks_plot(reference_genome, annotation, region, bigwig_file, bigwig_consensus_file, output_dir, sample_name, user_lab):
+def create_pygenometracks_plot(reference_genome, annotation, region, bed_path, bigwig_file, bigwig_consensus_file, output_dir, sample_name, user_lab):
     """
     Generate a genome coverage plot using pyGenomeTracks for a specific user_lab.
     Creates a tracks.ini file that includes:
@@ -133,16 +133,25 @@ title = {reference_genome.split("/")[-1].split(".")[0]} genes
 prefered_name = gene_name
 color = green
 style = UCSC
-height = 3
+height = 2
 file_type = gtf
 merge_transcripts = true
 
+[bed]
+file = {bed_path}
+title = Seq. variants
+color = purple
+height = 3
+file_type = bed
+
 [bigwig]
 file = {bigwig_consensus_file}
-title = Sequence coverage
+title = Seq. coverage
 color = grey
-height = 3
+height = 1
 file_type = bigwig
+
+
 
 [bigwig]
 file = {bigwig_file}
@@ -1023,8 +1032,11 @@ The summary of the EQA participation, variant call assessment, marking criteria 
             bigwig_file_path = os.path.join(f"data/{distribution}/{user_lab}/{sample}", f"{user_lab}_{sample}_consensus.bw")
             bigwig_consensus_copy=os.path.join(output_dir,f"{user_lab}_{sample}_consensus.bw")
             shutil.copy(bigwig_file_path,bigwig_consensus_copy)
+            bed_path = os.path.join(f"data/{distribution}/{user_lab}/{sample}", f"{user_lab}_{sample}_mutations.bed")
+            bed_path_copy=os.path.join(output_dir,f"{user_lab}_{sample}_mutations.bed")
+            shutil.copy(bed_path,bed_path_copy)
             output_dir = "project/static/plots"
-            plot_path = create_pygenometracks_plot( reference_genome, annotation, region, bigwig_copy, bigwig_consensus_copy, output_dir, sample, user_lab)
+            plot_path = create_pygenometracks_plot( reference_genome, annotation, region, bed_path_copy, bigwig_copy, bigwig_consensus_copy, output_dir, sample, user_lab)
             
             # Add the plot image to DOCX with a caption
             para = doc.add_paragraph()

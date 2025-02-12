@@ -71,8 +71,12 @@ process alignFastas {
     tuple val(sample_id), path(fasta_file), path(outputdir), path(reference)
 
     output:
-    path("${outputdir}/${sample_id}_consensus.bam"), emit: consensus_bam
-    path("${outputdir}/${sample_id}_consensus.bw"), emit: consensus_bw
+    tuple val(sample_id), 
+            path("${outputdir}/${sample_id}_consensus.bam"),
+            path("${outputdir}/${sample_id}_consensus.bam.bai"),
+            path("${outputdir}/${sample_id}_consensus.bw"),
+            path(outputdir), 
+            path(reference)
 
     script:
     """
@@ -82,6 +86,27 @@ process alignFastas {
     bamCoverage --bam "${outputdir}/${sample_id}_consensus.bam" --outFileName "${outputdir}/${sample_id}_consensus.bw" --outFileFormat bigwig
     """
 }
+
+// Process: Call variants from the consensus BAM and convert to BED
+process callVariants {
+    cache 'lenient'
+    input:
+    tuple val(sample_id), path(consensus_bam), path(consensus_bai), path(consensus_bw), path(outputdir), path(reference)
+    
+    output:
+    path("${outputdir}/${sample_id}_variants.vcf"), emit: variants_vcf
+    path("${outputdir}/${sample_id}_mutations.bed"), emit: mutations_bed
+
+    script:
+    """
+    bcftools mpileup -Ou -f ${reference} ${consensus_bam} | bcftools call -mv -Ob -o ${outputdir}/${sample_id}_variants.vcf
+
+    bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' ${outputdir}/${sample_id}_variants.vcf > ${outputdir}/${sample_id}_variants.txt
+    awk 'BEGIN {OFS="\\t"} {print \$1, \$2-1, \$2, \$3, \$4}' ${outputdir}/${sample_id}_variants.txt > ${outputdir}/${sample_id}_mutations.bed
+
+    """
+}
+
 
 
 process alignReads {
@@ -355,8 +380,14 @@ workflow {
     nextcladeAlternative(final_fasta_files.map { tuple -> tuple[0..3] }) // Alternative Nextclade run
 
     // Send to Align Fastas process
-    alignFastas(final_fasta_files.map { tuple ->
-        def (sample_id, fasta_file, outputdir, _, reference) = tuple  // Extract relevant fields
+        // Channel to store aligned results
+    aligned_ch = alignFastas(final_fasta_files.map { tuple ->
+        def (sample_id, fasta_file, outputdir, _, reference) = tuple
         [sample_id, fasta_file, outputdir, reference]
     })
+
+    aligned_ch.view()  // Debugging: Ensure data is passing correctly
+
+    callVariants(aligned_ch)
+
 }

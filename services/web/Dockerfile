@@ -89,6 +89,7 @@ RUN cd / && wget "https://sourceforge.net/projects/bbmap/files/BBMap_${BB_VERSIO
 
 #iVar and htslib
 RUN wget https://github.com/samtools/htslib/releases/download/1.21/htslib-1.21.tar.bz2 && tar -xf htslib-1.21.tar.bz2 && cd htslib-1.21 && ./configure --prefix=/usr/bin/htslib-1.21 && make && make install
+RUN wget https://github.com/samtools/bcftools/releases/download/1.21/bcftools-1.21.tar.bz2 && tar -xf bcftools-1.21.tar.bz2 && cd bcftools-1.21 && ./configure --prefix=/usr/bin/bcftools-1.21 && make && make install
 RUN export PATH=/usr/bin/htslib-1.21/bin:$PATH
 RUN apt-get install autotools-dev autoconf -y && git clone https://github.com/andersen-lab/ivar.git --branch v1.4.3 && cd ivar && ./autogen.sh && ./configure --with-hts=/usr/bin/htslib-1.21 && make && make install
 
