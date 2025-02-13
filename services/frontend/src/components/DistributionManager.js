@@ -31,15 +31,15 @@ const DistributionManager = () => {
         credentials: "include",
       });
       const data = await response.json();
-  
+
       // Extract distribution names from the distributions list.
       // Each distribution has: id, name, samples, and organizations.
       const distroNames = (data.distributions || []).map((dist) => dist.name);
       setDistributions(distroNames);
-  
+
       // Set organizations list
       setOrganizations(data.organizations || []);
-  
+
       // Parse assignments mapping from distributions.
       // Expected structure: { organizationName: { distributionName: true } }
       const assignmentsMapping = {};
@@ -196,14 +196,14 @@ const DistributionManager = () => {
     if (assignments[participant] && assignments[participant][distribution]) {
       return;
     }
-  
+
     // Alert the user that the assignment is permanent
     const confirmed = window.confirm(
       "This assignment is permanent. Are you sure you want to assign?"
     );
-  
+
     if (!confirmed) return;
-  
+
     try {
       // Send assignment data to the backend
       const response = await fetch("api/assign_participant", {
@@ -217,11 +217,11 @@ const DistributionManager = () => {
           distribution,
         }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to assign participant. Please try again.");
       }
-  
+
       // Update the frontend state only if the API request succeeds
       setAssignments((prevAssignments) => {
         const newAssignments = { ...prevAssignments };
@@ -231,22 +231,22 @@ const DistributionManager = () => {
         newAssignments[participant][distribution] = true;
         return newAssignments;
       });
-  
+
       setMessage("Participant successfully assigned.");
     } catch (error) {
       console.error("Error assigning participant:", error);
       setMessage("An error occurred. Please try again.");
     }
   };
-  
+
 
   return (
-    <div className="page-container">
+    <div className="page-container" style={{ width: "920px" }}>
       <h1>Management Dashboard</h1>
 
       <div className="grid-container">
         {/* Create Distribution Section */}
-        <section className="grid-item">
+        <section className="grid-item" style={{ height: "360px" }}>
           <h2>Create New Distribution</h2>
           <div className="input-group">
             <label>Distribution Name:</label>
@@ -267,7 +267,7 @@ const DistributionManager = () => {
         </section>
 
         {/* Add Sample to Distribution Section */}
-        <section className="grid-item">
+        <section className="grid-item" style={{ height: "360px" }}>
           <h2>Add Sample to Distribution</h2>
           <div className="input-group">
             <label>Select Distribution:</label>
@@ -377,52 +377,106 @@ const DistributionManager = () => {
           {message3 && <div className="message-box">{message3}</div>}
         </section>
 
-        {/* Participant (Organization) Assignment Section */}
         <section className="grid-item">
-          <h2>Organization Assignment</h2>
-          <table className="assignment-table" style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  Organization
-                </th>
-                {distributions.map((dist, idx) => (
-                  <th key={idx} style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {dist}
+          <h2>Distribution Assignment</h2>
+          <div style={{
+            overflowX: "auto",
+            overflowY: "auto",
+            maxHeight: "500px", // Limits height to enable vertical scrolling
+            maxWidth: "100%"
+          }}>
+            <table
+              className="assignment-table"
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                tableLayout: "fixed",
+                minWidth: "400px", // Ensures columns don’t get too narrow
+              }}
+            >
+              <thead>
+                <tr>
+                  <th style={{
+                    border: "1px solid #ddd",
+                    padding: "5px",
+                    fontSize: "14px",
+                    minWidth: "80px", // Prevents excessive shrinking
+                    maxWidth: "150px", // Constrains width
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    position: "sticky",
+                    top: 0,
+                    backgroundColor: "#fff", // Keeps header visible when scrolling
+                    zIndex: 2
+                  }}>
+                    Organization
                   </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {organizations.map((org, pIndex) => (
-                <tr key={pIndex}>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {org}
-                  </td>
-                  {distributions.map((dist, dIndex) => {
-                    const isAssigned =
-                      assignments[org] && assignments[org][dist];
-                    return (
-                      <td
-                        key={dIndex}
-                        style={{
-                          border: "1px solid #ddd",
-                          padding: "8px",
-                          textAlign: "center",
-                          cursor: "pointer",
-                          backgroundColor: isAssigned ? "#4CAF50" : "#fff",
-                          color: isAssigned ? "#fff" : "#000",
-                        }}
-                        onClick={() => toggleAssignment(org, dist)}
-                      >
-                        {isAssigned ? "✓" : ""}
-                      </td>
-                    );
-                  })}
+                  {distributions.map((dist, idx) => (
+                    <th key={idx} style={{
+                      border: "1px solid #ddd",
+                      padding: "5px",
+                      fontSize: "14px",
+                      minWidth: "80px",
+                      maxWidth: "150px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      position: "sticky",
+                      top: 0,
+                      backgroundColor: "#fff",
+                      zIndex: 2
+                    }}>
+                      {dist}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {organizations.map((org, pIndex) => (
+                  <tr key={pIndex}>
+                    <td style={{
+                      border: "1px solid #ddd",
+                      padding: "5px",
+                      fontSize: "14px",
+                      minWidth: "80px",
+                      maxWidth: "150px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      wordWrap: "break-word",
+                      position: "sticky",
+                      left: 0, // Keeps first column fixed
+                      backgroundColor: "#fff", // Ensures visibility
+                      zIndex: 1 // Ensures it stays on top
+                    }}>
+                      {org}
+                    </td>
+                    {distributions.map((dist, dIndex) => {
+                      const isAssigned = assignments[org] && assignments[org][dist];
+                      return (
+                        <td
+                          key={dIndex}
+                          style={{
+                            border: "1px solid #ddd",
+                            padding: "5px",
+                            minWidth: "50px",
+                            maxWidth: "100px",
+                            textAlign: "center",
+                            cursor: "pointer",
+                            backgroundColor: isAssigned ? "#4CAF50" : "#fff",
+                            color: isAssigned ? "#fff" : "#000",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                          onClick={() => toggleAssignment(org, dist)}
+                        >
+                          {isAssigned ? "✓" : ""}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
     </div>
