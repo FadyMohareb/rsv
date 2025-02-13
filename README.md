@@ -15,7 +15,7 @@ This will bring the application online, but with empty databases (no registered 
 
 ```(sudo) docker-compose exec web python3 manage.py seed_db```
 
-This command runs the seed_db method contained at ```services/web/manage.py```, which allows interaction with the already running backend Flask server.
+This command runs the seed_db method contained at ```services/web/manage.py```, which allows interaction with the already running backend Flask server. Commands can even be added/modified at runtime.
 
 To monitor server activity, real time logs can be printed to console by:
 

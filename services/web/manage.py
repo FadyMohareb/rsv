@@ -25,33 +25,59 @@ def create_db():
 
 @cli.command("seed_db")
 def seed_db():
+    base_dir = "data/"
+
     try:
-        # Clear the database to avoid duplicate entries
-        db.session.query(Organization).delete()
-        db.session.query(Distribution).delete()
-
-        # Add Organizations
-        org1 = Organization(name="WR099")
-        org2 = Organization(name="WR006")
-        org3 = Organization(name="WR024")
-        org4 = Organization(name="9999")
-        org5 = Organization(name="testOrg")
-        org6 = Organization(name="WR090")
-        orgList=[org1, org2, org3, org4, org5, org6]
-        db.session.add_all(orgList)
-        db.session.flush()  # Ensure IDs are assigned to organizations
-
-        # Add Distributions
-        db.session.add(Distribution(name="RSV 2024 Winter", samples=["2524", "2525", "2526"], organizations=orgList))
+        org_dict = {}
+    
+        # Iterate over distribution directories in base_dir
+        for dist_folder in os.listdir(base_dir):
+            dist_path = os.path.join(base_dir, dist_folder)
+            if not os.path.isdir(dist_path):
+                continue  # skip files
+            
+            distribution_name = dist_folder  # Use folder name as distribution name
+            all_samples = []      # To collect sample names
+            orgs_for_distribution = []  # To collect Organization objects for this distribution
+            
+            # Iterate over organization directories in the distribution folder
+            for org_folder in os.listdir(dist_path):
+                org_path = os.path.join(dist_path, org_folder)
+                if not os.path.isdir(org_path):
+                    continue
+                
+                organization_name = org_folder  # Folder name as organization name
+                # If organization not created yet, create and store it
+                if organization_name not in org_dict:
+                    org_obj = Organization(name=organization_name)
+                    db.session.add(org_obj)
+                    db.session.flush()  # Ensure an ID is assigned
+                    org_dict[organization_name] = org_obj
+                else:
+                    org_obj = org_dict[organization_name]
+                
+                orgs_for_distribution.append(org_obj)
+                
+                # Iterate over sample directories inside the organization folder
+                for sample_folder in os.listdir(org_path):
+                    sample_path = os.path.join(org_path, sample_folder)
+                    if os.path.isdir(sample_path):
+                        all_samples.append(sample_folder)
+            
+            # Create and add the Distribution with its organizations and samples
+            distribution = Distribution(
+                name=distribution_name,
+                samples=list(set(all_samples)),
+                organizations=orgs_for_distribution
+            )
+            db.session.add(distribution)
 
         # Add users
-        db.session.add(User(email="elon@gmail.com", username="elonmusk", password=generate_password_hash("passwordtesla"), role="superuser", organization=org4))
-        db.session.add(User(email="bill@gmail.com", username="bill", password=generate_password_hash("password1"),  organization=org1))
-        db.session.add(User(email="jill@gmail.com", username="jill", password=generate_password_hash("password2"),  organization=org2))
-        db.session.add(User(email="joe@gmail.com", username="joe", password=generate_password_hash("password3"),  organization=org3))
-        db.session.add(User(email="testOrg@gmail.com", username="testOrg", password=generate_password_hash("testOrg"),  organization=org5, role="superuser"))
-        db.session.add(User(email="testUser@gmail.com", username="testUser", password=generate_password_hash("testUser"),  organization=org5))
-        db.session.add(User(email="WR090@gmail.com", username="WR090", password=generate_password_hash("WR090"),  organization=org6))
+        db.session.add(User(email="elon@gmail.com", username="elonmusk", password=generate_password_hash("passwordtesla"), role="superuser", organization=org_dict.get("9999")))
+        db.session.add(User(email="bill@gmail.com", username="bill", password=generate_password_hash("password1"),  organization=org_dict.get("WR099")))
+        db.session.add(User(email="jill@gmail.com", username="jill", password=generate_password_hash("password2"),  organization=org_dict.get("WR090")))
+        db.session.add(User(email="testOrg@gmail.com", username="testOrg", password=generate_password_hash("testOrg"),  organization=org_dict.get("testOrg"), role="superuser"))
+        db.session.add(User(email="testUser@gmail.com", username="testUser", password=generate_password_hash("testUser"),  organization=org_dict.get("testOrg")))
         db.session.commit()
 
         # Query the user with username "elonmusk"
