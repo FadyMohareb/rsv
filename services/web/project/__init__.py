@@ -812,7 +812,8 @@ def get_sample_details(distribution, selected_sample):
 def distribution_manager():
     if request.method == "GET":
         # Fetch all distributions from the database
-        distributions = Distribution.query.all()
+        distributions = Distribution.query.filter(Distribution.organizations.any(id=current_user.organization_id)).all()
+        print(distributions)
         return jsonify({
             "distributions": [d.name for d in distributions]
         }), 200
