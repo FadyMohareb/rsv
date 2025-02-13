@@ -454,6 +454,7 @@ const DistributionManager = () => {
                       return (
                         <td
                           key={dIndex}
+                          className="assignment-cell"
                           style={{
                             border: "1px solid #ddd",
                             padding: "5px",
