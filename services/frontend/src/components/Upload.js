@@ -12,6 +12,7 @@ export default function Upload() {
     const [distributions, setDistributions] = useState([]); // State for fetched distributions
     const [sampleDetails, setSampleDetails] = useState([]); // State for sample details
     const [sampleSelect, setSampleSelect] = useState(''); // State for selected sample
+    const [sequencingType, setSequencingType] = useState('');
     const [organization, setOrganization] = useState(''); // State for the user's organization
     const [loading, setLoading] = useState(false); // State for loading indicator
     const [samplesLoading, setSamplesLoading] = useState(false); // State for loading samples
@@ -102,6 +103,11 @@ export default function Upload() {
         setFastq2(event.target.files[0]);
     };
 
+    // Handle sequencing type change
+    const handleSequencingTypeChange = (event) => {
+        setSequencingType(event.target.value);
+    };
+
     // Handle description change
     const handleDescriptionChange = (event) => {
         setDescription(event.target.value);
@@ -144,6 +150,8 @@ export default function Upload() {
         formData.append('sample', sampleSelect);
         formData.append('distribution', distribution);
         formData.append('organization', organization); // Include the fetched organization
+        formData.append('sequencing_type', sequencingType); // Include the sequencing type
+        console.log('sequencing_type', sequencingType);
 
         // Create a new XMLHttpRequest to send the form data
         const xhr = new XMLHttpRequest();
@@ -170,8 +178,14 @@ export default function Upload() {
                 alert('File(s) uploaded successfully!');
                 navigate('/'); // Navigate back to home page after successful upload
             } else {
-                const errorData = JSON.parse(xhr.responseText);
-                alert(`Failed to upload files: ${errorData.error || "Unknown error"}`);
+                let errorData;
+                try {
+                    errorData = JSON.parse(xhr.responseText);
+                } catch (e) {
+                    console.error("Failed to parse JSON:", xhr.responseText);
+                    errorData = { error: "Unknown error" };
+                }
+                alert(`Failed to upload files: ${errorData.error}`);
             }
             setLoading(false); // Hide the loading spinner after the upload completes
         };
@@ -251,7 +265,32 @@ export default function Upload() {
                         )}
                     </select>
                 </div>
-
+                {/* Sequencing Type Input with Autocompletion */}
+                <div className="input-group">
+                    <label htmlFor="sequencingType" className="input-label">
+                        Sequencing Type<span style={{ color: '#b83030' }}>*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="sequencingType"
+                        value={sequencingType}
+                        onChange={handleSequencingTypeChange}
+                        className="input-field"
+                        required
+                        list="sequencingOptions"
+                    />
+                    <datalist id="sequencingOptions">
+                        <option value="Illumina MiSeq" />
+                        <option value="Illumina NextSeq" />
+                        <option value="Illumina NovaSeq" />
+                        <option value="Oxford Nanopore MinION" />
+                        <option value="Oxford Nanopore GridION" />
+                        <option value="PacBio Sequel" />
+                        <option value="PacBio RS II" />
+                        <option value="Ion Torrent PGM" />
+                        {/* Add or modify options as needed */}
+                    </datalist>
+                </div>
                 {/* FASTA File Input */}
                 <div className="input-group">
                     <label htmlFor="fasta" className="input-label">FASTA File</label>

@@ -778,7 +778,7 @@ def get_sample_details(distribution, selected_sample):
                     "coverage": round(user_metrics["coverage"] * 100, 2),
                     "ns": round(user_metrics["Ns"], 2),
                     "similarity": round(user_metrics["similarity"], 2),
-                    "read_coverage": round(user_metrics["Mean coverage depth"], 2),
+                    "read_coverage": round(user_metrics["Mean coverage depth"], 2) if user_metrics["Mean coverage depth"]!="N/A" else "N/A",
                     "clade":user_metrics["clade"],
                     "G_clade":user_metrics["G_clade"]
                 },
@@ -796,7 +796,7 @@ def get_sample_details(distribution, selected_sample):
                     "coverage": round(ref_metrics["coverage"] * 100, 2),
                     "ns": round(ref_metrics["Ns"], 2),
                     "similarity": round(ref_metrics["similarity"], 2),
-                    "read_coverage": round(ref_metrics["Mean coverage depth"], 2),
+                    "read_coverage": round(ref_metrics["Mean coverage depth"], 2) if ref_metrics["Mean coverage depth"]!="N/A" else "N/A",
                     "clade":ref_metrics["clade"],
                     "G_clade":ref_metrics["G_clade"]
                 }
@@ -1066,6 +1066,33 @@ def samples_per_distro_manager(distribution):
             "message": f"Sample '{sample_name}' with RSV type '{rsv_type}' added to '{distribution}' and saved in samples.txt"
         }), 201
 
+class Submission(db.Model):
+    __tablename__ = "submissions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Foreign keys
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    organization_id = db.Column(db.Integer, db.ForeignKey('organizations.id'), nullable=False)
+    distribution_id = db.Column(db.Integer, db.ForeignKey('distributions.id'), nullable=False)
+    
+    # The sample from the distribution that was submitted (as a string identifier)
+    sample = db.Column(db.String(128), nullable=False)
+    
+    # Additional info
+    sequencing_type = db.Column(db.String(64), nullable=False)
+    submission_date = db.Column(db.DateTime, default=datetime.now, nullable=False)
+
+    # Relationships for convenient access to associated objects
+    user = db.relationship("User", backref=db.backref("submissions", lazy=True))
+    organization = db.relationship("Organization", backref=db.backref("submissions", lazy=True))
+    distribution = db.relationship("Distribution", backref=db.backref("submissions", lazy=True))
+
+    def __repr__(self):
+        return (f"<Submission(id={self.id}, user_id={self.user_id}, "
+                f"organization_id={self.organization_id}, distribution_id={self.distribution_id}, "
+                f"sample={self.sample}, sequencing_type={self.sequencing_type}, "
+                f"submission_date={self.submission_date})>")
 
 # Upload route
 @app.route("/api/upload", methods=["POST"])
@@ -1115,12 +1142,13 @@ def upload_files():
             return False
     
     # Validate request form data
-    required_fields = ['sample', 'distribution', 'organization']
+    required_fields = ['sample', 'distribution', 'organization','sequencing_type']
     for field in required_fields:
         if field not in request.form:
             return jsonify({"error": f"{field} is required"}), 400
     
     # Get form data
+    sequencing_type = request.form['sequencing_type']
     fasta_file = request.files.get('fasta')
     bam_file = request.files.get('bam')
     fq1 = request.files.get('fq1')
@@ -1219,6 +1247,24 @@ def upload_files():
         task = q.enqueue(launch_nextflow, specific_upload_folder, "main.nf", {"reads": specific_upload_folder+"", "samples_txt": samples_txt})
 
     r.publish("chat",f"[UPLOAD]{organization}'s upload of sample {sample} from distribution {distribution} has been completed.")
+
+    # Create and commit a new Submission record
+    # Assuming Organization and Distribution are identified by their unique 'name'
+    org_obj = Organization.query.filter_by(name=organization).first()
+    dist_obj = Distribution.query.filter_by(name=distribution).first()
+    user_obj = User.query.filter_by(email=current_user.id).first()
+    if not org_obj or not dist_obj:
+        return jsonify({"error": "Organization or distribution not found"}), 400
+
+    submission = Submission(
+        user_id=user_obj.id,
+        organization_id=org_obj.id,
+        distribution_id=dist_obj.id,
+        sample=sample,
+        sequencing_type=sequencing_type
+    )
+    db.session.add(submission)
+    db.session.commit()
 
     # Return response with task information
     return jsonify({

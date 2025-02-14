@@ -80,9 +80,9 @@ process alignFastas {
 
     script:
     """
-    /usr/bin/minimap2  -a "${reference}" "${fasta_file}" | \
-    /usr/bin/samtools sort -o "${outputdir}/${sample_id}_consensus.bam"
-    /usr/bin/samtools index "${outputdir}/${sample_id}_consensus.bam"
+    minimap2  -a "${reference}" "${fasta_file}" | \
+    samtools sort -o "${outputdir}/${sample_id}_consensus.bam"
+    samtools index "${outputdir}/${sample_id}_consensus.bam"
     bamCoverage --bam "${outputdir}/${sample_id}_consensus.bam" --outFileName "${outputdir}/${sample_id}_consensus.bw" --outFileFormat bigwig
     """
 }
@@ -99,9 +99,9 @@ process callVariants {
 
     script:
     """
-    bcftools mpileup -Ou -f ${reference} ${consensus_bam} | bcftools call -mv -Ob -o ${outputdir}/${sample_id}_variants.vcf
+    /usr/bin/bcftools-1.21/bin/bcftools mpileup -Ou -f ${reference} ${consensus_bam} | /usr/bin/bcftools-1.21/bin/bcftools call -mv -Ob -o ${outputdir}/${sample_id}_variants.vcf
 
-    bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' ${outputdir}/${sample_id}_variants.vcf > ${outputdir}/${sample_id}_variants.txt
+    /usr/bin/bcftools-1.21/bin/bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' ${outputdir}/${sample_id}_variants.vcf > ${outputdir}/${sample_id}_variants.txt
     awk 'BEGIN {OFS="\\t"} {print \$1, \$2-1, \$2, \$3, \$4}' ${outputdir}/${sample_id}_variants.txt > ${outputdir}/${sample_id}_mutations.bed
 
     """

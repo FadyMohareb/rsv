@@ -21,7 +21,8 @@ class DataView extends Component {
             numParticipants: 0,
             errorMessage: "",
             role: this.props.role,
-            loadFailed: false,  // ✅ New state to track load failures
+            loadFailed: false,  // ✅ New state to track load failures,
+            activeTab: 'normal', // 'normal' or 'technique'
         };
 
         // Bind methods
@@ -30,6 +31,7 @@ class DataView extends Component {
         this.loadSampleDetails = this.loadSampleDetails.bind(this);
         this.loadSamplePlotAndData = this.loadSamplePlotAndData.bind(this);
         this.createViewState = this.createViewState.bind(this);
+        this.handleTabChange = this.handleTabChange.bind(this);
     }
 
     componentDidMount() {
@@ -99,7 +101,7 @@ class DataView extends Component {
                 this.setState({ loading: false, loadFailed: true, errorMessage: errorMsg });
                 throw new Error(errorMsg);
             }
-            
+
             const data = await response.json();
 
             // Interleave BAM and BigWig tracks by sample
@@ -229,6 +231,10 @@ class DataView extends Component {
         });
     }
 
+    handleTabChange(tabName) {
+        this.setState({ activeTab: tabName });
+    }
+
     render() {
         const {
             loading,
@@ -241,7 +247,8 @@ class DataView extends Component {
             bamTracks,
             numParticipants,
             role,
-            loadFailed
+            loadFailed,
+            activeTab
         } = this.state;
         console.log(role)
 
@@ -289,8 +296,6 @@ class DataView extends Component {
                             ))}
                         </select>
 
-                        {/* Button to Download DOCX */}
-                        <DownloadButton distribution={distribution} disabled={numParticipants < 4} />
                     </div>
 
                     <div className="table-container" id="sample-table-container">
@@ -298,7 +303,7 @@ class DataView extends Component {
                             <thead>
                                 <tr>
                                     <th>Sample Name</th>
-                                    <th>Reference</th>
+                                    <th>Intended Subtype</th>
                                     <th>Number of Participants</th>
                                 </tr>
                             </thead>
@@ -322,52 +327,81 @@ class DataView extends Component {
                     </div>
                 </div>
 
-                {/* Right Panel */}
+                {/* Right Panel with Tab System */}
                 <div className="right-panel panel">
-                    {shouldShowData ? (
-                        <>
-                            <div className={`plot-container ${loading || !tableData ? 'hidden' : ''}`} id="plot-container">
-                                {loading ? (
-                                    <div className="spinner">
-                                        <ScaleLoader color="#21afde" />
-                                    </div>
-                                ) : (
-                                    <SamplePlot sampleData={tableData} chartOrientation={chartOrientation} />
-                                )}
-                            </div>
+                    {/* Tab Buttons */}
+                    <div className="tab-buttons">
+                        <button
+                            className={activeTab === 'normal' ? 'active' : ''}
+                            onClick={() => this.handleTabChange('normal')}
+                        >
+                            Per Participant
+                        </button>
+                        <button
+                            className={activeTab === 'technique' ? 'active' : ''}
+                            onClick={() => this.handleTabChange('technique')}
+                        >
+                            Per Technique
+                        </button>
+                        {/* Button to Download DOCX */}
+                        <DownloadButton distribution={distribution} disabled={numParticipants < 4} />
+                    </div>
 
-                            <div className={`table-container ${loading || !tableData ? 'hidden' : ''}`} id="table-container" style={{ width: '100%', overflowX: 'auto' }}>
-                                {loading ? (
-                                    <div className="spinner">
-                                        <ScaleLoader color="#21afde" />
-                                    </div>
-                                ) : (
-                                    tableData && (
-                                        <div style={{ width: '100%', height: '350px' }}>
-                                            <AgGridReact
-                                                rowData={tableData}
-                                                columnDefs={columnDefs}
-                                                defaultColDef={{
-                                                    sortable: true,
-                                                    filter: true,
-                                                    resizable: true,
-                                                }}
-                                                theme={myTheme}
-                                                domLayout="normal"
-                                            />
+                    {activeTab === 'normal' ? (
+                        shouldShowData ? (
+                            <>
+                                <div className={`plot-container ${loading || !tableData ? 'hidden' : ''}`} id="plot-container">
+                                    {loading ? (
+                                        <div className="spinner">
+                                            <ScaleLoader color="#21afde" />
                                         </div>
-                                    )
-                                )}
+                                    ) : (
+                                        <SamplePlot sampleData={tableData} chartOrientation={chartOrientation} />
+                                    )}
+                                </div>
+                                <div
+                                    className={`table-container ${loading || !tableData ? 'hidden' : ''}`}
+                                    id="table-container"
+                                    style={{ width: '100%', overflowX: 'auto' }}
+                                >
+                                    {loading ? (
+                                        <div className="spinner">
+                                            <ScaleLoader color="#21afde" />
+                                        </div>
+                                    ) : (
+                                        tableData && (
+                                            <div style={{ width: '100%', height: '350px' }}>
+                                                <AgGridReact
+                                                    rowData={tableData}
+                                                    columnDefs={columnDefs}
+                                                    defaultColDef={{
+                                                        sortable: true,
+                                                        filter: true,
+                                                        resizable: true,
+                                                    }}
+                                                    theme={myTheme}
+                                                    domLayout="normal"
+                                                />
+                                            </div>
+                                        )
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            <div className="error-message">
+                                {this.state.errorMessage || 'Insufficient participant data'}
                             </div>
-                        </>
-                    ) : (
-                        <div className="error-message">
-                            {this.state.errorMessage || 'Insufficient participant data'}
+                        )
+                    ) : activeTab === 'technique' ? (
+                        // Replace the content below with your own "Per Technique" view logic
+                        <div className="technique-view">
+                            <h2>Per Technique View</h2>
+                            <p>This view will display data grouped or filtered by sequencing technique.</p>
+                            {/* For example, you might implement a different table layout or filtering logic here */}
                         </div>
-                    )}
+                    ) : null}
                 </div>
             </div>
-
         );
 
 

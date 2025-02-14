@@ -843,3 +843,42 @@ h2 {
   transform: scale(1.05);
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
+
+.tab-buttons {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #f0f0f0; /* Light gray background for the toolbar */
+  margin-top: -20px;
+  margin-left: -20px;
+  margin-right: -20px;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 1rem;
+}
+
+/* Default style for each tab button */
+.tab-buttons button {
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Hover effect for tab buttons */
+.tab-buttons button:hover {
+  background-color: #e0e0e0;
+}
+
+/* Active tab button styling */
+.tab-buttons button.active {
+  background-color: #21afde; /* Active tab background */
+  color: #fff; /* Active tab text color */
+  border-radius: 4px;
+}
+
