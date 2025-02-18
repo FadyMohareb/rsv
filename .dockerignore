@@ -1,2 +1,3 @@
 services/frontend/node_modules
 services/web/project/static/plots
+services/web/data

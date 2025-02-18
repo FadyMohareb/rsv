@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { themeQuartz, themeBalham, themeAlpine } from 'ag-grid-community';
 import SamplePlot from './SamplePlot.js';
+import SeqPlot from './SeqPlot.js';
 import ScaleLoader from 'react-spinners/ScaleLoader';
 import DownloadButton from './DownloadButton.js';
 import { JBrowseLinearGenomeView, createViewState } from '@jbrowse/react-linear-genome-view';
@@ -16,12 +17,13 @@ class DataView extends Component {
             sampleDetails: {},
             sampleSelect: '',
             tableData: null,
+            aggregatedData: null,
             tracks: [],
             viewState: null,
             numParticipants: 0,
             errorMessage: "",
             role: this.props.role,
-            loadFailed: false,  // ✅ New state to track load failures,
+            loadFailed: false,
             activeTab: 'normal', // 'normal' or 'technique'
         };
 
@@ -103,6 +105,7 @@ class DataView extends Component {
             }
 
             const data = await response.json();
+            console.log(data)
 
             // Interleave BAM and BigWig tracks by sample
             const tracks = [];
@@ -159,6 +162,7 @@ class DataView extends Component {
 
             this.setState({
                 tableData: sanitizedTableData,
+                aggregatedData: data.sequencing_aggregates || null,
                 tracks,
                 loading: false,
             });
@@ -240,6 +244,7 @@ class DataView extends Component {
             loading,
             sampleDetails,
             tableData,
+            aggregatedData,
             distribution,
             distributions,
             viewState,
@@ -258,13 +263,39 @@ class DataView extends Component {
 
         const columnDefs = [
             { field: 'participant', headerName: 'Participant', sortable: true, filter: true, minWidth: 75, maxWidth: 125, flex: 2 },
-            { field: 'clade', headerName: 'Clade', sortable: true, filter: true, minWidth: 50, maxWidth: 125, flex: 1 },
-            { field: 'G_clade', headerName: 'Legacy clade', sortable: true, filter: true, minWidth: 50, maxWidth: 150, flex: 1 },
+            { field: 'clade', headerName: 'Lineage', sortable: true, filter: true, minWidth: 50, maxWidth: 125, flex: 1 },
+            { field: 'G_clade', headerName: 'Legacy lineage', sortable: true, filter: true, minWidth: 50, maxWidth: 150, flex: 1 },
             { field: 'coverage', headerName: 'Genome Coverage (%)', sortable: true, filter: true, minWidth: 50, maxWidth: 200, flex: 1 },
             { field: 'similarity', headerName: 'Similarity (%)', sortable: true, filter: true, minWidth: 50, maxWidth: 200, flex: 1 },
             { field: 'ns', headerName: 'Ns in Sequence (%)', sortable: true, filter: true, minWidth: 50, maxWidth: 200, flex: 1 },
             { field: 'read_coverage', headerName: 'Read Coverage (Mean)', sortable: true, filter: true, minWidth: 50, maxWidth: 200, flex: 1 },
         ];
+        // Build technique (aggregated by sequencing type) table data and column definitions.
+        let techniqueTableData = [];
+        if (aggregatedData) {
+            for (let seq in aggregatedData) {
+                techniqueTableData.push({
+                sequencing_type: seq,
+                count:aggregatedData[seq].count,
+                coverage: aggregatedData[seq].coverage,
+                ns: aggregatedData[seq].Ns, // Note: ensure field names match those returned by your API
+                similarity: aggregatedData[seq].similarity,
+                read_coverage: aggregatedData[seq].read_coverage,
+                clade: aggregatedData[seq].clade,
+                G_clade: aggregatedData[seq].G_clade,
+                });
+            }
+        }
+        const techniqueColumnDefs = [
+            { field: 'sequencing_type', headerName: 'Sequencing Type', sortable: true, filter: true, flex: 1 },
+            { field: 'count', headerName: 'Valid submissions', sortable: true, filter: true, flex: 1 },
+            { field: 'clade', headerName: 'Dominant lineage', sortable: true, filter: true, flex: 1 },
+            { field: 'G_clade', headerName: 'Dominant legacy lineage', sortable: true, filter: true, flex: 1 },
+            { field: 'coverage', headerName: 'Avg Genome Coverage (%)', sortable: true, filter: true, flex: 1 },
+            { field: 'ns', headerName: 'Avg Ns (%)', sortable: true, filter: true, flex: 1 },
+            { field: 'similarity', headerName: 'Avg Similarity (%)', sortable: true, filter: true, flex: 1 },
+            { field: 'read_coverage', headerName: 'Avg Read Coverage', sortable: true, filter: true, flex: 1 },
+          ];
 
         const myTheme = themeQuartz.withParams({
             backgroundColor: '#ffffff', // Matches even row background
@@ -393,13 +424,53 @@ class DataView extends Component {
                             </div>
                         )
                     ) : activeTab === 'technique' ? (
-                        // Replace the content below with your own "Per Technique" view logic
-                        <div className="technique-view">
-                            <h2>Per Technique View</h2>
-                            <p>This view will display data grouped or filtered by sequencing technique.</p>
-                            {/* For example, you might implement a different table layout or filtering logic here */}
-                        </div>
-                    ) : null}
+                        shouldShowData ? (
+                          <>
+                            <div className={`plot-container ${loading || !aggregatedData ? 'hidden' : ''}`} id="technique-plot-container">
+                              {loading ? (
+                                <div className="spinner">
+                                  <ScaleLoader color="#21afde" />
+                                </div>
+                              ) : (
+                                // Display aggregated data using the SamplePlot component.
+                                // You might need to adjust how SamplePlot renders aggregated data.
+                                <SeqPlot sampleData={techniqueTableData} chartOrientation="vertical" />
+                              )}
+                            </div>
+                            <div
+                              className={`table-container ${loading || !aggregatedData ? 'hidden' : ''}`}
+                              id="technique-table-container"
+                              style={{ width: '100%', overflowX: 'auto' }}
+                            >
+                              {loading ? (
+                                <div className="spinner">
+                                  <ScaleLoader color="#21afde" />
+                                </div>
+                              ) : (
+                                techniqueTableData && (
+                                  <div style={{ width: '100%', height: '350px' }}>
+                                    <AgGridReact
+                                      rowData={techniqueTableData}
+                                      columnDefs={techniqueColumnDefs}
+                                      defaultColDef={{
+                                        sortable: true,
+                                        filter: true,
+                                        resizable: true,
+                                      }}
+                                      theme={myTheme}
+                                      domLayout="normal"
+                                    />
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="error-message">
+                            {errorMessage || 'Insufficient participant data'}
+                          </div>
+                        )
+                      ) : null}
                 </div>
             </div>
         );

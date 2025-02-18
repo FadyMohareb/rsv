@@ -96,9 +96,6 @@ RUN apt-get install autotools-dev autoconf -y && git clone https://github.com/an
 # Verify installations
 RUN java -version && /opt/qualimap/qualimap --help && nextclade --version && busco --version && nextflow info && /bbmap/bbduk.sh -h && ivar version && bedtools --version
 
-# Copy data folder first (heavy)
-COPY data/ /usr/src/app/
-
 # Copy the rest of the application's source code to the container
 COPY project/ main.nf entrypoint.sh manage.py /usr/src/app/
 
