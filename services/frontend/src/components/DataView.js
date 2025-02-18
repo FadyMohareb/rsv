@@ -177,7 +177,7 @@ class DataView extends Component {
     async fetchDistributions() {
         try {
             this.setState({ loading: true });
-            const response = await fetch('api/create_distributions', {
+            const response = await fetch('api/distribution_fetch', {
                 credentials: 'include',
             });
 

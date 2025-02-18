@@ -37,7 +37,7 @@ export default function Upload() {
     const fetchDistributions = async () => {
         try {
             setLoading(true); // Set loading to true while fetching data
-            const response = await fetch('api/create_distributions', {
+            const response = await fetch('api/distribution_fetch', {
                 credentials: 'include',
             });
 

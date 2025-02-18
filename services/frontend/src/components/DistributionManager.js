@@ -110,7 +110,7 @@ const DistributionManager = () => {
 
     try {
       const response = await fetch(
-        `api/distributions/${selectedDistribution}/samples`,
+        `api/distributions/${selectedDistribution}/add_samples`,
         {
           method: "POST",
           body: formData,
