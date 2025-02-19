@@ -35,5 +35,12 @@ I have made so that ```docker-compose.yml``` receives the environment variables 
 
 To add https protocol, new locations and ports must be specified at ```services/nginx/```, to redirect traffic to the secure port. Speaking about ports, the docker-compose.yml specifies what ports the services are using, if these must be changed, the code of each service should be reviewed.
 
+### Auto-generating backend documentation with Sphinx
+
+Once the services are all deployed, run:
+
+```(sudo) docker-compose exec web python3 manage.py build_docs```
+
+This will create the documentation HTMLs in services/web/project/docs/build/html. Start navigating via the index.html.
 
 

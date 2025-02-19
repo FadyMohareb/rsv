@@ -1,13 +1,9 @@
-import os
+import os, subprocess
 import click
 from flask.cli import FlaskGroup
-from threading import Thread
-import time
 import redis
-from rq import Worker, Queue, Connection
-from rq_scheduler import Scheduler
-from datetime import datetime, timedelta
-from werkzeug.security import check_password_hash, generate_password_hash
+from rq import Worker, Connection
+from werkzeug.security import generate_password_hash
 from sqlalchemy.exc import IntegrityError
 
 from project import app, db, User, Distribution, Organization, Submission
@@ -117,6 +113,20 @@ def run_worker():
         worker = Worker(app.config["QUEUES"])
         worker.work()
 
+@cli.command("build_docs")
+def build_docs():
+    """
+    Build Sphinx documentation.
+    This command runs 'make html' in the docs folder.
+    """
+    docs_dir = os.path.join(os.getcwd(), 'project/docs')
+    try:
+        print("📖 Building Sphinx documentation...")
+        subprocess.run(["make", "clean"], cwd=docs_dir, check=True)
+        subprocess.run(["make", "html"], cwd=docs_dir, check=True)
+        print("\n\033[92mDocumentation built successfully. Check 'docs/build/html/index.html'. \033[0m\n")
+    except subprocess.CalledProcessError as e:
+        print(f"\n\033[91mError while building docs: {e} \033[0m\n")
 
 if __name__ == "__main__":
     cli()

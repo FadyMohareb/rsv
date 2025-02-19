@@ -111,10 +111,12 @@ def generate_sample_plot_pdf(sample_name, sample_data, role):
 def create_pygenometracks_plot(reference_genome, annotation, region, bed_path, bigwig_file, bigwig_consensus_file, output_dir, sample_name, user_lab):
     """
     Generate a genome coverage plot using pyGenomeTracks for a specific user_lab.
+
     Creates a tracks.ini file that includes:
       - a reference track (from the provided FASTA),
       - an annotation track (from the provided GFF3), and
       - a bigwig track (from the provided BigWig file).
+      
     The plot is generated for the given region.
     """
     if not os.path.exists(output_dir):
@@ -127,39 +129,39 @@ def create_pygenometracks_plot(reference_genome, annotation, region, bed_path, b
     # Reference, Annotation, and BigWig
     with open(tracks_ini, "w") as ini:
         ini.write(f"""
-[annotation]
-file = {annotation}
-title = {reference_genome.split("/")[-1].split(".")[0]} genes
-prefered_name = gene_name
-color = green
-style = UCSC
-height = 2
-file_type = gtf
-merge_transcripts = true
+        [annotation]
+        file = {annotation}
+        title = {reference_genome.split("/")[-1].split(".")[0]} genes
+        prefered_name = gene_name
+        color = green
+        style = UCSC
+        height = 2
+        file_type = gtf
+        merge_transcripts = true
 
-[bed]
-file = {bed_path}
-title = Seq. variants
-color = purple
-height = 3
-file_type = bed
+        [bed]
+        file = {bed_path}
+        title = Seq. variants
+        color = purple
+        height = 3
+        file_type = bed
 
-[bigwig]
-file = {bigwig_consensus_file}
-title = Seq. coverage
-color = grey
-height = 1
-file_type = bigwig
+        [bigwig]
+        file = {bigwig_consensus_file}
+        title = Seq. coverage
+        color = grey
+        height = 1
+        file_type = bigwig
 
 
 
-[bigwig]
-file = {bigwig_file}
-title = Read Coverage
-color = blue
-height = 3
-file_type = bigwig
-""")
+        [bigwig]
+        file = {bigwig_file}
+        title = Read Coverage
+        color = blue
+        height = 3
+        file_type = bigwig
+        """)
     
     # Run pyGenomeTracks to generate the plot for the given region
     command = [
