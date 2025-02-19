@@ -4,6 +4,7 @@ FROM node:22 AS development
 WORKDIR /app
 # Install dependencies first (for caching)
 COPY package*.json ./
+RUN npm install -g jsdoc@4.0.4
 RUN npm install
 # Copy application source code
 COPY . .
@@ -15,6 +16,7 @@ CMD ["npm", "start"]
 FROM node:22 AS build
 WORKDIR /app
 COPY package*.json ./
+RUN npm install -g jsdoc@4.0.4
 RUN npm install
 COPY . .
 RUN npm run build

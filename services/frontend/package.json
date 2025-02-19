@@ -26,7 +26,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "doc": "cp -r src /usr/src/app/frontend_mount/ && jsdoc /usr/src/app/frontend_mount/src --destination /usr/src/app/frontend_mount/docs"
   },
   "eslintConfig": {
     "extends": [

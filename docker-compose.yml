@@ -5,6 +5,7 @@ services:
       container_name: web
       volumes:
         - ./services/web/:/usr/src/app/
+        - ./services/frontend:/usr/src/app/frontend_mount  # Mount docs from frontend
       ports:
         - 5000:5000
       environment:
@@ -53,6 +54,8 @@ services:
         context: ./services/frontend
         target: development  # Use the development target defined in your Dockerfile  
       container_name: frontend
+      volumes:
+        - ./services/frontend:/usr/src/app/frontend_mount  # Mount docs to the web service
       environment:
         - WEBSITE_NAME=localhost
       ports:

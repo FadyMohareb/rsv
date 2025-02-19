@@ -39,8 +39,14 @@ To add https protocol, new locations and ports must be specified at ```services/
 
 Once the services are all deployed, run:
 
+```(sudo) docker-compose exec frontend npm run doc```
 ```(sudo) docker-compose exec web python3 manage.py build_docs```
 
-This will create the documentation HTMLs in services/web/project/docs/build/html. Start navigating via the index.html.
+This will create the documentation HTMLs in services/web/project/docs/build/html for both the backend and the frontend, using Sphinx. Start navigating via the index.html.
+
+For the frontend documentation, if JSDoc is preferred over Sphinx, JSDoc HTMLs can be copied to local directory using:
+
+```sudo docker-compose cp web:/usr/src/app/frontend_mount/docs .```
+
 
 

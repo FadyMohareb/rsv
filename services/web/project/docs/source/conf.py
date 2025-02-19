@@ -22,7 +22,7 @@ release = '0.0.1'
 
 extensions = ['sphinx.ext.autodoc','sphinx.ext.napoleon', 'sphinx.ext.viewcode','sphinx_js']
 
-js_source_path = os.path.join('../../..', 'services', 'frontend', 'src')  # Path to your frontend code
+js_source_path = os.path.join('../../..', 'frontend_mount', 'src')  # Path to your frontend code
 
 napoleon_google_docstring = True
 napoleon_numpy_docstring = False

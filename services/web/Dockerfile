@@ -34,7 +34,12 @@ RUN apt-get update && apt-get install -y \
     liblzma-dev \
     netcat \
     bedtools \
+    nodejs \
+    npm \
     && apt-get clean
+
+# Install jsdoc globally
+RUN npm install -g jsdoc@4.0.4
 
 # Make the Conda environment available globally
 ENV PATH="/opt/conda/envs/busco_env/bin:$PATH"

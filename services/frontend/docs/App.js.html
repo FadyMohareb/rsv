@@ -1,4 +1,32 @@
-import React, { Component } from 'react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: App.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: App.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { Component } from 'react';
 import './App.css';
 import DataView from './components/DataView.js';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
@@ -218,15 +246,15 @@ class App extends Component {
     const { username, password, loginError } = this.state;
 
     return (
-      <div className="login-form-container">
-        <form className="login-form" onSubmit={this.handleLogin}>
-          <h2 className="form-title">Login</h2>
+      &lt;div className="login-form-container">
+        &lt;form className="login-form" onSubmit={this.handleLogin}>
+          &lt;h2 className="form-title">Login&lt;/h2>
 
-          {loginError && <div className="error-message">{loginError}</div>}
+          {loginError &amp;&amp; &lt;div className="error-message">{loginError}&lt;/div>}
 
-          <div className="input-group">
-            <label htmlFor="username" className="input-label">Username:</label>
-            <input
+          &lt;div className="input-group">
+            &lt;label htmlFor="username" className="input-label">Username:&lt;/label>
+            &lt;input
               id="username"
               type="text"
               value={username}
@@ -234,11 +262,11 @@ class App extends Component {
               required
               className="input-field"
             />
-          </div>
+          &lt;/div>
 
-          <div className="input-group">
-            <label htmlFor="password" className="input-label">Password:</label>
-            <input
+          &lt;div className="input-group">
+            &lt;label htmlFor="password" className="input-label">Password:&lt;/label>
+            &lt;input
               id="password"
               type="password"
               value={password}
@@ -246,34 +274,34 @@ class App extends Component {
               required
               className="input-field"
             />
-          </div>
+          &lt;/div>
 
-          <button type="submit" className="login-button">Login</button>
+          &lt;button type="submit" className="login-button">Login&lt;/button>
 
-          <div className="footer">
-            <p style={{ textAlign: "left" }}>
-              To restore password, please<br />
-              contact <a href="mailto:admin@example.com">admin</a>.
-            </p>
-          </div>
-        </form>
-      </div>
+          &lt;div className="footer">
+            &lt;p style={{ textAlign: "left" }}>
+              To restore password, please&lt;br />
+              contact &lt;a href="mailto:admin@example.com">admin&lt;/a>.
+            &lt;/p>
+          &lt;/div>
+        &lt;/form>
+      &lt;/div>
     );
   }
   renderPasswordChange() {
     const { oldPassword, newPassword, confirmPassword, passwordError, passwordSuccess } = this.state;
 
     return (
-      <div className="page-container">
-        <form className="password-change-form" onSubmit={this.handlePasswordChange}>
-          <h2 className="form-title">Change Password</h2>
+      &lt;div className="page-container">
+        &lt;form className="password-change-form" onSubmit={this.handlePasswordChange}>
+          &lt;h2 className="form-title">Change Password&lt;/h2>
 
-          {passwordError && <div className="error-message">{passwordError}</div>}
-          {passwordSuccess && <div className="success-message">{passwordSuccess}</div>}
+          {passwordError &amp;&amp; &lt;div className="error-message">{passwordError}&lt;/div>}
+          {passwordSuccess &amp;&amp; &lt;div className="success-message">{passwordSuccess}&lt;/div>}
 
-          <div className="input-group">
-            <label htmlFor="oldPassword" className="input-label">Old Password:</label>
-            <input
+          &lt;div className="input-group">
+            &lt;label htmlFor="oldPassword" className="input-label">Old Password:&lt;/label>
+            &lt;input
               id="oldPassword"
               type="password"
               value={oldPassword}
@@ -281,11 +309,11 @@ class App extends Component {
               required
               className="input-field"
             />
-          </div>
+          &lt;/div>
 
-          <div className="input-group">
-            <label htmlFor="newPassword" className="input-label">New Password:</label>
-            <input
+          &lt;div className="input-group">
+            &lt;label htmlFor="newPassword" className="input-label">New Password:&lt;/label>
+            &lt;input
               id="newPassword"
               type="password"
               value={newPassword}
@@ -293,11 +321,11 @@ class App extends Component {
               required
               className="input-field"
             />
-          </div>
+          &lt;/div>
 
-          <div className="input-group">
-            <label htmlFor="confirmPassword" className="input-label">Confirm Password:</label>
-            <input
+          &lt;div className="input-group">
+            &lt;label htmlFor="confirmPassword" className="input-label">Confirm Password:&lt;/label>
+            &lt;input
               id="confirmPassword"
               type="password"
               value={confirmPassword}
@@ -305,11 +333,11 @@ class App extends Component {
               required
               className="input-field"
             />
-          </div>
+          &lt;/div>
 
-          <button type="submit" className="change-password-button">Change Password</button>
-        </form>
-      </div>
+          &lt;button type="submit" className="change-password-button">Change Password&lt;/button>
+        &lt;/form>
+      &lt;/div>
     );
   }
 
@@ -320,51 +348,51 @@ class App extends Component {
     const { role, email, windowWidth } = this.state;
 
     return (
-      <Router>
-        <div className="app-container">
+      &lt;Router>
+        &lt;div className="app-container">
           {/* Toolbar - Replaced inline code with the Toolbar component */}
-          <Toolbar role={role} email={email} handleLogout={this.handleLogout} />
+          &lt;Toolbar role={role} email={email} handleLogout={this.handleLogout} />
 
 
 
-          <div className="routes-container" style={{ display: 'flex', width: '100%' }}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/upload" element={<Upload />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/dataview" element={<DataView role={role} />} />
-              <Route path="/admin" element={<DistributionManager />} />
-              <Route path="/change-password" element={this.renderPasswordChange()} />
-            </Routes>
-          </div>
-        </div>
+          &lt;div className="routes-container" style={{ display: 'flex', width: '100%' }}>
+            &lt;Routes>
+              &lt;Route path="/" element={&lt;Home />} />
+              &lt;Route path="/upload" element={&lt;Upload />} />
+              &lt;Route path="/about" element={&lt;About />} />
+              &lt;Route path="/settings" element={&lt;Settings />} />
+              &lt;Route path="/dataview" element={&lt;DataView role={role} />} />
+              &lt;Route path="/admin" element={&lt;DistributionManager />} />
+              &lt;Route path="/change-password" element={this.renderPasswordChange()} />
+            &lt;/Routes>
+          &lt;/div>
+        &lt;/div>
         {/* Custom Divider */}
-        <div className="footer-divider"></div>
+        &lt;div className="footer-divider">&lt;/div>
 
         {/* Footer with Logos */}
-        <div className="footer-logo-container">
-          <a href="https://ukneqasmicro.org.uk/" target="_blank" rel="noopener noreferrer">
-            <img
+        &lt;div className="footer-logo-container">
+          &lt;a href="https://ukneqasmicro.org.uk/" target="_blank" rel="noopener noreferrer">
+            &lt;img
               src="/images/logo1.png"
               alt="UK NEQAS Microbiology"
               className="footer-logo"
             />
-          </a>
+          &lt;/a>
 
-          <a href="https://www.cranfield.ac.uk/" target="_blank" rel="noopener noreferrer">
-            <img
+          &lt;a href="https://www.cranfield.ac.uk/" target="_blank" rel="noopener noreferrer">
+            &lt;img
               src="/images/logo2.png"
               alt="Cranfield University"
               className="footer-logo footer-logo2"  // Add a second class for styling
             />
-          </a>
-        </div>
+          &lt;/a>
+        &lt;/div>
 
 
         {/* Cookie Notice */}
-        <CookieNotice />
-      </Router>
+        &lt;CookieNotice />
+      &lt;/Router>
     );
   }
   /**
@@ -373,12 +401,12 @@ class App extends Component {
   render() {
     const { loggedIn, windowWidth, minWidth } = this.state;
 
-    if (windowWidth < minWidth) {
+    if (windowWidth &lt; minWidth) {
       return (
-        <div className="warning-message" style={styles.warning}>
-          <h2>Warning</h2>
-          <p>Your screen width is too small to use this application. Please increase your browser window width to at least {minWidth}px.</p>
-        </div>
+        &lt;div className="warning-message" style={styles.warning}>
+          &lt;h2>Warning&lt;/h2>
+          &lt;p>Your screen width is too small to use this application. Please increase your browser window width to at least {minWidth}px.&lt;/p>
+        &lt;/div>
       );
     }
 
@@ -389,11 +417,11 @@ class App extends Component {
 // Cookie Notice Component
 const CookieNotice = () => {
   return (
-    <div style={cookieNoticeStyles.container}>
-      <p style={cookieNoticeStyles.text}>
+    &lt;div style={cookieNoticeStyles.container}>
+      &lt;p style={cookieNoticeStyles.text}>
         This site uses only essential cookies to ensure functionality.
-      </p>
-    </div>
+      &lt;/p>
+    &lt;/div>
   );
 };
 
@@ -436,3 +464,26 @@ const styles = {
 };
 
 export default App;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="App.html">App</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Feb 19 2025 16:08:47 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
