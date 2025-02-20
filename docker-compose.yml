@@ -10,6 +10,7 @@ services:
         - 5000:5000
       environment:
         - WEBSITE_NAME=localhost
+        - SUBDIRECTORY_NAME=/rsv
         - REDIS_PORT=6379
       env_file:
         - ./.env.dev
@@ -31,6 +32,7 @@ services:
         - ./services/web/:/usr/src/app/
       environment:
         - WEBSITE_NAME=localhost
+        - SUBDIRECTORY_NAME=/rsv
         - REDIS_PORT=6379
       env_file:
         - ./.env.dev
@@ -51,13 +53,11 @@ services:
       # Front-End Service
     frontend:
       build:
-        context: ./services/frontend
-        target: development  # Use the development target defined in your Dockerfile  
+        context: ./services/frontend # If there is a subdirectory to the URL, modify .env and add it to package.json "homepage"
+        target: development
       container_name: frontend
       volumes:
         - ./services/frontend:/usr/src/app/frontend_mount  # Mount docs to the web service
-      environment:
-        - WEBSITE_NAME=localhost
       ports:
         - 3000:3000  # Expose port 80 for the front-end
       depends_on:
@@ -67,7 +67,7 @@ services:
       restart: always
       build: ./services/nginx
       environment:
-        - WEBSITE_NAME=localhost
+        - WEBSITE_NAME=localhost # If there is a subdirectory to the URL, code must be modified
         - WEBSITE_ROOT=localhost
       ports:
         - "80:80"

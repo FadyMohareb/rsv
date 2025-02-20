@@ -9,6 +9,7 @@ services:
         - 5000:5000
       environment:
         - WEBSITE_NAME=www.ukneqastest.com
+        - SUBDIRECTORY_NAME=/rsv
         - REDIS_PORT=6379
       env_file:
         - ./.env.dev
@@ -30,6 +31,7 @@ services:
         - ./services/web/:/usr/src/app/
       environment:
         - WEBSITE_NAME=www.ukneqastest.com
+        - SUBDIRECTORY_NAME=/rsv
         - REDIS_PORT=6379
       env_file:
         - ./.env.dev
@@ -50,11 +52,9 @@ services:
       # Front-End Service
     frontend:
       build:
-        context: ./services/frontend
+        context: ./services/frontend # If there is a subdirectory to the URL, modify .env and add it to package.json "homepage"
         target: production
       container_name: frontend
-      environment:
-        - WEBSITE_NAME=www.ukneqastest.com
       ports:
         - 3001:3000  # Expose port 80 for the front-end
       depends_on:
@@ -64,7 +64,7 @@ services:
       restart: always
       build: ./services/nginx
       environment:
-        - WEBSITE_NAME=www.ukneqastest.com
+        - WEBSITE_NAME=www.ukneqastest.com # If there is a subdirectory to the URL, code must be modified
         - WEBSITE_ROOT=ukneqastest.com
       ports:
         - "80:80"

@@ -5,7 +5,7 @@ import { faUpload, faInfoCircle, faCog, faUser, faSignOutAlt, faBell, faTimes } 
 import { io } from "socket.io-client";
 
 const Toolbar = ({ role, email, handleLogout }) => {
-  const [activeLink, setActiveLink] = useState('/'); // Default active link
+  const [activeLink, setActiveLink] = useState(`/`); // Default active link
   const [notifications, setNotifications] = useState([]); // Store notifications
   const [dismissedNotifications, setDismissedNotifications] = useState([]); // Store notifications
   const [hasNewNotifications, setHasNewNotifications] = useState(false); // Twinkle effect
@@ -63,8 +63,9 @@ const Toolbar = ({ role, email, handleLogout }) => {
 
 
     // Establish socket connection
+    const SUBDIRECTORY=process.env.REACT_APP_SUBDIRECTORY_NAME || ""
     const socket = io("/", {  // Connect to the same host
-      path: "/socket.io",      // Explicitly set the socket.io endpoint
+      path:`${SUBDIRECTORY}/socket.io`,
       transports: ["websocket", "polling"],
       query: { role: role, email: email },
     });
@@ -142,43 +143,43 @@ const Toolbar = ({ role, email, handleLogout }) => {
     }
   };
   
+  const SUBDIRECTORY=process.env.REACT_APP_SUBDIRECTORY_NAME || ""
   
-
   return (
     <div className="toolbar">
-      <Link to="/" className="toolbar-title toolbar-link" onClick={() => handleLinkClick('/')}>
+      <Link to={`${SUBDIRECTORY}/`} className="toolbar-title toolbar-link" onClick={() => handleLinkClick(`${SUBDIRECTORY}/`)}>
         RSV EQA Dashboard
       </Link>
       <div className="toolbar-links">
         <Link
-          to="/upload"
-          className={`toolbar-link ${activeLink === '/upload' ? 'active' : ''}`}
-          onClick={() => handleLinkClick('/upload')}
+          to={`${SUBDIRECTORY}/upload`}
+          className={`toolbar-link ${activeLink === `${SUBDIRECTORY}/upload` ? 'active' : ''}`}
+          onClick={() => handleLinkClick(`${SUBDIRECTORY}/upload` )}
         >
           <FontAwesomeIcon icon={faUpload} className="icon" />
           Upload
         </Link>
         <Link
-          to="/about"
-          className={`toolbar-link ${activeLink === '/about' ? 'active' : ''}`}
-          onClick={() => handleLinkClick('/about')}
+          to={`${SUBDIRECTORY}/about`}
+          className={`toolbar-link ${activeLink === `${SUBDIRECTORY}/about`  ? 'active' : ''}`}
+          onClick={() => handleLinkClick(`${SUBDIRECTORY}/about` )}
         >
           <FontAwesomeIcon icon={faInfoCircle} className="icon" />
           About
         </Link>
         <Link
-          to="/settings"
-          className={`toolbar-link ${activeLink === '/settings' ? 'active' : ''}`}
-          onClick={() => handleLinkClick('/settings')}
+          to={`${SUBDIRECTORY}/settings`}
+          className={`toolbar-link ${activeLink === `${SUBDIRECTORY}/settings`  ? 'active' : ''}`}
+          onClick={() => handleLinkClick(`${SUBDIRECTORY}/setting` )}
         >
           <FontAwesomeIcon icon={faCog} className="icon" />
           Settings
         </Link>
         {role === 'superuser' && (
           <Link
-            to="/admin"
-            className={`toolbar-link ${activeLink === '/admin' ? 'active' : ''}`}
-            onClick={() => handleLinkClick('/admin')}
+            to={`${SUBDIRECTORY}/admin`}
+            className={`toolbar-link ${activeLink === `${SUBDIRECTORY}/admin`  ? 'active' : ''}`}
+            onClick={() => handleLinkClick(`${SUBDIRECTORY}/admin`)}
           >
             <FontAwesomeIcon icon={faUser} className="icon" />
             Admin

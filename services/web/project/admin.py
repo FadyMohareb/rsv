@@ -10,6 +10,7 @@ from flask_mail import Message, Mail
 # Create the blueprint
 admin_bp = Blueprint('admin', __name__)
 website_name = os.environ.get("WEBSITE_NAME", "default_website_name")
+subdirectory_name = os.environ.get("SUBDIRECTORY_NAME", "default_subdirectory_name")
 mail=Mail()
 
 # This one is for general use (works with all HTTP methods)
@@ -181,7 +182,7 @@ def create_or_restore_organization_with_user():
             - Password: {random_password}
 
             Please log in and change your password as soon as possible using the link below:
-            http://{website_name}/change-password/
+            http://{website_name}{subdirectory_name}/change-password/
 
             Best regards,
             The RSV EQA Team
@@ -247,7 +248,7 @@ def create_or_restore_organization_with_user():
         - Password: {random_password}
 
         If you would like to change your password, please visit the link below:
-        http://{website_name}/change-password
+        http://{website_name}{subdirectory_name}/change-password
 
         Best regards,
         The RSV EQA Team

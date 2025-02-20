@@ -8,6 +8,7 @@ from project.utils.report_parser import process_all_reports
 # Create the blueprint
 data_bp = Blueprint('data', __name__)
 website_name = os.environ.get("WEBSITE_NAME", "default_website_name")
+subdirectory_name = os.environ.get("SUBDIRECTORY_NAME", "default_subdirectory_name")
 
 @data_bp.route("/api/distribution_fetch", methods=["GET", "POST"], strict_slashes=False)
 @login_required
@@ -241,8 +242,8 @@ def get_sample_details(distribution, selected_sample):
                 "sequencing_type": seq_type
             })
             if read_coverage!="N/A":
-                bam_url = f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{lab}"
-                bigwig_url = f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{lab}.bw"
+                bam_url = f"http://{website_name}{subdirectory_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{lab}"
+                bigwig_url = f"http://{website_name}{subdirectory_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{lab}.bw"
                 bams.append(bam_url)
                 bigwigs.append(bigwig_url)
 
@@ -338,8 +339,8 @@ def get_sample_details(distribution, selected_sample):
             user_bigwig_url=[]
             plot_url=""
             if "Mean coverage depth" in user_metrics and user_metrics["Mean coverage depth"]!="N/A":
-                user_bam_url = [f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{user_lab}"]
-                user_bigwig_url = [f"http://{website_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{user_lab}.bw"]
+                user_bam_url = [f"http://{website_name}{subdirectory_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{user_lab}"]
+                user_bigwig_url = [f"http://{website_name}{subdirectory_name}/api/distribution_data/{distribution}/sample/{selected_sample}/participant/{user_lab}.bw"]
 
             # Aggregate metrics from other labs
             aggregated_metrics = {

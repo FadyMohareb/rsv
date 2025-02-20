@@ -32,11 +32,12 @@ import pysam
 UPLOAD_FOLDER = 'data'
 
 website_name = os.environ.get("WEBSITE_NAME", "default_website_name")
+subdirectory_name = os.environ.get("SUBDIRECTORY_NAME", "default_subdirectory_name")
 redis_port = os.environ.get("REDIS_PORT", "6379")
 app = Flask(__name__)
 # Register blueprints (containing all the REST endpoints and extra logic) in the app
 for bp in [admin_bp,notif_bp,auth_bp,upload_bp, data_bp]:
-    app.register_blueprint(bp, url_prefix='/')
+    app.register_blueprint(bp, url_prefix=f'{subdirectory_name}/')
 CORS(app, supports_credentials=True, origins="*")  # Enable CORS to avoid issues when calling from a different frontend
 app.secret_key = '2eb189a5bf52a9bd074be4f5e0a3a14adcdab32ae318f5ef77bfe99322926fc8'
 app.config.from_object("project.config.Config")
@@ -58,9 +59,9 @@ app.config['MAIL_DEFAULT_SENDER'] = 'sorteo.los.castro@gmail.com'
 mail.init_app(app)
 db.init_app(app)
 login_manager.init_app(app)
-login_manager.login_view = "login"
+login_manager.login_view = "authentication.login"
 r = redis.from_url(app.config["REDIS_URL"])
-socketio.init_app(app, message_queue=app.config["REDIS_URL"])
+socketio.init_app(app, message_queue=app.config["REDIS_URL"], path=f"{subdirectory_name}/socket.io")
 
 # Ensure the upload folder exists
 if not os.path.exists(UPLOAD_FOLDER):

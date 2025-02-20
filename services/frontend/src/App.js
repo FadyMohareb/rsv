@@ -62,7 +62,7 @@ class App extends Component {
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
   }
 
-
+  
   /**
    * Lifecycle method that runs when the component mounts.
    * Checks login status and adds event listener for window resize.
@@ -144,10 +144,11 @@ class App extends Component {
       });
   
       if (response.ok) {
+        const SUBDIRECTORY=process.env.REACT_APP_SUBDIRECTORY_NAME || ""
         this.setState(
           { loggedIn: false, role: '', email: '' },
           () => {
-            window.location.href = "/"; // Redirect to home
+            window.location.href = `${SUBDIRECTORY}/`; // Redirect to home
           }
         );
       } else {
@@ -318,7 +319,9 @@ class App extends Component {
    */
   renderApp() {
     const { role, email, windowWidth } = this.state;
-
+    const SUBDIRECTORY=process.env.REACT_APP_SUBDIRECTORY_NAME || ""
+    console.log(SUBDIRECTORY);
+    
     return (
       <Router>
         <div className="app-container">
@@ -329,13 +332,13 @@ class App extends Component {
 
           <div className="routes-container" style={{ display: 'flex', width: '100%' }}>
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/upload" element={<Upload />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/dataview" element={<DataView role={role} />} />
-              <Route path="/admin" element={<DistributionManager />} />
-              <Route path="/change-password" element={this.renderPasswordChange()} />
+              <Route path={`${SUBDIRECTORY}/`} element={<Home />} />
+              <Route path={`${SUBDIRECTORY}/upload`} element={<Upload />} />
+              <Route path={`${SUBDIRECTORY}/about`} element={<About />} />
+              <Route path={`${SUBDIRECTORY}/settings`} element={<Settings />} />
+              <Route path={`${SUBDIRECTORY}/dataview`} element={<DataView role={role} />} />
+              <Route path={`${SUBDIRECTORY}/admin`} element={<DistributionManager />} />
+              <Route path={`${SUBDIRECTORY}/change-password`} element={this.renderPasswordChange()} />
             </Routes>
           </div>
         </div>
@@ -346,7 +349,7 @@ class App extends Component {
         <div className="footer-logo-container">
           <a href="https://ukneqasmicro.org.uk/" target="_blank" rel="noopener noreferrer">
             <img
-              src="/images/logo1.png"
+              src={`${SUBDIRECTORY}/images/logo1.png`}
               alt="UK NEQAS Microbiology"
               className="footer-logo"
             />
@@ -354,7 +357,7 @@ class App extends Component {
 
           <a href="https://www.cranfield.ac.uk/" target="_blank" rel="noopener noreferrer">
             <img
-              src="/images/logo2.png"
+              src={`${SUBDIRECTORY}/images/logo2.png`}
               alt="Cranfield University"
               className="footer-logo footer-logo2"  // Add a second class for styling
             />
