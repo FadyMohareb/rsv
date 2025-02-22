@@ -1,6 +1,6 @@
 
 
-# Dockerised Flask/React application
+# RSV NEQAS - a dockerised Flask/React application
 
 ## Requirements
 
