@@ -1,12 +1,12 @@
-project
-=======
+Backend endpoints
+=================
 
 .. toctree::
    :maxdepth: 4
 
    project
 
-project.utils
+Backend utils
 =============
 project.utils.docx
 ------------------
@@ -22,11 +22,3 @@ project.utils.sql_models
 ------------------------
 .. automodule:: project.utils.sql_models
    :members:
-
-Frontend Documentation
-======================
-Here is the documentation for the frontend (React) code:
-
-.. js:autoclass:: App
-   :members:
-   :private-members:

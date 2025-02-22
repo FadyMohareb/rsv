@@ -1,3 +1,9 @@
+/**
+ * @module Toolbar
+ * @memberof App
+ * @description Renders the application toolbar including navigation links, notification bell, and logout button. Has the tough task of handling the only WebSocket in the application.
+ * @returns {JSX.Element} The rendered toolbar.
+ */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -12,6 +18,11 @@ const Toolbar = ({ role, email, handleLogout }) => {
   const [socketInstance, setSocketInstance] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false); // Show/hide dropdown
 
+   /**
+   * Formats a date string into a human-readable format.
+   * @param {string} dateString - The date string to format.
+   * @returns {string} The formatted date.
+   */
   const formatDate = (dateString) => {
     if (!dateString) return "Unknown Date";
     const date = new Date(dateString);
@@ -23,10 +34,19 @@ const Toolbar = ({ role, email, handleLogout }) => {
     }).format(date);
   };
 
+  /**
+   * Updates the active navigation link.
+   * @param {string} path - The path of the clicked link.
+   * @returns {void}
+   */
   const handleLinkClick = (path) => {
     setActiveLink(path);
   };
-
+  /**
+   * Fetches notifications for the current user from the API.
+   * @async
+   * @returns {Promise<void>}
+   */
   const fetchNotifications = async (email) => {
     try {
       if (!email) {
@@ -112,11 +132,27 @@ const Toolbar = ({ role, email, handleLogout }) => {
     };
   }, [role]);
 
+  /**
+   * Dismisses a notification by sending a POST request to the API.
+   * Updates notifications and dismissed notifications state.
+   * @async
+   * @param {number|string} id - The ID of the notification to dismiss.
+   * @param {number} index - The index of the notification in the current array.
+   * @returns {Promise<void>}
+   */
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
     setHasNewNotifications(false); // Clear the twinkle effect when dropdown is opened
   };
 
+  /**
+   * Dismisses a notification by sending a POST request to the API.
+   * Updates notifications and dismissed notifications state.
+   * @async
+   * @param {number|string} id - The ID of the notification to dismiss.
+   * @param {number} index - The index of the notification in the current array.
+   * @returns {Promise<void>}
+   */
   const dismissNotification = async (id, index) => {
     try {
       const response = await fetch("api/notifications/dismiss", {

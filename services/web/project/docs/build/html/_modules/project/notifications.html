@@ -31,12 +31,69 @@
           <div class="body" role="main">
             
   <h1>Source code for project.notifications</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">current_app</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">notifications.py</span>
+<span class="sd">================</span>
+
+<span class="sd">This module handles notifications via Flask endpoints and WebSocket communications.</span>
+<span class="sd">These functions are mostly used by the frontend&#39;s Toolbar.js component.</span>
+<span class="sd">It provides endpoints for retrieving and dismissing notifications and sets up a </span>
+<span class="sd">Redis-based background listener to publish messages to connected WebSocket clients.</span>
+<span class="sd">WebSocket events are managed via Flask-SocketIO.</span>
+
+<span class="sd">Flask endpoints:</span>
+
+<span class="sd">    /api/notifications --&gt; get_notifications()</span>
+<span class="sd">        Retrieves both dismissed and undismissed notifications for the current user.</span>
+
+<span class="sd">    /api/notifications/dismiss --&gt; dismiss_notification()</span>
+<span class="sd">        Marks a specific notification as dismissed for the current user.</span>
+
+<span class="sd">    /hello --&gt; publish_hello()</span>
+<span class="sd">        Publishes a &quot;Hello!&quot; message to the Redis &quot;chat&quot; channel.</span>
+
+<span class="sd">    /pub --&gt; publish_pub()</span>
+<span class="sd">        Publishes a &quot;Pub!&quot; message to the Redis &quot;chat&quot; channel.</span>
+
+<span class="sd">WebSocket events:</span>
+
+<span class="sd">    connect --&gt; handle_connect()</span>
+<span class="sd">        Registers a new WebSocket connection, sends initial notifications, and a confirmation message.</span>
+
+<span class="sd">    disconnect --&gt; handle_disconnect()</span>
+<span class="sd">        Removes a disconnected client from the list of connected clients.</span>
+
+<span class="sd">    start_redis_listener --&gt; start_listener()</span>
+<span class="sd">        Starts a background task to listen to Redis for messages.</span>
+
+<span class="sd">    my event --&gt; test_message()</span>
+<span class="sd">        A test event that echoes a received message back to the client.</span>
+
+<span class="sd">    my broadcast event --&gt; test_broadcast_message()</span>
+<span class="sd">        A test event that broadcasts a received message to all connected clients.</span>
+
+<span class="sd">Other functions:</span>
+
+<span class="sd">    save_notification(email, message)</span>
+<span class="sd">        Saves a new notification to the database and returns its ID.</span>
+
+<span class="sd">    publish_message_to_clients(channel, data)</span>
+<span class="sd">        Processes and emits a message to all connected WebSocket clients.</span>
+
+<span class="sd">    redis_listener(r)</span>
+<span class="sd">        Listens to a Redis channel (&quot;chat&quot;) for new messages and publishes them via WebSocket.</span>
+
+<span class="sd">:author: Kevin</span>
+<span class="sd">:version: 0.0.1</span>
+<span class="sd">:date: 2025-02-21</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">current_app</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flask_login</span><span class="w"> </span><span class="kn">import</span> <span class="n">current_user</span><span class="p">,</span> <span class="n">login_required</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">project.utils.sql_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">db</span><span class="p">,</span> <span class="n">User</span><span class="p">,</span> <span class="n">Distribution</span><span class="p">,</span> <span class="n">Organization</span><span class="p">,</span> <span class="n">Notification</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">project.utils.sql_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">db</span><span class="p">,</span> <span class="n">Notification</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">redis</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">flask_socketio</span><span class="w"> </span><span class="kn">import</span> <span class="n">SocketIO</span><span class="p">,</span> <span class="n">emit</span><span class="p">,</span> <span class="n">disconnect</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask_socketio</span><span class="w"> </span><span class="kn">import</span> <span class="n">SocketIO</span><span class="p">,</span> <span class="n">emit</span>
 
 <span class="c1"># Create the blueprint</span>
 <span class="n">notif_bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">&#39;notifications&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
@@ -52,6 +109,15 @@
 <span class="nd">@notif_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/notifications&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
 <span class="nd">@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_notifications</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve notifications for the current user.</span>
+
+<span class="sd">    Queries the database for all notifications associated with the logged-in user,</span>
+<span class="sd">    then separates them into dismissed and undismissed notifications. Returns the results as JSON.</span>
+
+<span class="sd">    :return: A JSON response with keys &#39;undismissed&#39; and &#39;dismissed&#39;, each containing lists of notifications.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Query both dismissed and undismissed notifications for the user</span>
     <span class="n">notifications</span> <span class="o">=</span> <span class="n">Notification</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">user_email</span><span class="o">=</span><span class="n">current_user</span><span class="o">.</span><span class="n">id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 
@@ -69,6 +135,19 @@
 <div class="viewcode-block" id="save_notification">
 <a class="viewcode-back" href="../../project.html#project.notifications.save_notification">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">save_notification</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save a new notification to the database.</span>
+
+<span class="sd">    Creates a Notification object with the specified email and message, marks it as not dismissed,</span>
+<span class="sd">    commits the change, and returns the notification&#39;s ID.</span>
+
+<span class="sd">    :param email: The email address of the user for whom the notification is saved.</span>
+<span class="sd">    :type email: str</span>
+<span class="sd">    :param message: The notification message.</span>
+<span class="sd">    :type message: str</span>
+<span class="sd">    :return: The ID of the newly created notification.</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">current_app</span><span class="o">.</span><span class="n">app_context</span><span class="p">():</span>
         <span class="n">notification</span> <span class="o">=</span> <span class="n">Notification</span><span class="p">(</span><span class="n">user_email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span> <span class="n">is_dismissed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">notification</span><span class="p">)</span>
@@ -80,6 +159,18 @@
 <div class="viewcode-block" id="publish_message_to_clients">
 <a class="viewcode-back" href="../../project.html#project.notifications.publish_message_to_clients">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">publish_message_to_clients</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Publish a processed message to all connected WebSocket clients.</span>
+
+<span class="sd">    For each connected client, the function determines an appropriate message based on the client&#39;s role</span>
+<span class="sd">    and the provided raw data, saves the notification in the database, and emits the message (along with its ID</span>
+<span class="sd">    and timestamp) to that client.</span>
+
+<span class="sd">    :param channel: The channel name associated with the message.</span>
+<span class="sd">    :type channel: str</span>
+<span class="sd">    :param data: The raw message data received (typically from Redis).</span>
+<span class="sd">    :type data: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">sid</span><span class="p">,</span> <span class="n">client_info</span> <span class="ow">in</span> <span class="n">connected_clients</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">role</span> <span class="o">=</span> <span class="n">client_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;role&quot;</span><span class="p">)</span>
         <span class="n">email</span> <span class="o">=</span> <span class="n">client_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">)</span>
@@ -111,6 +202,15 @@
 <div class="viewcode-block" id="redis_listener">
 <a class="viewcode-back" href="../../project.html#project.notifications.redis_listener">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">redis_listener</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Listen for messages on the Redis &quot;chat&quot; channel and publish them to connected clients.</span>
+
+<span class="sd">    Subscribes to the &quot;chat&quot; channel on the provided Redis connection. For each message received,</span>
+<span class="sd">    decodes the message (if necessary) and calls publish_message_to_clients() to emit the message.</span>
+
+<span class="sd">    :param r: A Redis connection object.</span>
+<span class="sd">    :type r: redis.Redis</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">pubsub</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">pubsub</span><span class="p">()</span>
     <span class="n">pubsub</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s2">&quot;chat&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">listen</span><span class="p">():</span>
@@ -125,6 +225,14 @@
 <a class="viewcode-back" href="../../project.html#project.notifications.handle_connect">[docs]</a>
 <span class="nd">@socketio</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s2">&quot;connect&quot;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_connect</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handle a new WebSocket connection.</span>
+
+<span class="sd">    Extracts the client&#39;s role and email from query parameters, stores them in the connected_clients dictionary,</span>
+<span class="sd">    retrieves the user&#39;s undismissed notifications from the database, and sends both a connection confirmation and</span>
+<span class="sd">    the notifications to the client.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">query_params</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span>
     <span class="n">role</span> <span class="o">=</span> <span class="n">query_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;role&quot;</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">)</span>
     <span class="n">email</span> <span class="o">=</span> <span class="n">query_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">)</span>
@@ -146,6 +254,13 @@
 <span class="nd">@notif_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/notifications/dismiss&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">])</span>
 <span class="nd">@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dismiss_notification</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Mark a notification as dismissed for the current user.</span>
+
+<span class="sd">    Expects a notification ID in the form data. If the notification is found and belongs to the current user,</span>
+<span class="sd">    marks it as dismissed and commits the change to the database.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;OPTIONS&#39;</span> <span class="ow">or</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;GET&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">204</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span>
@@ -165,6 +280,12 @@
 <a class="viewcode-back" href="../../project.html#project.notifications.start_listener">[docs]</a>
 <span class="nd">@socketio</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">&#39;start_redis_listener&#39;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">start_listener</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Start the background Redis listener task if it is not already running.</span>
+
+<span class="sd">    Checks if the listener has been started; if not, retrieves the Redis URL from the app configuration,</span>
+<span class="sd">    creates a Redis connection, and starts the background task that listens for messages on the &quot;chat&quot; channel.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">start_listener</span><span class="p">,</span> <span class="s1">&#39;started&#39;</span><span class="p">):</span>
         <span class="c1"># If listener hasn&#39;t started yet, start it</span>
         <span class="n">redis_url</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;REDIS_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;redis://localhost:6379/0&quot;</span><span class="p">)</span>
@@ -179,6 +300,11 @@
 <a class="viewcode-back" href="../../project.html#project.notifications.handle_disconnect">[docs]</a>
 <span class="nd">@socketio</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s2">&quot;disconnect&quot;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_disconnect</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handle the disconnection of a WebSocket client.</span>
+
+<span class="sd">    Removes the client from the connected_clients dictionary and logs the disconnection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">client_info</span> <span class="o">=</span> <span class="n">connected_clients</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">sid</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">client_info</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;User disconnected: </span><span class="si">{</span><span class="n">client_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">, Role: </span><span class="si">{</span><span class="n">client_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;role&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
@@ -188,6 +314,14 @@
 <a class="viewcode-back" href="../../project.html#project.notifications.test_message">[docs]</a>
 <span class="nd">@socketio</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">&#39;my event&#39;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">test_message</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handle a test event by echoing the received message back to the client.</span>
+
+<span class="sd">    Logs the received message and emits it back under the &#39;my response&#39; event.</span>
+
+<span class="sd">    :param message: A dictionary containing the data sent by the client.</span>
+<span class="sd">    :type message: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received message: </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">emit</span><span class="p">(</span><span class="s1">&#39;my response&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]})</span></div>
 
@@ -196,6 +330,14 @@
 <a class="viewcode-back" href="../../project.html#project.notifications.test_broadcast_message">[docs]</a>
 <span class="nd">@socketio</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">&#39;my broadcast event&#39;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">test_broadcast_message</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handle a broadcast event by emitting the received message to all connected clients.</span>
+
+<span class="sd">    Logs the message and broadcasts it under the &#39;my response&#39; event.</span>
+
+<span class="sd">    :param message: A dictionary containing the data sent by the client.</span>
+<span class="sd">    :type message: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Broadcasting message: </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">emit</span><span class="p">(</span><span class="s1">&#39;my response&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]},</span> <span class="n">broadcast</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
@@ -204,11 +346,20 @@
 <a class="viewcode-back" href="../../project.html#project.notifications.publish_hello">[docs]</a>
 <span class="nd">@notif_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/hello&#39;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">publish_hello</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Publish a &quot;Hello!&quot; message to the Redis &quot;chat&quot; channel.</span>
+
+<span class="sd">    Retrieves the Redis URL from the app configuration, creates a connection,</span>
+<span class="sd">    publishes a &quot;Hello!&quot; message to the &quot;chat&quot; channel, and returns a JSON response.</span>
+<span class="sd">    Meant for testing purposes.</span>
+
+<span class="sd">    :return: A JSON response confirming that the &quot;Hello!&quot; message was published.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">redis_url</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;REDIS_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;redis://localhost:6379/0&quot;</span><span class="p">)</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">redis_url</span><span class="p">)</span>
     <span class="n">r</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s2">&quot;chat&quot;</span><span class="p">,</span> <span class="s2">&quot;Hello!&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;hi&quot;</span><span class="p">)</span>
-    <span class="c1">#sse.publish({&quot;message&quot;: &quot;Hello!&quot;}, type=&#39;notification&#39;)</span>
     <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello!&quot;</span><span class="p">}),</span> <span class="mi">200</span></div>
 
 
@@ -216,10 +367,19 @@
 <a class="viewcode-back" href="../../project.html#project.notifications.publish_pub">[docs]</a>
 <span class="nd">@notif_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/pub&#39;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">publish_pub</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Publish a &quot;Pub!&quot; message to the Redis &quot;chat&quot; channel.</span>
+
+<span class="sd">    Retrieves the Redis URL from the app configuration, creates a connection,</span>
+<span class="sd">    publishes a &quot;Pub!&quot; message to the &quot;chat&quot; channel, and returns a JSON response.</span>
+<span class="sd">    Meant for testing purposes.</span>
+
+<span class="sd">    :return: A JSON response confirming that the &quot;Pub!&quot; message was published.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">redis_url</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;REDIS_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;redis://localhost:6379/0&quot;</span><span class="p">)</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">redis_url</span><span class="p">)</span>
     <span class="n">r</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s2">&quot;chat&quot;</span><span class="p">,</span> <span class="s2">&quot;Pub!&quot;</span><span class="p">)</span>
-    <span class="c1">#sse.publish({&quot;message&quot;: &quot;Pub 2!&quot;}, type=&#39;notification&#39;)</span>
     <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Pub 2!&quot;</span><span class="p">}),</span> <span class="mi">200</span></div>
 
 
@@ -252,9 +412,9 @@
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html">project</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html#project-utils">project.utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html#frontend-documentation">Frontend Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../manage.html">Backend management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Backend endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html#backend-utils">Backend utils</a></li>
 </ul>
 
 <div class="relations">
@@ -262,8 +422,6 @@
 <ul>
   <li><a href="../../index.html">Documentation overview</a><ul>
   <li><a href="../index.html">Module code</a><ul>
-  <li><a href="../project.html">project</a><ul>
-  </ul></li>
   </ul></li>
   </ul></li>
 </ul>

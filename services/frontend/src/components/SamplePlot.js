@@ -1,3 +1,13 @@
+/**
+ * @module SamplePlot
+ * @memberof App
+ * @description Renders a Plotly graph displaying sample statistics as a combination of bar (percentage values) and line charts (read coverage).
+ *
+ * @param {Object} props - Component properties.
+ * @param {Array.<Object>} props.sampleData - Array of sample statistics objects. Each object should contain keys such as "participant", "coverage", "ns", "similarity", and "read_coverage".
+ * @param {string} props.chartOrientation - The orientation of the chart; either "horizontal" or "vertical".
+ * @returns {JSX.Element} The rendered Plotly plot.
+ */
 import React from 'react';
 import Plot from 'react-plotly.js';
 

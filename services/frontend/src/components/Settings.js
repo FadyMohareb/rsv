@@ -1,3 +1,10 @@
+/**
+ * Settings component.
+ * Renders a settings form for updating user preferences.
+ *
+ * @returns {JSX.Element} The rendered settings form.
+ */
+
 import React from 'react';
 
 export default function Settings() {

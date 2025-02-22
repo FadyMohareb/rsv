@@ -1,3 +1,11 @@
+/**
+ * @module SamplePlot
+ * 
+ * @description Entry point for the React application. Renders the App component within React.StrictMode into the DOM element with id "root". Also calls reportWebVitals for performance measurement.
+ *
+ * @module index
+ */
+
 import React from 'react';
 import './App.css';
 import ReactDOM from 'react-dom/client';

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/DataView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/DataView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module DataView
+ * @memberof App
+ * @description Provides the management dashboard UI for visualizing sample data, including distribution selection, sample details, plots, tables, and genomic tracks.
+ * @returns {JSX.Element} The rendered DataView component.
+ */
+import React, { Component } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+import { themeQuartz } from 'ag-grid-community';
+import SamplePlot from './SamplePlot.js';
+import SeqPlot from './SeqPlot.js';
+import ScaleLoader from 'react-spinners/ScaleLoader';
+import DownloadButton from './DownloadButton.js';
+import { JBrowseLinearGenomeView, createViewState } from '@jbrowse/react-linear-genome-view';
+
+class DataView extends Component {
+   /**
+   * Initializes the DataView component and sets initial state. This is the main component for data visualisation.
+   * @param {Object} props - Component properties.
+   */
+    constructor(props) {
+        super(props);
+        this.state = {
+            loading: true,
+            distribution: '1',
+            distributions: [],
+            sampleDetails: {},
+            sampleSelect: '',
+            tableData: null,
+            aggregatedData: null,
+            tracks: [],
+            viewState: null,
+            numParticipants: 0,
+            errorMessage: "",
+            role: this.props.role,
+            loadFailed: false,
+            activeTab: 'normal', // 'normal' or 'technique'
+        };
+
+        // Bind methods
+        this.handleSampleSelection = this.handleSampleSelection.bind(this);
+        this.handleDistributionChange = this.handleDistributionChange.bind(this);
+        this.loadSampleDetails = this.loadSampleDetails.bind(this);
+        this.loadSamplePlotAndData = this.loadSamplePlotAndData.bind(this);
+        this.createViewState = this.createViewState.bind(this);
+        this.handleTabChange = this.handleTabChange.bind(this);
+    }
+
+   /**
+   * Lifecycle method invoked after component mount.
+   * Fetches distributions and initializes view state.
+   * @returns {void}
+   */
+    componentDidMount() {
+        this.fetchDistributions();
+        this.createViewState([]); // Initialize the viewState with no tracks
+    }
+   /**
+   * Creates the viewState for the genome view.
+   * @param {Array} tracks - Array of track objects to include.
+   * @returns {void}
+   */
+    createViewState(tracks) {
+        const { sampleSelect, sampleDetails } = this.state;
+        const reference = sampleDetails[sampleSelect]?.reference || 'EPI_ISL_412866'; // Default to 'EPI_ISL_412866' if no reference found
+
+        const featureTrack = {
+            trackId: `${reference}_annotations`,
+            name: `${reference} Annotations`,
+            type: 'FeatureTrack',
+            assemblyNames: [reference],
+            adapter: {
+                type: 'Gff3Adapter',
+                gffLocation: {
+                    uri: `api/proxy_gff3_${reference}`,
+                },
+            },
+        };
+
+        const viewState = createViewState({
+            assembly: {
+                name: reference,
+                aliases: [reference],
+                sequence: {
+                    trackId: `${reference}_reference`,
+                    type: 'ReferenceSequenceTrack',
+                    adapter: {
+                        type: 'IndexedFastaAdapter',
+                        fastaLocation: {
+                            uri: `api/proxy_fasta_${reference}`,
+                        },
+                        faiLocation: {
+                            uri: `api/proxy_fai_${reference}`,
+                        },
+                    },
+                },
+            },
+            tracks: [featureTrack, ...tracks], // Include dynamic feature track
+        });
+        console.log(tracks)
+        this.setState({ viewState });
+    }
+
+   /**
+   * Loads sample plot and table data for a given sample.
+   * Fetches data from the API, creates BAM/BigWig tracks, and updates state.
+   * @async
+   * @param {string} sample - The sample identifier.
+   * @returns {Promise&lt;void>}
+   */
+    async loadSamplePlotAndData(sample) {
+        try {
+            this.setState({ loading: true, loadFailed: false, errorMessage: '' });
+            const { sampleSelect, sampleDetails } = this.state;
+            const reference = sampleDetails[sampleSelect]?.reference || 'EPI_ISL_412866'; // Default if no reference found
+
+            const response = await fetch(
+                `api/distribution_data/${this.state.distribution}/sample/${sample}`,
+                { credentials: 'include' }
+            );
+            if (!response.ok) {
+                let errorMsg = "";
+                try {
+                    const errorData = await response.json();
+                    errorMsg = errorData.error || response.statusText;
+                } catch (err) {
+                    errorMsg = response.statusText || 'Failed to fetch plot and table data';
+                }
+                this.setState({ loading: false, loadFailed: true, errorMessage: errorMsg });
+                throw new Error(errorMsg);
+            }
+
+            const data = await response.json();
+            console.log(data)
+
+            // Interleave BAM and BigWig tracks by sample
+            const tracks = [];
+            // Assuming data.bams and data.bigwigs are arrays of equal length
+            const numTracks = Math.max(data.bams.length, data.bigwigs.length);
+            for (let i = 0; i &lt; numTracks; i++) {
+                const participant = data.bams[i].split('/').slice(-1)[0];
+                if (data.bams[i]) {
+                    tracks.push({
+                        trackId: `bam_track_${i}`,
+                        name: `${participant}`, // Customizing name for each sample
+                        type: 'AlignmentsTrack',
+                        assemblyNames: [reference],
+                        adapter: {
+                            type: 'BamAdapter',
+                            bamLocation: { uri: data.bams[i] },
+                            index: { location: { uri: `${data.bams[i]}.bai` } },
+                        },
+                        display: [
+                            {
+                                type: 'SnpCoverage',
+                                displayId: 'bam_snp_coverage',
+                                renderer: {
+                                    type: 'SnpCoverageRenderer',
+                                },
+                            },
+                        ],
+                    });
+                }
+
+                if (data.bigwigs[i]) {
+                    tracks.push({
+                        trackId: `bigwig_track_${i}`,
+                        name: `${participant} coverage`, // Customizing name for each sample
+                        type: 'QuantitativeTrack',
+                        assemblyNames: [reference],
+                        adapter: {
+                            type: 'BigWigAdapter',
+                            bigWigLocation: { uri: data.bigwigs[i] },
+                        },
+                    });
+                }
+            }
+
+            // Recreate viewState with the new BAM tracks
+            this.createViewState(tracks);
+
+            // Apply NA handling
+            const sanitizedTableData = data.table?.map(row =>
+                Object.fromEntries(
+                    Object.entries(row).map(([key, value]) => [key, value === "N/A" ? null : value])
+                )
+            ) || null;
+
+            this.setState({
+                tableData: sanitizedTableData,
+                aggregatedData: data.sequencing_aggregates || null,
+                tracks,
+                loading: false,
+            });
+        } catch (error) {
+            console.error('Error fetching plot and table data:', error);
+            // Save the error message so it can be displayed
+            this.setState({ loading: false, loadFailed: true, errorMessage: error.message });
+        }
+    }
+
+   /**
+   * Fetches the list of distributions from the API and updates state.
+   * @async
+   * @returns {Promise&lt;void>}
+   */
+    async fetchDistributions() {
+        try {
+            this.setState({ loading: true });
+            const response = await fetch('api/distribution_fetch', {
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch distributions');
+            }
+
+            const data = await response.json();
+
+            // Debugging: Check the API response
+            console.log("Fetched distributions:", data);
+
+            this.setState({ loading: false }); // Set loading to false once data is fetched
+            this.setState({ distributions: data.distributions, loading: false });
+        } catch (error) {
+            console.error('Error fetching distributions:', error);
+            this.setState({ loading: false });
+        }
+    };
+   /**
+   * Fetches sample details for the current distribution from the API.
+   * @async
+   * @returns {Promise&lt;void>}
+   */
+    async loadSampleDetails() {
+        try {
+            this.setState({ loading: true });
+            const response = await fetch(`api/distribution_data/${this.state.distribution}`, {
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch sample details');
+            }
+            const data = await response.json();
+            this.setState({ sampleDetails: data, loading: false });
+        } catch (error) {
+            console.error('Error fetching sample details:', error);
+            this.setState({ loading: false });
+        }
+    }
+
+   /**
+   * Handles sample selection by updating state and loading associated plot and data.
+   * @param {string} sample - The selected sample identifier.
+   * @returns {void}
+   */
+    handleSampleSelection(sample) {
+        const { sampleDetails } = this.state;
+        const numParticipants = sampleDetails[sample]?.participants || 0; // ✅ Get participants count
+
+        this.setState({
+            sampleSelect: sample,
+            numParticipants,  // ✅ Save in state
+        }, () => {
+            this.loadSamplePlotAndData(sample);
+        });
+    }
+
+   /**
+   * Handles distribution change events by updating state and fetching sample details.
+   * @param {Event} event - The change event from the distribution selector.
+   * @returns {void}
+   */
+    handleDistributionChange(event) {
+        this.setState({ distribution: event.target.value }, () => {
+            this.loadSampleDetails(); // Executes after state update
+        });
+    }
+   /**
+   * Handles tab change events in the UI.
+   * @param {string} tabName - The new active tab.
+   * @returns {void}
+   */
+    handleTabChange(tabName) {
+        this.setState({ activeTab: tabName });
+    }
+   /**
+   * Renders the DataView component UI including panels for distribution selection,
+   * sample table, genome view, and tabbed data displays.
+   * @returns {JSX.Element} The rendered DataView component.
+   */
+    render() {
+        const {
+            loading,
+            sampleDetails,
+            tableData,
+            aggregatedData,
+            distribution,
+            distributions,
+            viewState,
+            errorMessage,
+            bamTracks,
+            numParticipants,
+            role,
+            loadFailed,
+            activeTab
+        } = this.state;
+        console.log(role)
+
+        const shouldShowData = !loading &amp;&amp; tableData &amp;&amp; numParticipants >= 4 &amp;&amp; !loadFailed;
+
+        const chartOrientation = role === 'superuser' ? 'vertical' : 'horizontal'; // Determine chart orientation
+
+        const columnDefs = [
+            { field: 'participant', headerName: 'Participant', sortable: true, filter: true, minWidth: 75, maxWidth: 125, flex: 2 },
+            { field: 'clade', headerName: 'Lineage', sortable: true, filter: true, minWidth: 50, maxWidth: 125, flex: 1 },
+            { field: 'G_clade', headerName: 'Legacy lineage', sortable: true, filter: true, minWidth: 50, maxWidth: 150, flex: 1 },
+            { field: 'coverage', headerName: 'Genome Coverage (%)', sortable: true, filter: true, minWidth: 50, maxWidth: 200, flex: 1 },
+            { field: 'similarity', headerName: 'Similarity (%)', sortable: true, filter: true, minWidth: 50, maxWidth: 200, flex: 1 },
+            { field: 'ns', headerName: 'Ns in Sequence (%)', sortable: true, filter: true, minWidth: 50, maxWidth: 200, flex: 1 },
+            { field: 'read_coverage', headerName: 'Read Coverage (Mean)', sortable: true, filter: true, minWidth: 50, maxWidth: 200, flex: 1 },
+        ];
+        // Build technique (aggregated by sequencing type) table data and column definitions.
+        let techniqueTableData = [];
+        if (aggregatedData) {
+            for (let seq in aggregatedData) {
+                techniqueTableData.push({
+                sequencing_type: seq,
+                count:aggregatedData[seq].count,
+                coverage: aggregatedData[seq].coverage,
+                ns: aggregatedData[seq].Ns, // Note: ensure field names match those returned by your API
+                similarity: aggregatedData[seq].similarity,
+                read_coverage: aggregatedData[seq].read_coverage,
+                clade: aggregatedData[seq].clade,
+                G_clade: aggregatedData[seq].G_clade,
+                });
+            }
+        }
+        const techniqueColumnDefs = [
+            { field: 'sequencing_type', headerName: 'Sequencing Type', sortable: true, filter: true, flex: 1 },
+            { field: 'count', headerName: 'Valid submissions', sortable: true, filter: true, flex: 1 },
+            { field: 'clade', headerName: 'Dominant lineage', sortable: true, filter: true, flex: 1 },
+            { field: 'G_clade', headerName: 'Dominant legacy lineage', sortable: true, filter: true, flex: 1 },
+            { field: 'coverage', headerName: 'Avg Genome Coverage (%)', sortable: true, filter: true, flex: 1 },
+            { field: 'ns', headerName: 'Avg Ns (%)', sortable: true, filter: true, flex: 1 },
+            { field: 'similarity', headerName: 'Avg Similarity (%)', sortable: true, filter: true, flex: 1 },
+            { field: 'read_coverage', headerName: 'Avg Read Coverage', sortable: true, filter: true, flex: 1 },
+          ];
+
+        const myTheme = themeQuartz.withParams({
+            backgroundColor: '#ffffff', // Matches even row background
+            foregroundColor: '#1E3A5F', // Text color for the table
+            headerTextColor: '#ffffff', // White header text
+            headerBackgroundColor: '#1E3A5F', // Matches header background color
+            oddRowBackgroundColor: '#f9f9f9', // Matches odd row background
+            evenRowBackgroundColor: '#ffffff', // Matches even row background
+            headerColumnResizeHandleColor: '#f1f1f1', // Subtle hover color for headers
+        });
+
+        return (
+            &lt;div className="dataview-container">
+                {/* Left Panel */}
+                &lt;div className="left-panel panel">
+                    &lt;div className="input-box" id="distribution-container">
+                        &lt;label htmlFor="distribution" className="label">Distribution Number&lt;/label>
+                        &lt;select
+                            id="distribution"
+                            value={distribution}
+                            onChange={this.handleDistributionChange}
+                            className="select-input"
+                        >
+                            &lt;option value="">-- Select Distribution --&lt;/option>
+                            {distributions.map((dist, index) => (
+                                &lt;option key={index} value={dist}>
+                                    {dist}
+                                &lt;/option>
+                            ))}
+                        &lt;/select>
+
+                    &lt;/div>
+
+                    &lt;div className="table-container" id="sample-table-container">
+                        &lt;table className="sample-table">
+                            &lt;thead>
+                                &lt;tr>
+                                    &lt;th>Sample Name&lt;/th>
+                                    &lt;th>Intended Subtype&lt;/th>
+                                    &lt;th>Number of Participants&lt;/th>
+                                &lt;/tr>
+                            &lt;/thead>
+                            &lt;tbody>
+                                {Object.entries(sampleDetails).map(([sample, details]) => (
+                                    &lt;tr
+                                        key={sample}
+                                        onClick={() => this.handleSampleSelection(sample)}
+                                        className="sample-row"
+                                    >
+                                        &lt;td>{sample}&lt;/td>
+                                        &lt;td>{details.reference === 'EPI_ISL_1653999' ? 'RSV B' : 'RSV A'}&lt;/td>
+                                        &lt;td>{details.participants}&lt;/td>
+                                    &lt;/tr>
+                                ))}
+                            &lt;/tbody>
+                        &lt;/table>
+                    &lt;/div>
+                    &lt;div style={{ width: '100%', height: '475px', overflow: 'scroll' }}>
+                        {viewState &amp;&amp; &lt;JBrowseLinearGenomeView viewState={viewState} />}
+                    &lt;/div>
+                &lt;/div>
+
+                {/* Right Panel with Tab System */}
+                &lt;div className="right-panel panel">
+                    {/* Tab Buttons */}
+                    &lt;div className="tab-buttons">
+                        &lt;button
+                            className={activeTab === 'normal' ? 'active' : ''}
+                            onClick={() => this.handleTabChange('normal')}
+                        >
+                            Per Participant
+                        &lt;/button>
+                        &lt;button
+                            className={activeTab === 'technique' ? 'active' : ''}
+                            onClick={() => this.handleTabChange('technique')}
+                        >
+                            Per Technique
+                        &lt;/button>
+                        {/* Button to Download DOCX */}
+                        &lt;DownloadButton distribution={distribution} disabled={numParticipants &lt; 4} />
+                    &lt;/div>
+
+                    {activeTab === 'normal' ? (
+                        shouldShowData ? (
+                            &lt;>
+                                &lt;div className={`plot-container ${loading || !tableData ? 'hidden' : ''}`} id="plot-container">
+                                    {loading ? (
+                                        &lt;div className="spinner">
+                                            &lt;ScaleLoader color="#21afde" />
+                                        &lt;/div>
+                                    ) : (
+                                        &lt;SamplePlot sampleData={tableData} chartOrientation={chartOrientation} />
+                                    )}
+                                &lt;/div>
+                                &lt;div
+                                    className={`table-container ${loading || !tableData ? 'hidden' : ''}`}
+                                    id="table-container"
+                                    style={{ width: '100%', overflowX: 'auto' }}
+                                >
+                                    {loading ? (
+                                        &lt;div className="spinner">
+                                            &lt;ScaleLoader color="#21afde" />
+                                        &lt;/div>
+                                    ) : (
+                                        tableData &amp;&amp; (
+                                            &lt;div style={{ width: '100%', height: '350px' }}>
+                                                &lt;AgGridReact
+                                                    rowData={tableData}
+                                                    columnDefs={columnDefs}
+                                                    defaultColDef={{
+                                                        sortable: true,
+                                                        filter: true,
+                                                        resizable: true,
+                                                    }}
+                                                    theme={myTheme}
+                                                    domLayout="normal"
+                                                />
+                                            &lt;/div>
+                                        )
+                                    )}
+                                &lt;/div>
+                            &lt;/>
+                        ) : (
+                            &lt;div className="error-message">
+                                {this.state.errorMessage || 'Insufficient participant data'}
+                            &lt;/div>
+                        )
+                    ) : activeTab === 'technique' ? (
+                        shouldShowData ? (
+                          &lt;>
+                            &lt;div className={`plot-container ${loading || !aggregatedData ? 'hidden' : ''}`} id="technique-plot-container">
+                              {loading ? (
+                                &lt;div className="spinner">
+                                  &lt;ScaleLoader color="#21afde" />
+                                &lt;/div>
+                              ) : (
+                                // Display aggregated data using the SamplePlot component.
+                                // You might need to adjust how SamplePlot renders aggregated data.
+                                &lt;SeqPlot sampleData={techniqueTableData} chartOrientation="vertical" />
+                              )}
+                            &lt;/div>
+                            &lt;div
+                              className={`table-container ${loading || !aggregatedData ? 'hidden' : ''}`}
+                              id="technique-table-container"
+                              style={{ width: '100%', overflowX: 'auto' }}
+                            >
+                              {loading ? (
+                                &lt;div className="spinner">
+                                  &lt;ScaleLoader color="#21afde" />
+                                &lt;/div>
+                              ) : (
+                                techniqueTableData &amp;&amp; (
+                                  &lt;div style={{ width: '100%', height: '350px' }}>
+                                    &lt;AgGridReact
+                                      rowData={techniqueTableData}
+                                      columnDefs={techniqueColumnDefs}
+                                      defaultColDef={{
+                                        sortable: true,
+                                        filter: true,
+                                        resizable: true,
+                                      }}
+                                      theme={myTheme}
+                                      domLayout="normal"
+                                    />
+                                  &lt;/div>
+                                )
+                              )}
+                            &lt;/div>
+                          &lt;/>
+                        ) : (
+                          &lt;div className="error-message">
+                            {errorMessage || 'Insufficient participant data'}
+                          &lt;/div>
+                        )
+                      ) : null}
+                &lt;/div>
+            &lt;/div>
+        );
+
+
+    }
+}
+
+export default DataView;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="App.module_DataView.html">DataView</a></li><li><a href="App.module_Home.html">Home</a></li><li><a href="App.module_SamplePlot.html">SamplePlot</a></li><li><a href="App.module_SeqPlot.html">SeqPlot</a></li><li><a href="App.module_Toolbar.html">Toolbar</a></li><li><a href="App.module_Upload.html">Upload</a></li><li><a href="DataView.module_DownloadButton.html">DownloadButton</a></li><li><a href="module-About.html">About</a></li><li><a href="module-App.html">App</a></li><li><a href="module-index.html">index</a></li></ul><h3>Classes</h3><ul><li><a href="App.module_DataView-DataView.html">DataView</a></li><li><a href="module-App-App.html">App</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Sat Feb 22 2025 23:35:44 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

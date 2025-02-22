@@ -1,3 +1,12 @@
+/**
+ * Renders a form for uploading sequencing data files along with associated metadata,
+ * handles file changes and form submission with progress tracking, and fetches required
+ * data (user organization, distributions, and samples) from the API.
+ * @module Upload
+ * @memberof App
+ * @returns {JSX.Element} The rendered upload page.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,7 +27,11 @@ export default function Upload() {
     const [samplesLoading, setSamplesLoading] = useState(false); // State for loading samples
     const [uploadProgress, setUploadProgress] = useState(0); // State for upload progress
 
-    // Fetch the logged-in user's organization
+   /**
+   * Fetches the logged-in user's organization from the API.
+   * @async
+   * @returns {Promise<void>}
+   */
     const fetchUserOrganization = async () => {
         try {
             const response = await fetch('api/user', { credentials: 'include' });
@@ -33,7 +46,11 @@ export default function Upload() {
         }
     };
 
-    // Fetch the list of distributions
+   /**
+   * Fetches the list of distributions from the API and updates state.
+   * @async
+   * @returns {Promise<void>}
+   */
     const fetchDistributions = async () => {
         try {
             setLoading(true); // Set loading to true while fetching data
@@ -54,7 +71,12 @@ export default function Upload() {
         }
     };
 
-    // Fetch the samples for the selected distribution
+   /**
+   * Fetches samples for the selected distribution from the API.
+   * @async
+   * @param {string} selectedDistribution - The selected distribution.
+   * @returns {Promise<void>}
+   */
     const fetchSamplesForDistribution = async (selectedDistribution) => {
         if (!selectedDistribution) return;
 
@@ -84,36 +106,65 @@ export default function Upload() {
         fetchDistributions(); // Fetch the distributions
     }, []); // Only run once on mount
 
-    // Handle FASTA file change
+   /**
+   * Handles changes to the FASTA file input.
+   * @param {Event} event - The file input change event.
+   * @returns {void}
+   */
     const handleFastaChange = (event) => {
         setFasta(event.target.files[0]);
     };
 
-    // Handle BAM file change
+  /**
+   * Handles changes to the BAM file input.
+   * @param {Event} event - The file input change event.
+   * @returns {void}
+   */
     const handleBamChange = (event) => {
         setBam(event.target.files[0]);
     };
 
-    // Handle FASTQ file change
+   /**
+   * Handles changes to the FASTQ R1 file input.
+   * @param {Event} event - The file input change event.
+   * @returns {void}
+   */
     const handleFastq1Change = (event) => {
         setFastq1(event.target.files[0]);
     };
-    // Handle FASTQ file change
+   /**
+   * Handles changes to the FASTQ R2 file input.
+   * @param {Event} event - The file input change event.
+   * @returns {void}
+   */
     const handleFastq2Change = (event) => {
         setFastq2(event.target.files[0]);
     };
 
-    // Handle sequencing type change
+   /**
+   * Handles changes to the sequencing type input.
+   * @param {Event} event - The change event.
+   * @returns {void}
+   */
     const handleSequencingTypeChange = (event) => {
         setSequencingType(event.target.value);
     };
 
-    // Handle description change
+/**
+   * Handles changes to the description input.
+   * @param {Event} event - The change event.
+   * @returns {void}
+   */
     const handleDescriptionChange = (event) => {
         setDescription(event.target.value);
     };
 
-    // Handle distribution change
+   /**
+   * Handles changes to the distribution selector.
+   * Fetches the samples for the newly selected distribution.
+   * @param {Event} event - The change event.
+   * @returns {void}
+   */
     const handleDistributionChange = (event) => {
         const selectedDistribution = event.target.value;
         setDistribution(selectedDistribution);
@@ -122,12 +173,23 @@ export default function Upload() {
         fetchSamplesForDistribution(selectedDistribution);
     };
 
-    // Handle sample selection
+   /**
+   * Handles sample selection from the dropdown.
+   * Updates state with the selected sample and number of participants, then loads sample plot and data.
+   * @param {Event} event - The selection change event.
+   * @returns {void}
+   */
     const handleSampleSelection = (event) => {
         setSampleSelect(event.target.value);
     };
 
-    // Handle form submission with upload progress
+   /**
+   * Handles form submission for uploading files.
+   * Creates a FormData object with files and metadata, sends it via XMLHttpRequest,
+   * and tracks upload progress. Navigates to home upon success.
+   * @param {Event} event - The form submit event.
+   * @returns {void}
+   */
     const handleSubmit = (event) => {
         event.preventDefault();
 

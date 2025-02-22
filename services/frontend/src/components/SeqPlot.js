@@ -1,3 +1,13 @@
+/**
+ * @module SeqPlot
+ * @memberof App
+ * @description Renders a Plotly graph based on SamplePlot.js, but for the sequencing platform stats.
+ *
+ * @param {Object} props - Component properties.
+ * @param {Array.<Object>} props.sampleData - Array of sample statistics objects.
+ * @param {string} props.chartOrientation - The orientation of the chart; either "horizontal" or "vertical".
+ * @returns {JSX.Element} The rendered Plotly plot.
+ */
 import React from 'react';
 import Plot from 'react-plotly.js';
 

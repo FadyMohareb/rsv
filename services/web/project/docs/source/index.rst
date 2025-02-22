@@ -13,4 +13,6 @@ Please refer to README.MD for a general overview of the application. This is the
    :maxdepth: 3
    :caption: Contents:
 
+   manage
    modules
+   

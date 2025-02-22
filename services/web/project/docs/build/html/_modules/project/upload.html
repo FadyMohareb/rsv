@@ -31,7 +31,32 @@
           <div class="body" role="main">
             
   <h1>Source code for project.upload</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">current_app</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">upload.py</span>
+<span class="sd">=========</span>
+
+<span class="sd">This module provides the file upload functionality and asynchronous processing</span>
+<span class="sd">for the application (frontend Upload.js component). Users can upload sequence files (FASTA, BAM, FASTQ) for analysis.</span>
+<span class="sd">It includes validation logic for various file types and enqueues a task to process</span>
+<span class="sd">the files using a Nextflow workflow. Uploaded files are stored in a folder hierarchy</span>
+<span class="sd">based on distribution, organization, and sample, and notifications are sent via Redis.</span>
+
+<span class="sd">Flask endpoint:</span>
+<span class="sd">    /api/upload --&gt; upload_files()</span>
+<span class="sd">        Accepts file uploads along with form data for sample, distribution, organization,</span>
+<span class="sd">        and sequencing type. Validates and saves files, enqueues a Nextflow workflow, and</span>
+<span class="sd">        creates a new Submission record.</span>
+
+<span class="sd">Task function:</span>
+<span class="sd">    launch_nextflow(upload_dir, workflow_name=&quot;main.nf&quot;, params={})</span>
+<span class="sd">        Executes a Nextflow workflow on the uploaded files and publishes a completion message</span>
+<span class="sd">        to the Redis &quot;chat&quot; channel.</span>
+
+<span class="sd">:author: Kevin</span>
+<span class="sd">:version: 0.0.1</span>
+<span class="sd">:date: 2025-02-21</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">current_app</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flask_login</span><span class="w"> </span><span class="kn">import</span> <span class="n">current_user</span><span class="p">,</span> <span class="n">login_required</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">project.utils.sql_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">db</span><span class="p">,</span> <span class="n">User</span><span class="p">,</span> <span class="n">Distribution</span><span class="p">,</span> <span class="n">Organization</span><span class="p">,</span> <span class="n">Submission</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">redis</span><span class="o">,</span><span class="w"> </span><span class="nn">gzip</span><span class="o">,</span><span class="w"> </span><span class="nn">pysam</span><span class="o">,</span><span class="w"> </span><span class="nn">shutil</span><span class="o">,</span><span class="w"> </span><span class="nn">subprocess</span>
@@ -49,9 +74,26 @@
 <span class="nd">@upload_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/upload&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">])</span>
 <span class="nd">@login_required</span>  <span class="c1"># Ensure the user is authenticated</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">upload_files</span><span class="p">():</span>
-    <span class="c1">#######################this needs a lot of validation logic, and tasks sendings</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handle file uploads for sequence analysis.</span>
+
+<span class="sd">    This endpoint validates uploaded files (FASTA, BAM, FASTQ), saves them into a specific folder</span>
+<span class="sd">    structure based on distribution, organization, and sample, and enqueues a task to process the files</span>
+<span class="sd">    using a Nextflow workflow. It also copies a required genomeLength.txt file to the upload folder,</span>
+<span class="sd">    publishes a message to a Redis channel, and creates a new Submission record in the database.</span>
+
+<span class="sd">    :return: JSON response indicating success, with details about uploaded files and task ID.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_gzip_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if a file is gzip-compressed.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if a file is gzip-compressed.</span>
+
+<span class="sd">        :param file_path: Path to the file.</span>
+<span class="sd">        :type file_path: str</span>
+<span class="sd">        :return: True if the file is gzip-compressed, otherwise False.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">test_gzip</span><span class="p">:</span>
                 <span class="n">test_gzip</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -60,13 +102,29 @@
             <span class="k">return</span> <span class="kc">False</span>
         
     <span class="k">def</span><span class="w"> </span><span class="nf">read_first_lines</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">num_lines</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read first lines of a file, handling gzip if necessary.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read the first lines of a file, handling gzip files if necessary.</span>
+
+<span class="sd">        :param file_path: Path to the file.</span>
+<span class="sd">        :type file_path: str</span>
+<span class="sd">        :param num_lines: Number of lines to read (default is 4).</span>
+<span class="sd">        :type num_lines: int</span>
+<span class="sd">        :return: A list of strings, each corresponding to a line in the file.</span>
+<span class="sd">        :rtype: list[str]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">open_func</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span> <span class="k">if</span> <span class="n">is_gzip_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="k">else</span> <span class="nb">open</span>
         <span class="k">with</span> <span class="n">open_func</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>  <span class="c1"># Read as text</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_lines</span><span class="p">)]</span>
         
     <span class="k">def</span><span class="w"> </span><span class="nf">is_valid_fasta</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the file is a valid FASTA.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the file is a valid FASTA file by inspecting the first line.</span>
+
+<span class="sd">        :param file_path: Path to the FASTA file.</span>
+<span class="sd">        :type file_path: str</span>
+<span class="sd">        :return: True if the file starts with &#39;&gt;&#39;, otherwise False.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">first_line</span> <span class="o">=</span> <span class="n">read_first_lines</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">first_line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">)</span>
@@ -74,7 +132,14 @@
             <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">is_valid_bam</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the file is a valid BAM using pysam.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the file is a valid BAM file using pysam.</span>
+
+<span class="sd">        :param file_path: Path to the BAM file.</span>
+<span class="sd">        :type file_path: str</span>
+<span class="sd">        :return: True if the file can be opened by pysam, otherwise False.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">pysam</span><span class="o">.</span><span class="n">AlignmentFile</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">_</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">True</span>
@@ -82,7 +147,16 @@
             <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">is_valid_fastq</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the file follows the FASTQ format.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the file follows the FASTQ format.</span>
+
+<span class="sd">        Reads the first four lines of the file and validates the expected format.</span>
+
+<span class="sd">        :param file_path: Path to the FASTQ file.</span>
+<span class="sd">        :type file_path: str</span>
+<span class="sd">        :return: True if the file is a valid FASTQ, otherwise False.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">lines</span> <span class="o">=</span> <span class="n">read_first_lines</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)</span> <span class="ow">and</span>
@@ -104,7 +178,7 @@
     <span class="n">bam_file</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bam&#39;</span><span class="p">)</span>
     <span class="n">fq1</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;fq1&#39;</span><span class="p">)</span>
     <span class="n">fq2</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;fq2&#39;</span><span class="p">)</span>
-    <span class="n">description</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>  <span class="c1"># Optional description</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>  <span class="c1"># Not being processed</span>
     <span class="n">sample</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span>
     <span class="n">distribution</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;distribution&#39;</span><span class="p">]</span>
     <span class="n">organization</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;organization&#39;</span><span class="p">]</span>
@@ -202,7 +276,6 @@
     <span class="n">r</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s2">&quot;chat&quot;</span><span class="p">,</span><span class="sa">f</span><span class="s2">&quot;[UPLOAD]</span><span class="si">{</span><span class="n">organization</span><span class="si">}</span><span class="s2">&#39;s upload of sample </span><span class="si">{</span><span class="n">sample</span><span class="si">}</span><span class="s2"> from distribution </span><span class="si">{</span><span class="n">distribution</span><span class="si">}</span><span class="s2"> has been completed.&quot;</span><span class="p">)</span>
 
     <span class="c1"># Create and commit a new Submission record</span>
-    <span class="c1"># Assuming Organization and Distribution are identified by their unique &#39;name&#39;</span>
     <span class="n">org_obj</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">organization</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
     <span class="n">dist_obj</span> <span class="o">=</span> <span class="n">Distribution</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">distribution</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
     <span class="n">user_obj</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="n">current_user</span><span class="o">.</span><span class="n">id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
@@ -231,7 +304,22 @@
 <div class="viewcode-block" id="launch_nextflow">
 <a class="viewcode-back" href="../../project.html#project.upload.launch_nextflow">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">launch_nextflow</span><span class="p">(</span><span class="n">upload_dir</span><span class="p">,</span> <span class="n">workflow_name</span><span class="o">=</span><span class="s2">&quot;main.nf&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{}):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the Nextflow workflow.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run the Nextflow workflow on the uploaded files.</span>
+
+<span class="sd">    Constructs and executes a command to launch the Nextflow workflow. It logs the command,</span>
+<span class="sd">    captures the output, and publishes a message to the Redis &quot;chat&quot; channel when the workflow</span>
+<span class="sd">    is complete. Currently, only completion is published, not the specific status (success or fail).</span>
+
+<span class="sd">    :param upload_dir: The directory containing the uploaded files.</span>
+<span class="sd">    :type upload_dir: str</span>
+<span class="sd">    :param workflow_name: The name of the Nextflow workflow file to run (default &quot;main.nf&quot;).</span>
+<span class="sd">    :type workflow_name: str</span>
+<span class="sd">    :param params: A dictionary of parameters to pass to Nextflow (e.g., reads, samples_txt).</span>
+<span class="sd">    :type params: dict</span>
+<span class="sd">    :return: A dictionary with the status, stdout, and stderr of the executed command.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># Construct the command with escaped spaces</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
@@ -304,9 +392,9 @@
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html">project</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html#project-utils">project.utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html#frontend-documentation">Frontend Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../manage.html">Backend management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Backend endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html#backend-utils">Backend utils</a></li>
 </ul>
 
 <div class="relations">
@@ -314,8 +402,6 @@
 <ul>
   <li><a href="../../index.html">Documentation overview</a><ul>
   <li><a href="../index.html">Module code</a><ul>
-  <li><a href="../project.html">project</a><ul>
-  </ul></li>
   </ul></li>
   </ul></li>
 </ul>

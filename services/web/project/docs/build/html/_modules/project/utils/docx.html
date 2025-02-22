@@ -31,13 +31,42 @@
           <div class="body" role="main">
             
   <h1>Source code for project.utils.docx</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">docx.py</span>
+<span class="sd">=======</span>
+<span class="sd">This utilities module is in charge of processing the data of a distribution and preparing its docx report.</span>
+
+<span class="sd">Functions:</span>
+
+<span class="sd">    generate_sample_plot_pdf(sample_name, sample_data, role)</span>
+<span class="sd">        Creates a stacked bar and line graph for sample data visualization.</span>
+
+<span class="sd">    create_pygenometracks_plot(reference_genome, annotation, region, bed_path, bigwig_file, bigwig_consensus_file, output_dir, sample_name, user_lab)</span>
+<span class="sd">        Uses pyGenomeTracks to generate genome coverage plots.</span>
+
+<span class="sd">    create_element(name)</span>
+<span class="sd">        Creates an XML element for DOCX formatting.</span>
+
+<span class="sd">    create_attribute(element, name, value)</span>
+<span class="sd">        Adds an attribute to an XML element.</span>
+
+<span class="sd">    add_page_number(run)</span>
+<span class="sd">        Inserts a page number field in a DOCX document.</span>
+<span class="sd">    </span>
+<span class="sd">    generate_docx_reportreport_data, base_dir, role, user_lab, distribution</span>
+<span class="sd">        Generates a DOCX report summarizing viric genome analysis results.</span>
+
+<span class="sd">:author: Kevin</span>
+<span class="sd">:version: 0.0.1</span>
+<span class="sd">:date: 2025-02-21</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">docx</span><span class="w"> </span><span class="kn">import</span> <span class="n">Document</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">docx.shared</span><span class="w"> </span><span class="kn">import</span> <span class="n">Inches</span><span class="p">,</span><span class="n">Pt</span><span class="p">,</span> <span class="n">Cm</span><span class="p">,</span> <span class="n">RGBColor</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">docx.enum.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">WD_PARAGRAPH_ALIGNMENT</span><span class="p">,</span> <span class="n">WD_BREAK</span><span class="p">,</span> <span class="n">WD_COLOR_INDEX</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">docx.enum.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">WD_TABLE_ALIGNMENT</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">docx.enum.style</span><span class="w"> </span><span class="kn">import</span> <span class="n">WD_STYLE</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">docx.oxml</span><span class="w"> </span><span class="kn">import</span> <span class="n">OxmlElement</span><span class="p">,</span> <span class="n">ns</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">docx.oxml.ns</span><span class="w"> </span><span class="kn">import</span> <span class="n">nsdecls</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">docx.oxml</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_xml</span>
@@ -51,7 +80,18 @@
 <div class="viewcode-block" id="generate_sample_plot_pdf">
 <a class="viewcode-back" href="../../../modules.html#project.utils.docx.generate_sample_plot_pdf">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">generate_sample_plot_pdf</span><span class="p">(</span><span class="n">sample_name</span><span class="p">,</span> <span class="n">sample_data</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a Matplotlib stacked bar and line graph with dual y-axes for a single sample.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a stacked bar and line graph using Matplotlib for a given sample.</span>
+
+<span class="sd">    :param sample_name: The name of the sample, used for file naming.</span>
+<span class="sd">    :type sample_name: str</span>
+<span class="sd">    :param sample_data: Dictionary containing sample statistics (coverage, similarity, etc.).</span>
+<span class="sd">    :type sample_data: dict</span>
+<span class="sd">    :param role: User role (affects visualisation style).</span>
+<span class="sd">    :type role: str</span>
+<span class="sd">    :return: The file path of the generated plot image.</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="c1"># Extract the data for plotting (adjust based on your dataset structure)</span>
     <span class="n">labs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sample_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -148,14 +188,33 @@
 <a class="viewcode-back" href="../../../modules.html#project.utils.docx.create_pygenometracks_plot">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_pygenometracks_plot</span><span class="p">(</span><span class="n">reference_genome</span><span class="p">,</span> <span class="n">annotation</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">bed_path</span><span class="p">,</span> <span class="n">bigwig_file</span><span class="p">,</span> <span class="n">bigwig_consensus_file</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">sample_name</span><span class="p">,</span> <span class="n">user_lab</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Generate a genome coverage plot using pyGenomeTracks for a specific user_lab.</span>
+<span class="sd">    Generates a genome coverage plot using pyGenomeTracks for a specific user_lab.</span>
 
-<span class="sd">    Creates a tracks.ini file that includes:</span>
-<span class="sd">      - a reference track (from the provided FASTA),</span>
-<span class="sd">      - an annotation track (from the provided GFF3), and</span>
-<span class="sd">      - a bigwig track (from the provided BigWig file).</span>
-<span class="sd">      </span>
-<span class="sd">    The plot is generated for the given region.</span>
+<span class="sd">    Creates a tracks.ini file that configures:</span>
+<span class="sd">      - A reference track (FASTA),</span>
+<span class="sd">      - An annotation track (GFF3),</span>
+<span class="sd">      - A bigwig track (BigWig file).</span>
+
+<span class="sd">    :param reference_genome: Path to the reference genome FASTA file.</span>
+<span class="sd">    :type reference_genome: str</span>
+<span class="sd">    :param annotation: Path to the GFF3 annotation file.</span>
+<span class="sd">    :type annotation: str</span>
+<span class="sd">    :param region: Genomic region to visualize.</span>
+<span class="sd">    :type region: str</span>
+<span class="sd">    :param bed_path: Path to the BED file with sequence variants.</span>
+<span class="sd">    :type bed_path: str</span>
+<span class="sd">    :param bigwig_file: Path to the BigWig file containing read coverage data.</span>
+<span class="sd">    :type bigwig_file: str</span>
+<span class="sd">    :param bigwig_consensus_file: Path to the consensus BigWig file.</span>
+<span class="sd">    :type bigwig_consensus_file: str</span>
+<span class="sd">    :param output_dir: Directory where the plot and ini file will be saved.</span>
+<span class="sd">    :type output_dir: str</span>
+<span class="sd">    :param sample_name: Sample identifier.</span>
+<span class="sd">    :type sample_name: str</span>
+<span class="sd">    :param user_lab: User lab identifier.</span>
+<span class="sd">    :type user_lab: str</span>
+<span class="sd">    :return: File path of the generated coverage plot.</span>
+<span class="sd">    :rtype: str</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_dir</span><span class="p">):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
@@ -219,13 +278,45 @@
 
 
 
+<div class="viewcode-block" id="create_element">
+<a class="viewcode-back" href="../../../modules.html#project.utils.docx.create_element">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_element</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">OxmlElement</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates an XML element for use in DOCX formatting.</span>
 
+<span class="sd">    :param name: The name of the XML element.</span>
+<span class="sd">    :type name: str</span>
+<span class="sd">    :return: The created XML element.</span>
+<span class="sd">    :rtype: OxmlElement</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">OxmlElement</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_attribute">
+<a class="viewcode-back" href="../../../modules.html#project.utils.docx.create_attribute">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_attribute</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-    <span class="n">element</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ns</span><span class="o">.</span><span class="n">qn</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">value</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds an attribute to an XML element.</span>
 
+<span class="sd">    :param element: The XML element to modify.</span>
+<span class="sd">    :type element: OxmlElement</span>
+<span class="sd">    :param name: The attribute name.</span>
+<span class="sd">    :type name: str</span>
+<span class="sd">    :param value: The attribute value.</span>
+<span class="sd">    :type value: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">element</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ns</span><span class="o">.</span><span class="n">qn</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add_page_number">
+<a class="viewcode-back" href="../../../modules.html#project.utils.docx.add_page_number">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_page_number</span><span class="p">(</span><span class="n">run</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inserts a page number field in a DOCX document.</span>
+
+<span class="sd">    :param run: A DOCX run object where the page number field is inserted.</span>
+<span class="sd">    :type run: docx.text.run.Run</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">fldChar1</span> <span class="o">=</span> <span class="n">create_element</span><span class="p">(</span><span class="s1">&#39;w:fldChar&#39;</span><span class="p">)</span>
     <span class="n">create_attribute</span><span class="p">(</span><span class="n">fldChar1</span><span class="p">,</span> <span class="s1">&#39;w:fldCharType&#39;</span><span class="p">,</span> <span class="s1">&#39;begin&#39;</span><span class="p">)</span>
 
@@ -238,12 +329,30 @@
 
     <span class="n">run</span><span class="o">.</span><span class="n">_r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fldChar1</span><span class="p">)</span>
     <span class="n">run</span><span class="o">.</span><span class="n">_r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">instrText</span><span class="p">)</span>
-    <span class="n">run</span><span class="o">.</span><span class="n">_r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fldChar2</span><span class="p">)</span>
+    <span class="n">run</span><span class="o">.</span><span class="n">_r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fldChar2</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="generate_docx_report">
 <a class="viewcode-back" href="../../../modules.html#project.utils.docx.generate_docx_report">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">generate_docx_report</span><span class="p">(</span><span class="n">report_data</span><span class="p">,</span> <span class="n">base_dir</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">user_lab</span><span class="p">,</span> <span class="n">distribution</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Route for generating the DOCX report.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a DOCX report summarizing genomic analysis results for a given distribution.</span>
+
+<span class="sd">    The report includes sample statistics, visualizations, and formatted text.</span>
+
+<span class="sd">    :param report_data: Processed data containing genomic viral analysis results.</span>
+<span class="sd">    :type report_data: dict</span>
+<span class="sd">    :param base_dir: Base directory containing report-related files.</span>
+<span class="sd">    :type base_dir: str</span>
+<span class="sd">    :param role: User role determining report formatting.</span>
+<span class="sd">    :type role: str</span>
+<span class="sd">    :param user_lab: User lab identifier.</span>
+<span class="sd">    :type user_lab: str</span>
+<span class="sd">    :param distribution: The distribution to .</span>
+<span class="sd">    :type distribution: str</span>
+<span class="sd">    :return: the generated DOCX report.</span>
+<span class="sd">    :rtype: docx</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">report_data</span> <span class="o">=</span> <span class="n">process_all_reports</span><span class="p">(</span><span class="n">base_dir</span><span class="p">)</span>
     <span class="n">distribution</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">base_dir</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">samples_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_dir</span><span class="si">}</span><span class="s2">/samples.txt&quot;</span>
@@ -252,9 +361,6 @@
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">sample_id</span><span class="p">,</span> <span class="n">reference</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="n">sample_reference_map</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">reference</span>
-
-    <span class="n">lorem_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum vehicula quam sit amet feugiat ullamcorper. Phasellus non bibendum odio. Fusce nec purus et metus malesuada dapibus. Morbi gravida nisl vitae fringilla vulputate. Integer ac laoreet magna, sit amet rutrum lectus. Aliquam tincidunt, magna et mollis aliquam, nulla est dictum lectus, sit amet volutpat nunc nulla nec felis. Ut eu nunc eget felis varius tempus.&quot;&quot;&quot;</span>
-    <span class="n">lorem_text_short</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum vehicula quam sit amet feugiat ullamcorper.&quot;&quot;&quot;</span>
 
     <span class="kn">from</span><span class="w"> </span><span class="nn">docx.oxml</span><span class="w"> </span><span class="kn">import</span> <span class="n">OxmlElement</span><span class="p">,</span> <span class="n">ns</span>
 
@@ -1206,9 +1312,9 @@
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">project</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../modules.html#project-utils">project.utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../modules.html#frontend-documentation">Frontend Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../manage.html">Backend management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">Backend endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html#backend-utils">Backend utils</a></li>
 </ul>
 
 <div class="relations">
@@ -1216,8 +1322,6 @@
 <ul>
   <li><a href="../../../index.html">Documentation overview</a><ul>
   <li><a href="../../index.html">Module code</a><ul>
-  <li><a href="../../project.html">project</a><ul>
-  </ul></li>
   </ul></li>
   </ul></li>
 </ul>

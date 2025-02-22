@@ -14,7 +14,7 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="project" href="modules.html" />
+    <link rel="prev" title="Backend endpoints" href="modules.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -39,141 +39,379 @@
 </section>
 <section id="module-project.admin">
 <span id="project-admin-module"></span><h2>project.admin module<a class="headerlink" href="#module-project.admin" title="Link to this heading">¶</a></h2>
+<section id="admin-py">
+<h3>admin.py<a class="headerlink" href="#admin-py" title="Link to this heading">¶</a></h3>
+<p>This module provides the endpoints that require special privileges to access (role=superuser). These include admin tasks such as creating new distributions and adding samples and participants to said distributions. Basically, it is the module taking care of requests from the frontend’s DistributionManager.js component.</p>
+<p>Flask endpoints:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>/api/distributions_participants –&gt; get_all()</dt><dd><p>Returns all the distributions and participants registered on the SQL database.</p>
+</dd>
+<dt>/api/assign_participant –&gt; assign_participant()</dt><dd><p>The request requires the ‘participant’ and ‘distribution’ fields. Endpoint adds participant to the distribution.</p>
+</dd>
+<dt>/api/create_distributions –&gt; distribution_manager()</dt><dd><p>GET requests return a list of the distributions the participant has been assigned to, nfot requiring superuser privileges.
+POST requests receive a new distribution name, and if it does not exist already, will add it to the database and create an empty folder at services/web/data in which to store uploads and processing files.</p>
+</dd>
+<dt>/api/create_or_restore_organization –&gt; create_or_restore_organization_with_user()</dt><dd><p>Only POST requests. Fields to be sent include organization (also called participant) name, and email and username of the person being registered to the organization.
+Only one user per organization can be registered in this way. See the seed_db command in manage.py on how to manually add more users. This endpoint is also used to restore passwords, if ‘is_restore’ is set to true.
+This is the only endpoint that currently sends emails.</p>
+</dd>
+<dt>/api/distributions/&lt;distribution&gt;/add_samples –&gt; samples_per_distro_manager(distribution)</dt><dd><p>GET requests return the list of samples assigned to queried distribution, not requiring superuser privileges.
+POST creates a new sample and adds it to queried distribution. These samples are then available for the distribution’s participants to upload to (upload.py).</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Other functions:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>role_required(role)</dt><dd><p>Decorator for privileged endpoints, that requires the user to be authenticated and posses a superuser role, otherwise is denied the service (403 code).
+This is related to flask-login, a cookie-based authentication system, meaning session cookies in the client must carry the ‘role’ field and send those credentials in requests to the backend.</p>
+</dd>
+<dt>role_required_for_post(role)</dt><dd><p>Same as role_required, but only POST requests require the superuser role.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">author<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Kevin</p>
+</dd>
+<dt class="field-even">version<span class="colon">:</span></dt>
+<dd class="field-even"><p>0.0.1</p>
+</dd>
+<dt class="field-odd">date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2025-02-20</p>
+</dd>
+</dl>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py" id="project.admin.assign_participant">
 <span class="sig-prename descclassname"><span class="pre">project.admin.</span></span><span class="sig-name descname"><span class="pre">assign_participant</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/admin.html#assign_participant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.admin.assign_participant" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Adds participant to a distribution. Requires that the client sends the participant and distribution names.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.admin.create_or_restore_organization_with_user">
 <span class="sig-prename descclassname"><span class="pre">project.admin.</span></span><span class="sig-name descname"><span class="pre">create_or_restore_organization_with_user</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/admin.html#create_or_restore_organization_with_user"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.admin.create_or_restore_organization_with_user" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Creates or restores an organizations username and password.
+Only one user per organization can be registered in this way.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.admin.distribution_manager">
 <span class="sig-prename descclassname"><span class="pre">project.admin.</span></span><span class="sig-name descname"><span class="pre">distribution_manager</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/admin.html#distribution_manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.admin.distribution_manager" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns a list of the distributions the participant has been assigned to (GET), or creates a new distribution from the form’s name (POST).</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.admin.get_all">
 <span class="sig-prename descclassname"><span class="pre">project.admin.</span></span><span class="sig-name descname"><span class="pre">get_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/admin.html#get_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.admin.get_all" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns all the distributions and participants registered on the SQL database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>JSON with list of participants and distributions.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>JSON</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.admin.role_required">
 <span class="sig-prename descclassname"><span class="pre">project.admin.</span></span><span class="sig-name descname"><span class="pre">role_required</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">role</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/admin.html#role_required"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.admin.role_required" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Wrapper around Flask endpoints, users attempting to use endpoint must be logged in and be superusers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>role</strong> (<em>str</em>) – Role of the user (superuser or else).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A decorator for Flask endpoints.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>decorator</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.admin.role_required_for_post">
 <span class="sig-prename descclassname"><span class="pre">project.admin.</span></span><span class="sig-name descname"><span class="pre">role_required_for_post</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">role</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/admin.html#role_required_for_post"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.admin.role_required_for_post" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Same as role_required(role), but superuser requirement only enforced for POST requests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>role</strong> (<em>str</em>) – Role of the user (superuser or else).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A decorator for Flask endpoints.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>decorator</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.admin.samples_per_distro_manager">
 <span class="sig-prename descclassname"><span class="pre">project.admin.</span></span><span class="sig-name descname"><span class="pre">samples_per_distro_manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/admin.html#samples_per_distro_manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.admin.samples_per_distro_manager" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the list of samples belonging to the distribution (GET), or adds a sample to the distribution (POST)
+:param distribution: Name of the distribution.
+:type distribution: str</p>
+</dd></dl>
 
 </section>
 <section id="module-project.authentication">
 <span id="project-authentication-module"></span><h2>project.authentication module<a class="headerlink" href="#module-project.authentication" title="Link to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="project.authentication.LoginForm">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">project.authentication.</span></span><span class="sig-name descname"><span class="pre">LoginForm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/authentication.html#LoginForm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.authentication.LoginForm" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Form</span></code></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="project.authentication.LoginForm.password">
-<span class="sig-name descname"><span class="pre">password</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;UnboundField(PasswordField,</span> <span class="pre">('Your</span> <span class="pre">password',),</span> <span class="pre">{'validators':</span> <span class="pre">[&lt;wtforms.validators.DataRequired</span> <span class="pre">object&gt;]})&gt;</span></em><a class="headerlink" href="#project.authentication.LoginForm.password" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="project.authentication.LoginForm.submit">
-<span class="sig-name descname"><span class="pre">submit</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;UnboundField(SubmitField,</span> <span class="pre">('Sign</span> <span class="pre">In',),</span> <span class="pre">{})&gt;</span></em><a class="headerlink" href="#project.authentication.LoginForm.submit" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="project.authentication.LoginForm.username">
-<span class="sig-name descname"><span class="pre">username</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;UnboundField(StringField,</span> <span class="pre">('Your</span> <span class="pre">username',),</span> <span class="pre">{'validators':</span> <span class="pre">[&lt;wtforms.validators.DataRequired</span> <span class="pre">object&gt;]})&gt;</span></em><a class="headerlink" href="#project.authentication.LoginForm.username" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<section id="authentication-py">
+<h3>authentication.py<a class="headerlink" href="#authentication-py" title="Link to this heading">¶</a></h3>
+<p>This module provides the functionalities of the authentication system, and endpoints to login/logout, change passwords and verify user information. flask_login is the choice of package to facilitate this.</p>
+<p>Flask endpoints:</p>
+<blockquote>
+<div><dl>
+<dt>/api/login –&gt; login()</dt><dd><blockquote>
+<div><p>Receives username and password and logs in the user. Logged-in users can later be accessed using flask_login’s ‘current_user’ proxy. WARNING: beware non-unique usernames (not handled currently).</p>
+</div></blockquote>
+<dl class="simple">
+<dt>/api/logout –&gt; logout()</dt><dd><p>Logs out the currently authenticated user.</p>
+</dd>
+</dl>
+</dd>
+<dt>/api/user –&gt; get_user_info()</dt><dd><p>Returns information about the logged-in user, including username, organization, email, and role.</p>
+</dd>
+<dt>/api/verify_old_password –&gt; verify_old_password()</dt><dd><p>Verifies the user’s old password, used as part of the password change process.</p>
+</dd>
+<dt>/api/change_password –&gt; change_password()</dt><dd><p>Accepts a new password from the user, updates the user’s password in the database, and confirms
+the change.</p>
+</dd>
+<dt>/api/test –&gt; test_route()</dt><dd><p>A simple test endpoint that returns a message indicating whether the user is authenticated.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Other functions:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>flaskLoginUser (class)</dt><dd><p>Custom user class implementing flask_login’s UserMixin. It represents a user in the system,
+storing the email, organization, and role.</p>
+</dd>
+<dt>load_user(user_id)</dt><dd><p>Callback function for flask_login that loads a user from the database given a user identifier.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">author<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Kevin</p>
+</dd>
+<dt class="field-even">version<span class="colon">:</span></dt>
+<dd class="field-even"><p>0.0.1</p>
+</dd>
+<dt class="field-odd">date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2025-02-21</p>
+</dd>
+</dl>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py" id="project.authentication.change_password">
 <span class="sig-prename descclassname"><span class="pre">project.authentication.</span></span><span class="sig-name descname"><span class="pre">change_password</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/authentication.html#change_password"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.authentication.change_password" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Change the password of the currently authenticated user.</p>
+<p>Expects the new password to be provided in the form data as ‘newPassword’.
+The new password is hashed before storing in the database.</p>
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="project.authentication.flaskLoginUser">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">project.authentication.</span></span><span class="sig-name descname"><span class="pre">flaskLoginUser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">organization</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">role</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'user'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/authentication.html#flaskLoginUser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.authentication.flaskLoginUser" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">UserMixin</span></code></p>
+<p>Custom user class for flask_login.</p>
+<p>Represents a user in the authentication system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email</strong> (<em>str</em>) – The user’s email, used as a unique identifier.</p></li>
+<li><p><strong>organization</strong> (<em>str</em>) – The organization the user belongs to.</p></li>
+<li><p><strong>role</strong> (<em>str</em>) – The user’s role, defaults to “user”. Can be ‘superuser’ for admin privileges.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="project.authentication.flaskLoginUser.is_active">
 <span class="sig-name descname"><span class="pre">is_active</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/authentication.html#flaskLoginUser.is_active"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.authentication.flaskLoginUser.is_active" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Indicates whether the user is active.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Always True for active users.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="project.authentication.flaskLoginUser.is_superuser">
 <span class="sig-name descname"><span class="pre">is_superuser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/authentication.html#flaskLoginUser.is_superuser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.authentication.flaskLoginUser.is_superuser" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Checks if the user has superuser privileges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if the user’s role is ‘superuser’, otherwise False.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.authentication.get_user_info">
 <span class="sig-prename descclassname"><span class="pre">project.authentication.</span></span><span class="sig-name descname"><span class="pre">get_user_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/authentication.html#get_user_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.authentication.get_user_info" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve information about the currently authenticated user.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.authentication.load_user">
 <span class="sig-prename descclassname"><span class="pre">project.authentication.</span></span><span class="sig-name descname"><span class="pre">load_user</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/authentication.html#load_user"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.authentication.load_user" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Load a user from the database given a user identifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>user_id</strong> (<em>str</em>) – The unique identifier of the user (email).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of flaskLoginUser if found, otherwise None.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#project.authentication.flaskLoginUser" title="project.authentication.flaskLoginUser">flaskLoginUser</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.authentication.login">
 <span class="sig-prename descclassname"><span class="pre">project.authentication.</span></span><span class="sig-name descname"><span class="pre">login</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/authentication.html#login"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.authentication.login" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Log in a user using credentials provided in the form data.</p>
+<p>For POST requests, validates the user’s username and password against the database.
+If authentication is successful, logs in the user using flask_login.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.authentication.logout">
 <span class="sig-prename descclassname"><span class="pre">project.authentication.</span></span><span class="sig-name descname"><span class="pre">logout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/authentication.html#logout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.authentication.logout" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Log out the currently authenticated user.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.authentication.test_route">
 <span class="sig-prename descclassname"><span class="pre">project.authentication.</span></span><span class="sig-name descname"><span class="pre">test_route</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/authentication.html#test_route"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.authentication.test_route" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A test endpoint to verify if a user is authenticated.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.authentication.verify_old_password">
 <span class="sig-prename descclassname"><span class="pre">project.authentication.</span></span><span class="sig-name descname"><span class="pre">verify_old_password</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/authentication.html#verify_old_password"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.authentication.verify_old_password" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Verify that the old password provided by the user matches the stored password hash.</p>
+<p>Expects the old password to be sent in the form data as ‘oldPassword’.</p>
+</dd></dl>
 
 </section>
 <section id="module-project.config">
 <span id="project-config-module"></span><h2>project.config module<a class="headerlink" href="#module-project.config" title="Link to this heading">¶</a></h2>
+<section id="config-py">
+<h3>config.py<a class="headerlink" href="#config-py" title="Link to this heading">¶</a></h3>
+<p>This module provides the configuration settings for the application. It defines a
+<cite>Config</cite> class that centralizes configuration variables such as the SQLAlchemy
+database URI, as well as paths for static and media folders.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.config.basedir">
+<span class="sig-prename descclassname"><span class="pre">project.config.</span></span><span class="sig-name descname"><span class="pre">basedir</span></span><a class="headerlink" href="#project.config.basedir" title="Link to this definition">¶</a></dt>
+<dd><p>The absolute path of the directory where this configuration file resides.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">author<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Kevin</p>
+</dd>
+<dt class="field-even">version<span class="colon">:</span></dt>
+<dd class="field-even"><p>0.0.1</p>
+</dd>
+<dt class="field-odd">date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2025-02-21</p>
+</dd>
+</dl>
+</section>
 <dl class="py class">
 <dt class="sig sig-object py" id="project.config.Config">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">project.config.</span></span><span class="sig-name descname"><span class="pre">Config</span></span><a class="reference internal" href="_modules/project/config.html#Config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.config.Config" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="project.config.Config.MEDIA_FOLDER">
-<span class="sig-name descname"><span class="pre">MEDIA_FOLDER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/usr/src/app/project/media'</span></em><a class="headerlink" href="#project.config.Config.MEDIA_FOLDER" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<p>Application configuration class.</p>
+<p>This class defines configuration variables for the application. The values
+are obtained from environment variables with sensible defaults where applicable.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="project.config.Config.SQLALCHEMY_DATABASE_URI">
-<span class="sig-name descname"><span class="pre">SQLALCHEMY_DATABASE_URI</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'postgresql://hello_flask:hello_flask&#64;db:5432/hello_flask_dev'</span></em><a class="headerlink" href="#project.config.Config.SQLALCHEMY_DATABASE_URI" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">SQLALCHEMY_DATABASE_URI</span></span><a class="headerlink" href="#project.config.Config.SQLALCHEMY_DATABASE_URI" title="Link to this definition">¶</a></dt>
+<dd><p>The database URI used by SQLAlchemy.
+Retrieved from the “DATABASE_URL” environment variable, or defaults to “sqlite://”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="project.config.Config.SQLALCHEMY_TRACK_MODIFICATIONS">
-<span class="sig-name descname"><span class="pre">SQLALCHEMY_TRACK_MODIFICATIONS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#project.config.Config.SQLALCHEMY_TRACK_MODIFICATIONS" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">SQLALCHEMY_TRACK_MODIFICATIONS</span></span><a class="headerlink" href="#project.config.Config.SQLALCHEMY_TRACK_MODIFICATIONS" title="Link to this definition">¶</a></dt>
+<dd><p>Flag to disable modification tracking in SQLAlchemy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="project.config.Config.STATIC_FOLDER">
-<span class="sig-name descname"><span class="pre">STATIC_FOLDER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/usr/src/app/project/static'</span></em><a class="headerlink" href="#project.config.Config.STATIC_FOLDER" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">STATIC_FOLDER</span></span><a class="headerlink" href="#project.config.Config.STATIC_FOLDER" title="Link to this definition">¶</a></dt>
+<dd><p>Path to the static files directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.config.Config.MEDIA_FOLDER">
+<span class="sig-name descname"><span class="pre">MEDIA_FOLDER</span></span><a class="headerlink" href="#project.config.Config.MEDIA_FOLDER" title="Link to this definition">¶</a></dt>
+<dd><p>Path to the media files directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">MEDIA_FOLDER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/usr/src/app/project/media'</span></em><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">SQLALCHEMY_DATABASE_URI</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'postgresql://hello_flask:hello_flask&#64;db:5432/hello_flask_dev'</span></em><a class="headerlink" href="#id1" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">SQLALCHEMY_TRACK_MODIFICATIONS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#id2" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">STATIC_FOLDER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/usr/src/app/project/static'</span></em><a class="headerlink" href="#id3" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -181,182 +419,623 @@
 </section>
 <section id="module-project.data">
 <span id="project-data-module"></span><h2>project.data module<a class="headerlink" href="#module-project.data" title="Link to this heading">¶</a></h2>
+<section id="data-py">
+<h3>data.py<a class="headerlink" href="#data-py" title="Link to this heading">¶</a></h3>
+<p>This module provides endpoints for managing distribution data and sample reports.</p>
+<dl class="simple">
+<dt>It includes endpoints to:</dt><dd><p>Fetch distributions associated with the current user’s organization.
+Retrieve sample details and aggregated metrics for a distribution.
+Proxy static genome files (FASTA, FAI, GZI, GFF3) for specified references.
+Serve consensus BAM, BAI, and BigWig files for individual samples.
+Generate and download DOCX reports based on lab reports.</p>
+</dd>
+</dl>
+<p>WARNING: the static files are consumed by JBrowse2, which cant send credentials hence the
+endpoints are available to everyone and pose a safety risk. Must be revamped.</p>
+<dl class="field-list simple">
+<dt class="field-odd">author<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Kevin</p>
+</dd>
+<dt class="field-even">version<span class="colon">:</span></dt>
+<dd class="field-even"><p>0.0.1</p>
+</dd>
+<dt class="field-odd">date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2025-02-21</p>
+</dd>
+</dl>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.distribution_manager">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">distribution_manager</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#distribution_manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.distribution_manager" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Fetch distributions associated with the current user’s organization.</p>
+<p>For GET requests, returns a JSON object with a list of distribution names
+for which the user’s organization is registered.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>JSON object with key “distributions” and a list of distribution names.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.download_docx">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">download_docx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#download_docx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.download_docx" title="Link to this definition">¶</a></dt>
-<dd><p>Route for generating the DOCX report.</p>
+<dd><p>Generate and send a DOCX report for a specified distribution.</p>
+<p>Processes lab reports from the distribution’s data folder to generate a DOCX report,
+saves it temporarily, and returns the file as an attachment. Report is rendered differently,
+depending on user’s privileges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>distribution</strong> (<em>str</em>) – The name of the distribution.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The generated DOCX report file.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>flask.Response</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.get_distribution_data">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">get_distribution_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#get_distribution_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.get_distribution_data" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Process and return aggregated report data for a given distribution.</p>
+<p>Loads a sample-to-reference mapping from ‘samples.txt’, processes lab reports,
+aggregates metrics for each sample, and returns the distribution data as JSON.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>distribution</strong> (<em>str</em>) – The name of the distribution.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>JSON object containing aggregated metrics per sample.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.get_sample_bai">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">get_sample_bai</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_sample</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">participant</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#get_sample_bai"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.get_sample_bai" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Serve the BAI index file for a consensus BAM file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distribution</strong> (<em>str</em>) – Name of the distribution.</p></li>
+<li><p><strong>selected_sample</strong> (<em>str</em>) – Name of the sample.</p></li>
+<li><p><strong>participant</strong> (<em>str</em>) – Participant’s identifier (typically the lab name).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The BAI file as an attachment.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.get_sample_bam">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">get_sample_bam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_sample</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">participant</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#get_sample_bam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.get_sample_bam" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Serve the consensus BAM file for a given sample and participant within a distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distribution</strong> (<em>str</em>) – Name of the distribution.</p></li>
+<li><p><strong>selected_sample</strong> (<em>str</em>) – Name of the sample.</p></li>
+<li><p><strong>participant</strong> (<em>str</em>) – Participant’s identifier (typically the lab name).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The consensus BAM file as an attachment.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.get_sample_bigwig">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">get_sample_bigwig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_sample</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">participant</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#get_sample_bigwig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.get_sample_bigwig" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Serve the BigWig file for a given sample and participant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distribution</strong> (<em>str</em>) – Name of the distribution.</p></li>
+<li><p><strong>selected_sample</strong> (<em>str</em>) – Name of the sample.</p></li>
+<li><p><strong>participant</strong> (<em>str</em>) – Participant’s identifier (typically the lab name).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The BigWig file as an attachment.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.get_sample_details">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">get_sample_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_sample</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#get_sample_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.get_sample_details" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve detailed report data and aggregated metrics for a specific sample within a distribution.</p>
+<p>Processes lab reports from the distribution’s data folder, aggregates metrics across participants,
+and returns both individual and aggregated data. For superusers, all data is returned;
+otherwise, only data relevant to the user’s organization is provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distribution</strong> (<em>str</em>) – Name of the distribution.</p></li>
+<li><p><strong>selected_sample</strong> (<em>str</em>) – Name of the sample.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A JSON object with table data, file URLs (BAM/BigWig), and aggregated sequencing metrics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.proxy_fai1">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">proxy_fai1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#proxy_fai1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.proxy_fai1" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Serve the FAI index file for reference EPI_ISL_412866.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>FAI file from the static genomes directory.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.proxy_fai2">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">proxy_fai2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#proxy_fai2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.proxy_fai2" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Serve the FAI index file for reference EPI_ISL_1653999.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>FAI file.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.proxy_fasta1">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">proxy_fasta1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#proxy_fasta1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.proxy_fasta1" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Serve the FASTA file for reference EPI_ISL_412866.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>FASTA file from the static genomes directory.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.proxy_fasta2">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">proxy_fasta2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#proxy_fasta2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.proxy_fasta2" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Serve the FASTA file for reference EPI_ISL_1653999.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>FASTA file.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.proxy_gff1">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">proxy_gff1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#proxy_gff1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.proxy_gff1" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Serve the GFF3 file for reference EPI_ISL_412866.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>GFF3 file.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.proxy_gff2">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">proxy_gff2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#proxy_gff2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.proxy_gff2" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Serve the GFF3 file for reference EPI_ISL_1653999.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>GFF3 file.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.proxy_gzi1">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">proxy_gzi1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#proxy_gzi1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.proxy_gzi1" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Serve the gzipped FASTA file for reference EPI_ISL_412866.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Gzipped FASTA file.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.proxy_gzi2">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">proxy_gzi2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#proxy_gzi2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.proxy_gzi2" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Serve the gzipped FASTA file for reference EPI_ISL_1653999.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Gzipped FASTA file.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.data.samples_per_distro_manager">
 <span class="sig-prename descclassname"><span class="pre">project.data.</span></span><span class="sig-name descname"><span class="pre">samples_per_distro_manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/data.html#samples_per_distro_manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.data.samples_per_distro_manager" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve sample information for a specified distribution.</p>
+<p>For GET requests, returns a JSON object containing the distribution name
+and the list of samples registered to it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>distribution</strong> (<em>str</em>) – The name of the distribution.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>JSON response with distribution and sample data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 <section id="module-project.notifications">
 <span id="project-notifications-module"></span><h2>project.notifications module<a class="headerlink" href="#module-project.notifications" title="Link to this heading">¶</a></h2>
+<section id="notifications-py">
+<h3>notifications.py<a class="headerlink" href="#notifications-py" title="Link to this heading">¶</a></h3>
+<p>This module handles notifications via Flask endpoints and WebSocket communications.
+These functions are mostly used by the frontend’s Toolbar.js component.
+It provides endpoints for retrieving and dismissing notifications and sets up a
+Redis-based background listener to publish messages to connected WebSocket clients.
+WebSocket events are managed via Flask-SocketIO.</p>
+<p>Flask endpoints:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>/api/notifications –&gt; get_notifications()</dt><dd><p>Retrieves both dismissed and undismissed notifications for the current user.</p>
+</dd>
+<dt>/api/notifications/dismiss –&gt; dismiss_notification()</dt><dd><p>Marks a specific notification as dismissed for the current user.</p>
+</dd>
+<dt>/hello –&gt; publish_hello()</dt><dd><p>Publishes a “Hello!” message to the Redis “chat” channel.</p>
+</dd>
+<dt>/pub –&gt; publish_pub()</dt><dd><p>Publishes a “Pub!” message to the Redis “chat” channel.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>WebSocket events:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>connect –&gt; handle_connect()</dt><dd><p>Registers a new WebSocket connection, sends initial notifications, and a confirmation message.</p>
+</dd>
+<dt>disconnect –&gt; handle_disconnect()</dt><dd><p>Removes a disconnected client from the list of connected clients.</p>
+</dd>
+<dt>start_redis_listener –&gt; start_listener()</dt><dd><p>Starts a background task to listen to Redis for messages.</p>
+</dd>
+<dt>my event –&gt; test_message()</dt><dd><p>A test event that echoes a received message back to the client.</p>
+</dd>
+<dt>my broadcast event –&gt; test_broadcast_message()</dt><dd><p>A test event that broadcasts a received message to all connected clients.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Other functions:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>save_notification(email, message)</dt><dd><p>Saves a new notification to the database and returns its ID.</p>
+</dd>
+<dt>publish_message_to_clients(channel, data)</dt><dd><p>Processes and emits a message to all connected WebSocket clients.</p>
+</dd>
+<dt>redis_listener(r)</dt><dd><p>Listens to a Redis channel (“chat”) for new messages and publishes them via WebSocket.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">author<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Kevin</p>
+</dd>
+<dt class="field-even">version<span class="colon">:</span></dt>
+<dd class="field-even"><p>0.0.1</p>
+</dd>
+<dt class="field-odd">date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2025-02-21</p>
+</dd>
+</dl>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py" id="project.notifications.dismiss_notification">
 <span class="sig-prename descclassname"><span class="pre">project.notifications.</span></span><span class="sig-name descname"><span class="pre">dismiss_notification</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/notifications.html#dismiss_notification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.notifications.dismiss_notification" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Mark a notification as dismissed for the current user.</p>
+<p>Expects a notification ID in the form data. If the notification is found and belongs to the current user,
+marks it as dismissed and commits the change to the database.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.notifications.get_notifications">
 <span class="sig-prename descclassname"><span class="pre">project.notifications.</span></span><span class="sig-name descname"><span class="pre">get_notifications</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/notifications.html#get_notifications"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.notifications.get_notifications" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve notifications for the current user.</p>
+<p>Queries the database for all notifications associated with the logged-in user,
+then separates them into dismissed and undismissed notifications. Returns the results as JSON.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A JSON response with keys ‘undismissed’ and ‘dismissed’, each containing lists of notifications.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.notifications.handle_connect">
 <span class="sig-prename descclassname"><span class="pre">project.notifications.</span></span><span class="sig-name descname"><span class="pre">handle_connect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/notifications.html#handle_connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.notifications.handle_connect" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Handle a new WebSocket connection.</p>
+<p>Extracts the client’s role and email from query parameters, stores them in the connected_clients dictionary,
+retrieves the user’s undismissed notifications from the database, and sends both a connection confirmation and
+the notifications to the client.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.notifications.handle_disconnect">
 <span class="sig-prename descclassname"><span class="pre">project.notifications.</span></span><span class="sig-name descname"><span class="pre">handle_disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/notifications.html#handle_disconnect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.notifications.handle_disconnect" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Handle the disconnection of a WebSocket client.</p>
+<p>Removes the client from the connected_clients dictionary and logs the disconnection.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.notifications.publish_hello">
 <span class="sig-prename descclassname"><span class="pre">project.notifications.</span></span><span class="sig-name descname"><span class="pre">publish_hello</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/notifications.html#publish_hello"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.notifications.publish_hello" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Publish a “Hello!” message to the Redis “chat” channel.</p>
+<p>Retrieves the Redis URL from the app configuration, creates a connection,
+publishes a “Hello!” message to the “chat” channel, and returns a JSON response.
+Meant for testing purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A JSON response confirming that the “Hello!” message was published.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.notifications.publish_message_to_clients">
 <span class="sig-prename descclassname"><span class="pre">project.notifications.</span></span><span class="sig-name descname"><span class="pre">publish_message_to_clients</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/notifications.html#publish_message_to_clients"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.notifications.publish_message_to_clients" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Publish a processed message to all connected WebSocket clients.</p>
+<p>For each connected client, the function determines an appropriate message based on the client’s role
+and the provided raw data, saves the notification in the database, and emits the message (along with its ID
+and timestamp) to that client.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel</strong> (<em>str</em>) – The channel name associated with the message.</p></li>
+<li><p><strong>data</strong> (<em>str</em>) – The raw message data received (typically from Redis).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.notifications.publish_pub">
 <span class="sig-prename descclassname"><span class="pre">project.notifications.</span></span><span class="sig-name descname"><span class="pre">publish_pub</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/notifications.html#publish_pub"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.notifications.publish_pub" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Publish a “Pub!” message to the Redis “chat” channel.</p>
+<p>Retrieves the Redis URL from the app configuration, creates a connection,
+publishes a “Pub!” message to the “chat” channel, and returns a JSON response.
+Meant for testing purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A JSON response confirming that the “Pub!” message was published.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.notifications.redis_listener">
 <span class="sig-prename descclassname"><span class="pre">project.notifications.</span></span><span class="sig-name descname"><span class="pre">redis_listener</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/notifications.html#redis_listener"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.notifications.redis_listener" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Listen for messages on the Redis “chat” channel and publish them to connected clients.</p>
+<p>Subscribes to the “chat” channel on the provided Redis connection. For each message received,
+decodes the message (if necessary) and calls publish_message_to_clients() to emit the message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>r</strong> (<em>redis.Redis</em>) – A Redis connection object.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.notifications.save_notification">
 <span class="sig-prename descclassname"><span class="pre">project.notifications.</span></span><span class="sig-name descname"><span class="pre">save_notification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/notifications.html#save_notification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.notifications.save_notification" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Save a new notification to the database.</p>
+<p>Creates a Notification object with the specified email and message, marks it as not dismissed,
+commits the change, and returns the notification’s ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email</strong> (<em>str</em>) – The email address of the user for whom the notification is saved.</p></li>
+<li><p><strong>message</strong> (<em>str</em>) – The notification message.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The ID of the newly created notification.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.notifications.start_listener">
 <span class="sig-prename descclassname"><span class="pre">project.notifications.</span></span><span class="sig-name descname"><span class="pre">start_listener</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/notifications.html#start_listener"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.notifications.start_listener" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Start the background Redis listener task if it is not already running.</p>
+<p>Checks if the listener has been started; if not, retrieves the Redis URL from the app configuration,
+creates a Redis connection, and starts the background task that listens for messages on the “chat” channel.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.notifications.test_broadcast_message">
 <span class="sig-prename descclassname"><span class="pre">project.notifications.</span></span><span class="sig-name descname"><span class="pre">test_broadcast_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/notifications.html#test_broadcast_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.notifications.test_broadcast_message" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Handle a broadcast event by emitting the received message to all connected clients.</p>
+<p>Logs the message and broadcasts it under the ‘my response’ event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>message</strong> (<em>dict</em>) – A dictionary containing the data sent by the client.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.notifications.test_message">
 <span class="sig-prename descclassname"><span class="pre">project.notifications.</span></span><span class="sig-name descname"><span class="pre">test_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/notifications.html#test_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.notifications.test_message" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Handle a test event by echoing the received message back to the client.</p>
+<p>Logs the received message and emits it back under the ‘my response’ event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>message</strong> (<em>dict</em>) – A dictionary containing the data sent by the client.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 <section id="module-project.upload">
 <span id="project-upload-module"></span><h2>project.upload module<a class="headerlink" href="#module-project.upload" title="Link to this heading">¶</a></h2>
+<section id="upload-py">
+<h3>upload.py<a class="headerlink" href="#upload-py" title="Link to this heading">¶</a></h3>
+<p>This module provides the file upload functionality and asynchronous processing
+for the application (frontend Upload.js component). Users can upload sequence files (FASTA, BAM, FASTQ) for analysis.
+It includes validation logic for various file types and enqueues a task to process
+the files using a Nextflow workflow. Uploaded files are stored in a folder hierarchy
+based on distribution, organization, and sample, and notifications are sent via Redis.</p>
+<dl class="simple">
+<dt>Flask endpoint:</dt><dd><dl class="simple">
+<dt>/api/upload –&gt; upload_files()</dt><dd><p>Accepts file uploads along with form data for sample, distribution, organization,
+and sequencing type. Validates and saves files, enqueues a Nextflow workflow, and
+creates a new Submission record.</p>
+</dd>
+</dl>
+</dd>
+<dt>Task function:</dt><dd><dl class="simple">
+<dt>launch_nextflow(upload_dir, workflow_name=”main.nf”, params={})</dt><dd><p>Executes a Nextflow workflow on the uploaded files and publishes a completion message
+to the Redis “chat” channel.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">author<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Kevin</p>
+</dd>
+<dt class="field-even">version<span class="colon">:</span></dt>
+<dd class="field-even"><p>0.0.1</p>
+</dd>
+<dt class="field-odd">date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2025-02-21</p>
+</dd>
+</dl>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py" id="project.upload.launch_nextflow">
 <span class="sig-prename descclassname"><span class="pre">project.upload.</span></span><span class="sig-name descname"><span class="pre">launch_nextflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">upload_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workflow_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'main.nf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/upload.html#launch_nextflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.upload.launch_nextflow" title="Link to this definition">¶</a></dt>
-<dd><p>Run the Nextflow workflow.</p>
+<dd><p>Run the Nextflow workflow on the uploaded files.</p>
+<p>Constructs and executes a command to launch the Nextflow workflow. It logs the command,
+captures the output, and publishes a message to the Redis “chat” channel when the workflow
+is complete. Currently, only completion is published, not the specific status (success or fail).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>upload_dir</strong> (<em>str</em>) – The directory containing the uploaded files.</p></li>
+<li><p><strong>workflow_name</strong> (<em>str</em>) – The name of the Nextflow workflow file to run (default “main.nf”).</p></li>
+<li><p><strong>params</strong> (<em>dict</em>) – A dictionary of parameters to pass to Nextflow (e.g., reads, samples_txt).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary with the status, stdout, and stderr of the executed command.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.upload.upload_files">
 <span class="sig-prename descclassname"><span class="pre">project.upload.</span></span><span class="sig-name descname"><span class="pre">upload_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/upload.html#upload_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.upload.upload_files" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Handle file uploads for sequence analysis.</p>
+<p>This endpoint validates uploaded files (FASTA, BAM, FASTQ), saves them into a specific folder
+structure based on distribution, organization, and sample, and enqueues a task to process the files
+using a Nextflow workflow. It also copies a required genomeLength.txt file to the upload folder,
+publishes a message to a Redis channel, and creates a new Submission record in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>JSON response indicating success, with details about uploaded files and task ID.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Response</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 <section id="module-project">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-project" title="Link to this heading">¶</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="project.create_task">
-<span class="sig-prename descclassname"><span class="pre">project.</span></span><span class="sig-name descname"><span class="pre">create_task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#create_task"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.create_task" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="project.get_status">
-<span class="sig-prename descclassname"><span class="pre">project.</span></span><span class="sig-name descname"><span class="pre">get_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#get_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.get_status" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="project.run_task">
-<span class="sig-prename descclassname"><span class="pre">project.</span></span><span class="sig-name descname"><span class="pre">run_task</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#run_task"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.run_task" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<section id="init-py">
+<h3>__init__.py<a class="headerlink" href="#init-py" title="Link to this heading">¶</a></h3>
+<p>This module initialises the app, registers module blueprints and sets app configs, and initiates the redis, login, socket, database and mail listeners and managers.</p>
+<dl class="simple">
+<dt>Functions:</dt><dd><p>None</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">author<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Kevin</p>
+</dd>
+<dt class="field-even">version<span class="colon">:</span></dt>
+<dd class="field-even"><p>0.0.1</p>
+</dd>
+<dt class="field-odd">date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2025-02-20</p>
+</dd>
+</dl>
+</section>
 </section>
 </section>
 
@@ -388,7 +1067,8 @@
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">project</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="manage.html">Backend management</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Backend endpoints</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">project package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-project.admin">project.admin module</a></li>
@@ -402,16 +1082,15 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html#project-utils">project.utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html#frontend-documentation">Frontend Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html#backend-utils">Backend utils</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-  <li><a href="modules.html">project</a><ul>
-      <li>Previous: <a href="modules.html" title="previous chapter">project</a></li>
+  <li><a href="modules.html">Backend endpoints</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">Backend endpoints</a></li>
   </ul></li>
   </ul></li>
 </ul>

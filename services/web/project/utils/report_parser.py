@@ -1,12 +1,52 @@
+"""
+report_parser.py
+================
+
+This module provides functions to parse output files from Nextclade and Qualimap,
+as well as to read genome length from a file and process reports for multiple labs
+and samples. The parsed metrics include coverage, missing bases, substitutions,
+deletions, insertions, frame shifts, similarity, clade information, and subtype determination.
+
+Ideally, in the future these functions will populate the database with the parsed info in order to avoid redundant parsing, which would improve backend efficiency.
+This is a TO DO, especially if the 'number of participants per sample' or 'samples per distribution' increases.
+
+Functions:
+    parse_nextclade_file(nextclade_file_path, nextclade_alternative_file_path, genomeLength)
+        Parses Nextclade output files to extract quality metrics and determine the sample subtype.
+    parse_qualimap(genome_results_path, coverage_histogram_path)
+        Parses Qualimap output files to extract coverage metrics and uniformity.
+    read_genome_length(sample_path)
+        Reads and returns the genome length from a 'genomeLength.txt' file in the given sample directory.
+    process_all_reports(base_dir)
+        Processes report files from all labs and samples in a base directory and aggregates metrics.
+
+:author: Kevin
+:version: 0.0.1
+:date: 2025-02-21
+"""
 import numpy as np
 import os
 import csv
 
-import os
-import csv
-
 def parse_nextclade_file(nextclade_file_path, nextclade_alternative_file_path, genomeLength):
-    """Parses Nextclade output and calculates uniformity based on coverage and mutations."""
+    """
+    Parse Nextclade output files to extract quality metrics and determine sample subtype.
+
+    Reads the main Nextclade output file and an optional alternative file (if provided), 
+    compares the overall quality scores, and calculates metrics such as coverage, missing bases,
+    substitutions, deletions, insertions, frame shifts, and similarity percentage. The subtype 
+    is determined by comparing the quality score with the alternative score (if available).
+
+    :param nextclade_file_path: Path to the primary Nextclade output file.
+    :type nextclade_file_path: str
+    :param nextclade_alternative_file_path: Path to an alternative Nextclade output file (optional).
+    :type nextclade_alternative_file_path: str
+    :param genomeLength: The total genome length used for calculating similarity.
+    :type genomeLength: int
+    :return: A dictionary containing metrics including 'seqName', 'coverage', 'totalMissing', 'Ns',
+             'substitutions', 'deletions', 'insertions', 'frameShifts', 'similarity', 'clade', 'G_clade', and 'subtype'.
+    :rtype: dict
+    """
     
     if not os.path.isfile(nextclade_file_path):
         print(f"Warning: Nextclade file missing: {nextclade_file_path}")
@@ -90,7 +130,21 @@ def parse_nextclade_file(nextclade_file_path, nextclade_alternative_file_path, g
         }
 
 def parse_qualimap(genome_results_path, coverage_histogram_path):
-    """ Parses Qualimap genome_results.txt and coverage histogram file. """
+    """
+    Parse Qualimap output files to extract coverage and uniformity metrics.
+
+    Reads the 'genome_results.txt' file to extract metrics such as the percentage of bases
+    covered at 20X, mean coverage depth, and the standard deviation of coverage depth. Then it
+    processes a coverage histogram file to compute the median read depth and the uniformity percentage.
+
+    :param genome_results_path: Path to the Qualimap genome_results.txt file.
+    :type genome_results_path: str
+    :param coverage_histogram_path: Path to the Qualimap coverage histogram file.
+    :type coverage_histogram_path: str
+    :return: A dictionary with keys "Coverage at 20X (%)", "Mean coverage depth",
+             "Standard deviation of coverage depth", "Read depth (Median)", and "Uniformity (%)".
+    :rtype: dict
+    """
 
     if not os.path.isfile(genome_results_path) or not os.path.isfile(coverage_histogram_path):
         print(f"Warning: Missing Qualimap files ({genome_results_path} or {coverage_histogram_path})")
@@ -136,7 +190,14 @@ def parse_qualimap(genome_results_path, coverage_histogram_path):
     return metrics
 
 def read_genome_length(sample_path):
-    """ Reads genome length from genomeLength.txt, handling missing file cases. """
+    """
+    Read the genome length from a 'genomeLength.txt' file in the given sample directory.
+
+    :param sample_path: The directory path where 'genomeLength.txt' is expected to be found.
+    :type sample_path: str
+    :return: The genome length as an integer if the file is found and correctly formatted, otherwise None.
+    :rtype: int or None
+    """
     genome_length_file = os.path.join(sample_path, "genomeLength.txt")
     if os.path.isfile(genome_length_file):
         try:
@@ -150,7 +211,19 @@ def read_genome_length(sample_path):
         return None
 
 def process_all_reports(base_dir):
-    """ Processes all samples in the given directory and extracts relevant metrics. """
+    """
+    Process all lab and sample reports in the specified base directory and extract metrics.
+
+    Iterates through each lab folder in the base directory, then through each sample folder,
+    parsing Qualimap and Nextclade output files. Aggregates paths to FASTA, BAM, and BAI files,
+    and updates the metrics dictionary with the parsed data.
+
+    :param base_dir: The root directory containing lab-specific subdirectories with sample reports.
+    :type base_dir: str
+    :return: A nested dictionary where each key is a lab name mapping to sample dictionaries with
+             their corresponding metrics.
+    :rtype: dict
+    """
 
     report_data = {}
 

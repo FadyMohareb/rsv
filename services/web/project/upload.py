@@ -1,3 +1,28 @@
+"""
+upload.py
+=========
+
+This module provides the file upload functionality and asynchronous processing
+for the application (frontend Upload.js component). Users can upload sequence files (FASTA, BAM, FASTQ) for analysis.
+It includes validation logic for various file types and enqueues a task to process
+the files using a Nextflow workflow. Uploaded files are stored in a folder hierarchy
+based on distribution, organization, and sample, and notifications are sent via Redis.
+
+Flask endpoint:
+    /api/upload --> upload_files()
+        Accepts file uploads along with form data for sample, distribution, organization,
+        and sequencing type. Validates and saves files, enqueues a Nextflow workflow, and
+        creates a new Submission record.
+
+Task function:
+    launch_nextflow(upload_dir, workflow_name="main.nf", params={})
+        Executes a Nextflow workflow on the uploaded files and publishes a completion message
+        to the Redis "chat" channel.
+
+:author: Kevin
+:version: 0.0.1
+:date: 2025-02-21
+"""
 from flask import Blueprint, jsonify, request, current_app
 from flask_login import current_user, login_required
 from project.utils.sql_models import db, User, Distribution, Organization, Submission
@@ -14,9 +39,26 @@ website_name = os.environ.get("WEBSITE_NAME", "default_website_name")
 @upload_bp.route("/api/upload", methods=["POST"])
 @login_required  # Ensure the user is authenticated
 def upload_files():
-    #######################this needs a lot of validation logic, and tasks sendings
+    """
+    Handle file uploads for sequence analysis.
+
+    This endpoint validates uploaded files (FASTA, BAM, FASTQ), saves them into a specific folder
+    structure based on distribution, organization, and sample, and enqueues a task to process the files
+    using a Nextflow workflow. It also copies a required genomeLength.txt file to the upload folder,
+    publishes a message to a Redis channel, and creates a new Submission record in the database.
+
+    :return: JSON response indicating success, with details about uploaded files and task ID.
+    :rtype: flask.Response
+    """
     def is_gzip_file(file_path):
-        """Check if a file is gzip-compressed."""
+        """
+        Check if a file is gzip-compressed.
+
+        :param file_path: Path to the file.
+        :type file_path: str
+        :return: True if the file is gzip-compressed, otherwise False.
+        :rtype: bool
+        """
         try:
             with gzip.open(file_path, 'rb') as test_gzip:
                 test_gzip.read(1)
@@ -25,13 +67,29 @@ def upload_files():
             return False
         
     def read_first_lines(file_path, num_lines=4):
-        """Read first lines of a file, handling gzip if necessary."""
+        """
+        Read the first lines of a file, handling gzip files if necessary.
+
+        :param file_path: Path to the file.
+        :type file_path: str
+        :param num_lines: Number of lines to read (default is 4).
+        :type num_lines: int
+        :return: A list of strings, each corresponding to a line in the file.
+        :rtype: list[str]
+        """
         open_func = gzip.open if is_gzip_file(file_path) else open
         with open_func(file_path, 'rt') as f:  # Read as text
             return [f.readline().strip() for _ in range(num_lines)]
         
     def is_valid_fasta(file_path):
-        """Check if the file is a valid FASTA."""
+        """
+        Check if the file is a valid FASTA file by inspecting the first line.
+
+        :param file_path: Path to the FASTA file.
+        :type file_path: str
+        :return: True if the file starts with '>', otherwise False.
+        :rtype: bool
+        """
         try:
             first_line = read_first_lines(file_path, 1)[0]
             return first_line.startswith(">")
@@ -39,7 +97,14 @@ def upload_files():
             return False
 
     def is_valid_bam(file_path):
-        """Check if the file is a valid BAM using pysam."""
+        """
+        Check if the file is a valid BAM file using pysam.
+
+        :param file_path: Path to the BAM file.
+        :type file_path: str
+        :return: True if the file can be opened by pysam, otherwise False.
+        :rtype: bool
+        """
         try:
             with pysam.AlignmentFile(file_path, "rb") as _:
                 return True
@@ -47,7 +112,16 @@ def upload_files():
             return False
 
     def is_valid_fastq(file_path):
-        """Check if the file follows the FASTQ format."""
+        """
+        Check if the file follows the FASTQ format.
+
+        Reads the first four lines of the file and validates the expected format.
+
+        :param file_path: Path to the FASTQ file.
+        :type file_path: str
+        :return: True if the file is a valid FASTQ, otherwise False.
+        :rtype: bool
+        """
         try:
             lines = read_first_lines(file_path, 4)
             return (lines[0].startswith("@") and
@@ -69,7 +143,7 @@ def upload_files():
     bam_file = request.files.get('bam')
     fq1 = request.files.get('fq1')
     fq2 = request.files.get('fq2')
-    description = request.form.get('description', '')  # Optional description
+    description = request.form.get('description', '')  # Not being processed
     sample = request.form['sample']
     distribution = request.form['distribution']
     organization = request.form['organization']
@@ -167,7 +241,6 @@ def upload_files():
     r.publish("chat",f"[UPLOAD]{organization}'s upload of sample {sample} from distribution {distribution} has been completed.")
 
     # Create and commit a new Submission record
-    # Assuming Organization and Distribution are identified by their unique 'name'
     org_obj = Organization.query.filter_by(name=organization).first()
     dist_obj = Distribution.query.filter_by(name=distribution).first()
     user_obj = User.query.filter_by(email=current_user.id).first()
@@ -193,7 +266,22 @@ def upload_files():
 
 # Task function for launching Nextflow
 def launch_nextflow(upload_dir, workflow_name="main.nf", params={}):
-    """Run the Nextflow workflow."""
+    """
+    Run the Nextflow workflow on the uploaded files.
+
+    Constructs and executes a command to launch the Nextflow workflow. It logs the command,
+    captures the output, and publishes a message to the Redis "chat" channel when the workflow
+    is complete. Currently, only completion is published, not the specific status (success or fail).
+
+    :param upload_dir: The directory containing the uploaded files.
+    :type upload_dir: str
+    :param workflow_name: The name of the Nextflow workflow file to run (default "main.nf").
+    :type workflow_name: str
+    :param params: A dictionary of parameters to pass to Nextflow (e.g., reads, samples_txt).
+    :type params: dict
+    :return: A dictionary with the status, stdout, and stderr of the executed command.
+    :rtype: dict
+    """
     try:
         # Construct the command with escaped spaces
         cmd = " ".join([

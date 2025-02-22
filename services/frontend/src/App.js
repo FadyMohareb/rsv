@@ -1,3 +1,9 @@
+/**
+ * @module App
+ * 
+ * @description Main application component, React-based. Manages user authentication, routing, and layout rendering.
+ */
+
 import React, { Component } from 'react';
 import './App.css';
 import DataView from './components/DataView.js';
@@ -11,7 +17,7 @@ import Toolbar from './components/Toolbar';  // Import Toolbar component
 
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 
-// Register all Community features
+// Register all Community features for AG grid table
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const jbrowseStyle = {
@@ -22,12 +28,14 @@ const jbrowseStyle = {
 };
 
 /**
- * Main application component.
- * Manages user authentication, routing, and layout rendering.
+ * Main application component that handles authentication and routing.
+ *
+ * @extends Component
  */
 class App extends Component {
   /**
-   * Initializes the App component and sets initial state.
+   * Initializes the App component and sets the initial state.
+   *
    * @param {Object} props - Component properties.
    */
   constructor(props) {
@@ -158,6 +166,11 @@ class App extends Component {
       console.error("Error during logout:", error);
     }
   }
+    /**
+   * Handles user password change by verifying the old password and updating to a new password.
+   * @param {Event} event - The form submit event.
+   * @async
+   */
   async handlePasswordChange(event) {
     event.preventDefault();
     const { oldPassword, newPassword, confirmPassword } = this.state;
@@ -214,6 +227,7 @@ class App extends Component {
 
   /**
    * Renders the login form when the user is not authenticated.
+   * @returns {JSX.Element} The login form element.
    */
   renderLoginForm() {
     const { username, password, loginError } = this.state;
@@ -261,6 +275,10 @@ class App extends Component {
       </div>
     );
   }
+    /**
+   * Renders the password change form.
+   * @returns {JSX.Element} The password change form element.
+   */
   renderPasswordChange() {
     const { oldPassword, newPassword, confirmPassword, passwordError, passwordSuccess } = this.state;
 
@@ -316,6 +334,7 @@ class App extends Component {
 
   /**
    * Renders the main application when the user is logged in.
+   * @returns {JSX.Element} The main application layout with routing.
    */
   renderApp() {
     const { role, email, windowWidth } = this.state;
@@ -371,7 +390,10 @@ class App extends Component {
     );
   }
   /**
-   * Main render function.
+   * Main render method.
+   * Renders the application or login form based on the user's authentication status
+   * and the window width.
+   * @returns {JSX.Element} The rendered component.
    */
   render() {
     const { loggedIn, windowWidth, minWidth } = this.state;

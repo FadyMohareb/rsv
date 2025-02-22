@@ -1,3 +1,23 @@
+"""
+data.py
+=======
+
+This module provides endpoints for managing distribution data and sample reports.
+
+It includes endpoints to:
+    Fetch distributions associated with the current user's organization.
+    Retrieve sample details and aggregated metrics for a distribution.
+    Proxy static genome files (FASTA, FAI, GZI, GFF3) for specified references.
+    Serve consensus BAM, BAI, and BigWig files for individual samples.
+    Generate and download DOCX reports based on lab reports.
+
+WARNING: the static files are consumed by JBrowse2, which cant send credentials hence the 
+endpoints are available to everyone and pose a safety risk. Must be revamped.
+
+:author: Kevin
+:version: 0.0.1
+:date: 2025-02-21
+"""
 from flask import Blueprint, jsonify, request, current_app, send_file
 from flask_login import current_user, login_required
 from project.utils.sql_models import Distribution, Organization, Submission
@@ -13,6 +33,15 @@ subdirectory_name = os.environ.get("SUBDIRECTORY_NAME", "default_subdirectory_na
 @data_bp.route("/api/distribution_fetch", methods=["GET", "POST"], strict_slashes=False)
 @login_required
 def distribution_manager():
+    """
+    Fetch distributions associated with the current user's organization.
+
+    For GET requests, returns a JSON object with a list of distribution names
+    for which the user's organization is registered.
+
+    :return: JSON object with key "distributions" and a list of distribution names.
+    :rtype: flask.Response
+    """
     if request.method == "GET":
         # Fetch all distributions from the database
         distributions = Distribution.query.filter(Distribution.organizations.any(name=current_user.organization)).all()
@@ -24,6 +53,17 @@ def distribution_manager():
 @data_bp.route("/api/distributions/<distribution>/samples", methods=["GET", "POST"], strict_slashes=False)
 @login_required
 def samples_per_distro_manager(distribution):
+    """
+    Retrieve sample information for a specified distribution.
+
+    For GET requests, returns a JSON object containing the distribution name
+    and the list of samples registered to it.
+
+    :param distribution: The name of the distribution.
+    :type distribution: str
+    :return: JSON response with distribution and sample data.
+    :rtype: flask.Response
+    """
     if request.method == "GET":
         # Fetch the distribution from the database
         distribution_record = Distribution.query.filter_by(name=distribution).first()
@@ -39,6 +79,17 @@ def samples_per_distro_manager(distribution):
 @data_bp.route("/api/distribution_data/<distribution>", methods=["GET"])
 @login_required
 def get_distribution_data(distribution):
+    """
+    Process and return aggregated report data for a given distribution.
+
+    Loads a sample-to-reference mapping from 'samples.txt', processes lab reports,
+    aggregates metrics for each sample, and returns the distribution data as JSON.
+
+    :param distribution: The name of the distribution.
+    :type distribution: str
+    :return: JSON object containing aggregated metrics per sample.
+    :rtype: flask.Response
+    """
     print("Sample data request received")  # Debugging line
     dist = Distribution.query.filter_by(name=distribution).first()
     base_dir = f"data/{dist.name}"  # Root directory for lab reports
@@ -75,49 +126,109 @@ def get_distribution_data(distribution):
     return jsonify(distribution_data)
 
 @data_bp.route("/api/proxy_fasta_EPI_ISL_412866")
-#@login_required
+#@login_required these endpoints are to serve files to JBrowse2, which cant send credentials.
 def proxy_fasta1():
+    """
+    Serve the FASTA file for reference EPI_ISL_412866.
+
+    :return: FASTA file from the static genomes directory.
+    :rtype: flask.Response
+    """
     return current_app.send_static_file('genomes/EPI_ISL_412866/EPI_ISL_412866.fasta')
     
 @data_bp.route("/api/proxy_fai_EPI_ISL_412866")
 #@login_required
 def proxy_fai1():
+    """
+    Serve the FAI index file for reference EPI_ISL_412866.
+
+    :return: FAI file from the static genomes directory.
+    :rtype: flask.Response
+    """
     return current_app.send_static_file('genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.fai')
 
 @data_bp.route("/api/proxy_gzi_EPI_ISL_412866")
 #@login_required
 def proxy_gzi1():
+    """
+    Serve the gzipped FASTA file for reference EPI_ISL_412866.
+
+    :return: Gzipped FASTA file.
+    :rtype: flask.Response
+    """
     return current_app.send_static_file('genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.gz')
 
 @data_bp.route("/api/proxy_gff3_EPI_ISL_412866")
 #@login_required
 def proxy_gff1():
+    """
+    Serve the GFF3 file for reference EPI_ISL_412866.
+
+    :return: GFF3 file.
+    :rtype: flask.Response
+    """
     return current_app.send_static_file('genomes/EPI_ISL_412866/EPI_ISL_412866.gff3')
 
 @data_bp.route("/api/proxy_fasta_EPI_ISL_1653999")
 #@login_required
 def proxy_fasta2():
+    """
+    Serve the FASTA file for reference EPI_ISL_1653999.
+
+    :return: FASTA file.
+    :rtype: flask.Response
+    """
     return current_app.send_static_file('genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta')
     
 @data_bp.route("/api/proxy_fai_EPI_ISL_1653999")
 #@login_required
 def proxy_fai2():
+    """
+    Serve the FAI index file for reference EPI_ISL_1653999.
+
+    :return: FAI file.
+    :rtype: flask.Response
+    """
     return current_app.send_static_file('genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.fai')
 
 @data_bp.route("/api/proxy_gzi_EPI_ISL_1653999")
 #@login_required
 def proxy_gzi2():
+    """
+    Serve the gzipped FASTA file for reference EPI_ISL_1653999.
+
+    :return: Gzipped FASTA file.
+    :rtype: flask.Response
+    """
     return current_app.send_static_file('genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.gz')
 
 @data_bp.route("/api/proxy_gff3_EPI_ISL_1653999")
 #@login_required
 def proxy_gff2():
+    """
+    Serve the GFF3 file for reference EPI_ISL_1653999.
+
+    :return: GFF3 file.
+    :rtype: flask.Response
+    """
     return current_app.send_static_file('genomes/EPI_ISL_1653999/EPI_ISL_1653999.gff3')
 
 # Route to serve static bam
 @data_bp.route("/api/distribution_data/<distribution>/sample/<selected_sample>/participant/<participant>", methods=["GET"])
 #@login_required
 def get_sample_bam(distribution,selected_sample,participant):
+    """
+    Serve the consensus BAM file for a given sample and participant within a distribution.
+
+    :param distribution: Name of the distribution.
+    :type distribution: str
+    :param selected_sample: Name of the sample.
+    :type selected_sample: str
+    :param participant: Participant's identifier (typically the lab name).
+    :type participant: str
+    :return: The consensus BAM file as an attachment.
+    :rtype: flask.Response
+    """
     print(f"Request received for bams")  # Debugging line
     # Define the directory where your files are stored
     dist = Distribution.query.filter_by(name=distribution).first()
@@ -138,6 +249,18 @@ def get_sample_bam(distribution,selected_sample,participant):
 @data_bp.route("/api/distribution_data/<distribution>/sample/<selected_sample>/participant/<participant>.bai", methods=["GET"])
 #@login_required
 def get_sample_bai(distribution,selected_sample,participant):
+    """
+    Serve the BAI index file for a consensus BAM file.
+
+    :param distribution: Name of the distribution.
+    :type distribution: str
+    :param selected_sample: Name of the sample.
+    :type selected_sample: str
+    :param participant: Participant's identifier (typically the lab name).
+    :type participant: str
+    :return: The BAI file as an attachment.
+    :rtype: flask.Response
+    """
     print(f"Request received for bais")  # Debugging line
     # Define the directory where your files are stored
     dist = Distribution.query.filter_by(name=distribution).first()
@@ -158,6 +281,18 @@ def get_sample_bai(distribution,selected_sample,participant):
 @data_bp.route("/api/distribution_data/<distribution>/sample/<selected_sample>/participant/<participant>.bw", methods=["GET"])
 #@login_required
 def get_sample_bigwig(distribution,selected_sample,participant):
+    """
+    Serve the BigWig file for a given sample and participant.
+
+    :param distribution: Name of the distribution.
+    :type distribution: str
+    :param selected_sample: Name of the sample.
+    :type selected_sample: str
+    :param participant: Participant's identifier (typically the lab name).
+    :type participant: str
+    :return: The BigWig file as an attachment.
+    :rtype: flask.Response
+    """
     print(f"Request received for bams")  # Debugging line
     # Define the directory where your files are stored
     dist = Distribution.query.filter_by(name=distribution).first()
@@ -177,6 +312,20 @@ def get_sample_bigwig(distribution,selected_sample,participant):
 @data_bp.route("/api/distribution_data/<distribution>/sample/<selected_sample>", methods=["GET"])
 @login_required
 def get_sample_details(distribution, selected_sample):
+    """
+    Retrieve detailed report data and aggregated metrics for a specific sample within a distribution.
+
+    Processes lab reports from the distribution's data folder, aggregates metrics across participants,
+    and returns both individual and aggregated data. For superusers, all data is returned;
+    otherwise, only data relevant to the user's organization is provided.
+
+    :param distribution: Name of the distribution.
+    :type distribution: str
+    :param selected_sample: Name of the sample.
+    :type selected_sample: str
+    :return: A JSON object with table data, file URLs (BAM/BigWig), and aggregated sequencing metrics.
+    :rtype: flask.Response
+    """
     print(f"Request received for sample: {selected_sample}")  # Debugging line
     print(distribution)
     dist = Distribution.query.filter_by(name=distribution).first()
@@ -459,7 +608,18 @@ def get_sample_details(distribution, selected_sample):
 @data_bp.route("/api/download_docx/<distribution>")
 @login_required
 def download_docx(distribution):
-    """Route for generating the DOCX report."""
+    """
+    Generate and send a DOCX report for a specified distribution.
+
+    Processes lab reports from the distribution's data folder to generate a DOCX report,
+    saves it temporarily, and returns the file as an attachment. Report is rendered differently,
+    depending on user's privileges.
+
+    :param distribution: The name of the distribution.
+    :type distribution: str
+    :return: The generated DOCX report file.
+    :rtype: flask.Response
+    """
     dist = Distribution.query.filter_by(name=distribution).first()
     base_dir = f"data/{dist.name}"  # Root directory for lab reports
     report_data = process_all_reports(base_dir)

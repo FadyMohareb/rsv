@@ -1,3 +1,10 @@
+/**
+ * @module About
+ * 
+ * @description About page component. Renders a simple About page with details about the app and version information.
+ * @returns {JSX.Element} The rendered About page.
+ */
+
 import React from 'react';
 
 export default function About() {

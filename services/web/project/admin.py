@@ -1,3 +1,44 @@
+"""
+admin.py
+============
+
+This module provides the endpoints that require special privileges to access (role=superuser). These include admin tasks such as creating new distributions and adding samples and participants to said distributions. Basically, it is the module taking care of requests from the frontend's DistributionManager.js component.
+
+Flask endpoints:
+
+    /api/distributions_participants --> get_all()
+        Returns all the distributions and participants registered on the SQL database.
+
+    /api/assign_participant --> assign_participant()
+        The request requires the 'participant' and 'distribution' fields. Endpoint adds participant to the distribution.
+
+    /api/create_distributions --> distribution_manager()
+        GET requests return a list of the distributions the participant has been assigned to, nfot requiring superuser privileges.
+        POST requests receive a new distribution name, and if it does not exist already, will add it to the database and create an empty folder at services/web/data in which to store uploads and processing files.
+
+    /api/create_or_restore_organization --> create_or_restore_organization_with_user()    
+        Only POST requests. Fields to be sent include organization (also called participant) name, and email and username of the person being registered to the organization. 
+        Only one user per organization can be registered in this way. See the seed_db command in manage.py on how to manually add more users. This endpoint is also used to restore passwords, if 'is_restore' is set to true.
+        This is the only endpoint that currently sends emails.
+    
+    /api/distributions/<distribution>/add_samples --> samples_per_distro_manager(distribution)
+        GET requests return the list of samples assigned to queried distribution, not requiring superuser privileges.
+        POST creates a new sample and adds it to queried distribution. These samples are then available for the distribution's participants to upload to (upload.py).
+
+Other functions:
+
+    role_required(role)
+        Decorator for privileged endpoints, that requires the user to be authenticated and posses a superuser role, otherwise is denied the service (403 code). 
+        This is related to flask-login, a cookie-based authentication system, meaning session cookies in the client must carry the 'role' field and send those credentials in requests to the backend.
+
+    role_required_for_post(role)
+        Same as role_required, but only POST requests require the superuser role. 
+
+:author: Kevin
+:version: 0.0.1
+:date: 2025-02-20
+"""
+
 from flask import Blueprint, jsonify, request,abort, current_app
 from functools import wraps
 from flask_login import current_user, login_required
@@ -15,6 +56,14 @@ mail=Mail()
 
 # This one is for general use (works with all HTTP methods)
 def role_required(role):
+    """
+    Wrapper around Flask endpoints, users attempting to use endpoint must be logged in and be superusers.
+
+    :param role: Role of the user (superuser or else).
+    :type role: str
+    :return: A decorator for Flask endpoints.
+    :rtype: decorator
+    """
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -26,6 +75,14 @@ def role_required(role):
 
 # This one is for POST requests only
 def role_required_for_post(role):
+    """
+    Same as role_required(role), but superuser requirement only enforced for POST requests.
+
+    :param role: Role of the user (superuser or else).
+    :type role: str
+    :return: A decorator for Flask endpoints.
+    :rtype: decorator
+    """
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -40,6 +97,12 @@ def role_required_for_post(role):
 @login_required
 @role_required("superuser")
 def get_all():
+    """
+    Returns all the distributions and participants registered on the SQL database.
+
+    :return: JSON with list of participants and distributions.
+    :rtype: JSON
+    """
     # Retrieve all distributions and organizations from the database
     distributions = Distribution.query.all()
     organizations = Organization.query.all()
@@ -71,6 +134,10 @@ def get_all():
 @login_required
 @role_required_for_post("superuser")
 def assign_participant():
+    """
+    Adds participant to a distribution. Requires that the client sends the participant and distribution names.
+    
+    """
     data = request.get_json()
     print(data)
 
@@ -102,6 +169,10 @@ def assign_participant():
 @login_required
 @role_required_for_post("superuser")
 def distribution_manager():
+    """
+    Returns a list of the distributions the participant has been assigned to (GET), or creates a new distribution from the form's name (POST).
+
+    """
     if request.method == "GET":
         # Fetch all distributions from the database
         distributions = Distribution.query.filter(Distribution.organizations.any(name=current_user.organization)).all()
@@ -137,6 +208,11 @@ def distribution_manager():
 @login_required
 @role_required_for_post("superuser")
 def create_or_restore_organization_with_user():
+    """
+    Creates or restores an organizations username and password.
+    Only one user per organization can be registered in this way. 
+    
+    """
     # Get data from the request
     organization_name = request.form.get('name')
     organization_email = request.form.get('email')
@@ -268,6 +344,11 @@ def create_or_restore_organization_with_user():
 @login_required
 @role_required_for_post("superuser")
 def samples_per_distro_manager(distribution):
+    """
+    Returns the list of samples belonging to the distribution (GET), or adds a sample to the distribution (POST)
+    :param distribution: Name of the distribution.
+    :type distribution: str
+    """
     if request.method == "GET":
         # Fetch the distribution from the database
         distribution_record = Distribution.query.filter_by(name=distribution).first()

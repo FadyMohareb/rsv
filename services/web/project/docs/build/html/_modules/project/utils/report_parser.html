@@ -31,17 +31,57 @@
           <div class="body" role="main">
             
   <h1>Source code for project.utils.report_parser</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">report_parser.py</span>
+<span class="sd">================</span>
 
+<span class="sd">This module provides functions to parse output files from Nextclade and Qualimap,</span>
+<span class="sd">as well as to read genome length from a file and process reports for multiple labs</span>
+<span class="sd">and samples. The parsed metrics include coverage, missing bases, substitutions,</span>
+<span class="sd">deletions, insertions, frame shifts, similarity, clade information, and subtype determination.</span>
+
+<span class="sd">Ideally, in the future these functions will populate the database with the parsed info in order to avoid redundant parsing, which would improve backend efficiency.</span>
+<span class="sd">This is a TO DO, especially if the &#39;number of participants per sample&#39; or &#39;samples per distribution&#39; increases.</span>
+
+<span class="sd">Functions:</span>
+<span class="sd">    parse_nextclade_file(nextclade_file_path, nextclade_alternative_file_path, genomeLength)</span>
+<span class="sd">        Parses Nextclade output files to extract quality metrics and determine the sample subtype.</span>
+<span class="sd">    parse_qualimap(genome_results_path, coverage_histogram_path)</span>
+<span class="sd">        Parses Qualimap output files to extract coverage metrics and uniformity.</span>
+<span class="sd">    read_genome_length(sample_path)</span>
+<span class="sd">        Reads and returns the genome length from a &#39;genomeLength.txt&#39; file in the given sample directory.</span>
+<span class="sd">    process_all_reports(base_dir)</span>
+<span class="sd">        Processes report files from all labs and samples in a base directory and aggregates metrics.</span>
+
+<span class="sd">:author: Kevin</span>
+<span class="sd">:version: 0.0.1</span>
+<span class="sd">:date: 2025-02-21</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
 
 <div class="viewcode-block" id="parse_nextclade_file">
 <a class="viewcode-back" href="../../../modules.html#project.utils.report_parser.parse_nextclade_file">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_nextclade_file</span><span class="p">(</span><span class="n">nextclade_file_path</span><span class="p">,</span> <span class="n">nextclade_alternative_file_path</span><span class="p">,</span> <span class="n">genomeLength</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parses Nextclade output and calculates uniformity based on coverage and mutations.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse Nextclade output files to extract quality metrics and determine sample subtype.</span>
+
+<span class="sd">    Reads the main Nextclade output file and an optional alternative file (if provided), </span>
+<span class="sd">    compares the overall quality scores, and calculates metrics such as coverage, missing bases,</span>
+<span class="sd">    substitutions, deletions, insertions, frame shifts, and similarity percentage. The subtype </span>
+<span class="sd">    is determined by comparing the quality score with the alternative score (if available).</span>
+
+<span class="sd">    :param nextclade_file_path: Path to the primary Nextclade output file.</span>
+<span class="sd">    :type nextclade_file_path: str</span>
+<span class="sd">    :param nextclade_alternative_file_path: Path to an alternative Nextclade output file (optional).</span>
+<span class="sd">    :type nextclade_alternative_file_path: str</span>
+<span class="sd">    :param genomeLength: The total genome length used for calculating similarity.</span>
+<span class="sd">    :type genomeLength: int</span>
+<span class="sd">    :return: A dictionary containing metrics including &#39;seqName&#39;, &#39;coverage&#39;, &#39;totalMissing&#39;, &#39;Ns&#39;,</span>
+<span class="sd">             &#39;substitutions&#39;, &#39;deletions&#39;, &#39;insertions&#39;, &#39;frameShifts&#39;, &#39;similarity&#39;, &#39;clade&#39;, &#39;G_clade&#39;, and &#39;subtype&#39;.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">nextclade_file_path</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Nextclade file missing: </span><span class="si">{</span><span class="n">nextclade_file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -128,7 +168,21 @@
 <div class="viewcode-block" id="parse_qualimap">
 <a class="viewcode-back" href="../../../modules.html#project.utils.report_parser.parse_qualimap">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_qualimap</span><span class="p">(</span><span class="n">genome_results_path</span><span class="p">,</span> <span class="n">coverage_histogram_path</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Parses Qualimap genome_results.txt and coverage histogram file. &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse Qualimap output files to extract coverage and uniformity metrics.</span>
+
+<span class="sd">    Reads the &#39;genome_results.txt&#39; file to extract metrics such as the percentage of bases</span>
+<span class="sd">    covered at 20X, mean coverage depth, and the standard deviation of coverage depth. Then it</span>
+<span class="sd">    processes a coverage histogram file to compute the median read depth and the uniformity percentage.</span>
+
+<span class="sd">    :param genome_results_path: Path to the Qualimap genome_results.txt file.</span>
+<span class="sd">    :type genome_results_path: str</span>
+<span class="sd">    :param coverage_histogram_path: Path to the Qualimap coverage histogram file.</span>
+<span class="sd">    :type coverage_histogram_path: str</span>
+<span class="sd">    :return: A dictionary with keys &quot;Coverage at 20X (%)&quot;, &quot;Mean coverage depth&quot;,</span>
+<span class="sd">             &quot;Standard deviation of coverage depth&quot;, &quot;Read depth (Median)&quot;, and &quot;Uniformity (%)&quot;.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">genome_results_path</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">coverage_histogram_path</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Missing Qualimap files (</span><span class="si">{</span><span class="n">genome_results_path</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">coverage_histogram_path</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
@@ -177,7 +231,14 @@
 <div class="viewcode-block" id="read_genome_length">
 <a class="viewcode-back" href="../../../modules.html#project.utils.report_parser.read_genome_length">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">read_genome_length</span><span class="p">(</span><span class="n">sample_path</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Reads genome length from genomeLength.txt, handling missing file cases. &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read the genome length from a &#39;genomeLength.txt&#39; file in the given sample directory.</span>
+
+<span class="sd">    :param sample_path: The directory path where &#39;genomeLength.txt&#39; is expected to be found.</span>
+<span class="sd">    :type sample_path: str</span>
+<span class="sd">    :return: The genome length as an integer if the file is found and correctly formatted, otherwise None.</span>
+<span class="sd">    :rtype: int or None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">genome_length_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sample_path</span><span class="p">,</span> <span class="s2">&quot;genomeLength.txt&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">genome_length_file</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
@@ -194,7 +255,19 @@
 <div class="viewcode-block" id="process_all_reports">
 <a class="viewcode-back" href="../../../modules.html#project.utils.report_parser.process_all_reports">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">process_all_reports</span><span class="p">(</span><span class="n">base_dir</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Processes all samples in the given directory and extracts relevant metrics. &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process all lab and sample reports in the specified base directory and extract metrics.</span>
+
+<span class="sd">    Iterates through each lab folder in the base directory, then through each sample folder,</span>
+<span class="sd">    parsing Qualimap and Nextclade output files. Aggregates paths to FASTA, BAM, and BAI files,</span>
+<span class="sd">    and updates the metrics dictionary with the parsed data.</span>
+
+<span class="sd">    :param base_dir: The root directory containing lab-specific subdirectories with sample reports.</span>
+<span class="sd">    :type base_dir: str</span>
+<span class="sd">    :return: A nested dictionary where each key is a lab name mapping to sample dictionaries with</span>
+<span class="sd">             their corresponding metrics.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">report_data</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -260,9 +333,9 @@
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">project</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../modules.html#project-utils">project.utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../modules.html#frontend-documentation">Frontend Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../manage.html">Backend management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">Backend endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html#backend-utils">Backend utils</a></li>
 </ul>
 
 <div class="relations">
@@ -270,8 +343,6 @@
 <ul>
   <li><a href="../../../index.html">Documentation overview</a><ul>
   <li><a href="../../index.html">Module code</a><ul>
-  <li><a href="../../project.html">project</a><ul>
-  </ul></li>
   </ul></li>
   </ul></li>
 </ul>

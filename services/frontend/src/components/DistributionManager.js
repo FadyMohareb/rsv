@@ -1,5 +1,11 @@
+/**
+ * @module DistributionManager
+ * @memberof App
+ * @description Provides the management dashboard UI for creating distributions, adding samples, managing organizations, and assigning participants.
+ * @returns {JSX.Element} The rendered management dashboard.
+ */
+
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 
 const DistributionManager = () => {
   const [organizations, setOrganizations] = useState([]);
@@ -25,6 +31,11 @@ const DistributionManager = () => {
     fetchDistributionsAndOrganizations(); // Fetch data on mount
   }, []);
 
+   /**
+   * Fetches distributions and organizations from the API and updates state.
+   * @async
+   * @returns {void}
+   */
   const fetchDistributionsAndOrganizations = async () => {
     try {
       const response = await fetch("api/distributions_participants", {
@@ -59,11 +70,20 @@ const DistributionManager = () => {
       setMessage2("Failed to load distributions and organizations.");
     }
   };
-
+  /**
+   * Toggles the selected RSV type. If the provided type is already selected, it resets the selection.
+   * @param {string} rsvType - The RSV type to toggle.
+   * @returns {void}
+   */
   const handleRSVChange = (rsvType) => {
     setSelectedRSV(rsvType === selectedRSV ? "" : rsvType);
   };
-
+  /**
+   * Creates a new distribution by sending a POST request to the API.
+   * Updates state and displays a message based on the response.
+   * @async
+   * @returns {void}
+   */
   const createDistribution = async () => {
     if (!newDistribution.trim()) {
       setMessage("Distribution name cannot be empty.");
@@ -95,7 +115,12 @@ const DistributionManager = () => {
       alert("Error creating distribution. Please try again.");
     }
   };
-
+  /**
+   * Adds a new sample to the selected distribution by sending a POST request to the API.
+   * Validates required fields before submission.
+   * @async
+   * @returns {void}
+   */
   const addSampleToDistribution = async () => {
     if (!selectedDistribution || !sample.trim() || !selectedRSV) {
       setMessage2(
@@ -132,7 +157,12 @@ const DistributionManager = () => {
       console.error("Error:", error);
     }
   };
-
+  /**
+   * Handles organization creation or password restoration.
+   * Validates input fields and sends a POST request to the API.
+   * @async
+   * @returns {void}
+   */
   const handleOrganizationAction = async () => {
     // Validate required inputs
     if (
@@ -190,7 +220,13 @@ const DistributionManager = () => {
       );
     }
   };
-
+  /**
+   * Toggles assignment of a participant to a distribution.
+   * Prompts the user for confirmation before updating the assignment state.
+   * @param {string} participant - The participant's name.
+   * @param {string} distribution - The distribution name.
+   * @returns {void}
+   */
   const toggleAssignment = async (participant, distribution) => {
     // If already assigned, do nothing
     if (assignments[participant] && assignments[participant][distribution]) {

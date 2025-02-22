@@ -1,6 +1,22 @@
+/**
+ * @module DownloadButton
+ * @memberof DataView
+ * @description Renders a button to download a DOCX report for a specified distribution.
+ *
+ * @param {Object} props - Component properties.
+ * @param {string} props.distribution - Distribution identifier for the report.
+ * @param {boolean} props.disabled - Flag to disable the button.
+ * @returns {JSX.Element} The rendered download button.
+ */
+
 import React, { useState } from 'react';
 
 const DownloadButton = ({ distribution, disabled }) => {
+   /**
+   * Handles file download by fetching the report from the API and triggering a download.
+   *
+   * @async
+   */
     const [loading, setLoading] = useState(false);
 
     const handleDownload = async () => {

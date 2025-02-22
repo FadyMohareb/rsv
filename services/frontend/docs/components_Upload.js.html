@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/Upload.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/Upload.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Renders a form for uploading sequencing data files along with associated metadata,
+ * handles file changes and form submission with progress tracking, and fetches required
+ * data (user organization, distributions, and samples) from the API.
+ * @module Upload
+ * @memberof App
+ * @returns {JSX.Element} The rendered upload page.
+ */
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+export default function Upload() {
+    const navigate = useNavigate(); // Create a navigation function
+    const [fasta, setFasta] = useState(null); // State for the FASTA file
+    const [bam, setBam] = useState(null); // State for the BAM file
+    const [fq1, setFastq1] = useState(null); // State for the FASTQ R1 file
+    const [fq2, setFastq2] = useState(null); // State for the FASTQ R2 file
+    const [description, setDescription] = useState(''); // State for the description text
+    const [distribution, setDistribution] = useState(''); // State for the selected distribution
+    const [distributions, setDistributions] = useState([]); // State for fetched distributions
+    const [sampleDetails, setSampleDetails] = useState([]); // State for sample details
+    const [sampleSelect, setSampleSelect] = useState(''); // State for selected sample
+    const [sequencingType, setSequencingType] = useState('');
+    const [organization, setOrganization] = useState(''); // State for the user's organization
+    const [loading, setLoading] = useState(false); // State for loading indicator
+    const [samplesLoading, setSamplesLoading] = useState(false); // State for loading samples
+    const [uploadProgress, setUploadProgress] = useState(0); // State for upload progress
+
+   /**
+   * Fetches the logged-in user's organization from the API.
+   * @async
+   * @returns {Promise&lt;void>}
+   */
+    const fetchUserOrganization = async () => {
+        try {
+            const response = await fetch('api/user', { credentials: 'include' });
+            if (response.ok) {
+                const data = await response.json();
+                setOrganization(data.organization); // Set the organization state
+            } else {
+                console.error('Failed to fetch user organization');
+            }
+        } catch (error) {
+            console.error('Error fetching user organization:', error);
+        }
+    };
+
+   /**
+   * Fetches the list of distributions from the API and updates state.
+   * @async
+   * @returns {Promise&lt;void>}
+   */
+    const fetchDistributions = async () => {
+        try {
+            setLoading(true); // Set loading to true while fetching data
+            const response = await fetch('api/distribution_fetch', {
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch distributions');
+            }
+
+            const data = await response.json();
+            setDistributions(data.distributions || []); // Set the distributions into state
+            setLoading(false); // Set loading to false once data is fetched
+        } catch (error) {
+            console.error('Error fetching distributions:', error);
+            setLoading(false); // Set loading to false in case of error
+        }
+    };
+
+   /**
+   * Fetches samples for the selected distribution from the API.
+   * @async
+   * @param {string} selectedDistribution - The selected distribution.
+   * @returns {Promise&lt;void>}
+   */
+    const fetchSamplesForDistribution = async (selectedDistribution) => {
+        if (!selectedDistribution) return;
+
+        try {
+            setSamplesLoading(true); // Set loading for samples
+            const response = await fetch(
+                `api/distributions/${selectedDistribution}/samples`,
+                { credentials: 'include' }
+            );
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch samples for distribution');
+            }
+
+            const data = await response.json();
+            setSampleDetails(data.samples || []); // Set the samples for the distribution
+            setSamplesLoading(false); // Set loading for samples to false
+        } catch (error) {
+            console.error(`Error fetching samples for distribution '${selectedDistribution}':`, error);
+            setSamplesLoading(false); // Set loading for samples to false
+        }
+    };
+
+    // Load user organization and distributions on component mount
+    useEffect(() => {
+        fetchUserOrganization(); // Fetch the organization
+        fetchDistributions(); // Fetch the distributions
+    }, []); // Only run once on mount
+
+   /**
+   * Handles changes to the FASTA file input.
+   * @param {Event} event - The file input change event.
+   * @returns {void}
+   */
+    const handleFastaChange = (event) => {
+        setFasta(event.target.files[0]);
+    };
+
+  /**
+   * Handles changes to the BAM file input.
+   * @param {Event} event - The file input change event.
+   * @returns {void}
+   */
+    const handleBamChange = (event) => {
+        setBam(event.target.files[0]);
+    };
+
+   /**
+   * Handles changes to the FASTQ R1 file input.
+   * @param {Event} event - The file input change event.
+   * @returns {void}
+   */
+    const handleFastq1Change = (event) => {
+        setFastq1(event.target.files[0]);
+    };
+   /**
+   * Handles changes to the FASTQ R2 file input.
+   * @param {Event} event - The file input change event.
+   * @returns {void}
+   */
+    const handleFastq2Change = (event) => {
+        setFastq2(event.target.files[0]);
+    };
+
+   /**
+   * Handles changes to the sequencing type input.
+   * @param {Event} event - The change event.
+   * @returns {void}
+   */
+    const handleSequencingTypeChange = (event) => {
+        setSequencingType(event.target.value);
+    };
+
+/**
+   * Handles changes to the description input.
+   * @param {Event} event - The change event.
+   * @returns {void}
+   */
+    const handleDescriptionChange = (event) => {
+        setDescription(event.target.value);
+    };
+
+   /**
+   * Handles changes to the distribution selector.
+   * Fetches the samples for the newly selected distribution.
+   * @param {Event} event - The change event.
+   * @returns {void}
+   */
+    const handleDistributionChange = (event) => {
+        const selectedDistribution = event.target.value;
+        setDistribution(selectedDistribution);
+
+        // Fetch samples for the selected distribution
+        fetchSamplesForDistribution(selectedDistribution);
+    };
+
+   /**
+   * Handles sample selection from the dropdown.
+   * Updates state with the selected sample and number of participants, then loads sample plot and data.
+   * @param {Event} event - The selection change event.
+   * @returns {void}
+   */
+    const handleSampleSelection = (event) => {
+        setSampleSelect(event.target.value);
+    };
+
+   /**
+   * Handles form submission for uploading files.
+   * Creates a FormData object with files and metadata, sends it via XMLHttpRequest,
+   * and tracks upload progress. Navigates to home upon success.
+   * @param {Event} event - The form submit event.
+   * @returns {void}
+   */
+    const handleSubmit = (event) => {
+        event.preventDefault();
+
+        // Show confirmation dialog before proceeding
+        const userConfirmed = window.confirm(
+            "Uploading  will remove all previously existing data for this sample. Proceed?"
+        );
+
+        if (!userConfirmed) {
+            return; // Stop submission if user cancels
+        }
+
+        // Create a FormData object to hold the files and other form data
+        const formData = new FormData();
+        if (fasta) formData.append('fasta', fasta); // Add FASTA file if present
+        if (bam) formData.append('bam', bam); // Add BAM file if present
+        if (fq1) formData.append('fq1', fq1); // Add FASTQ R1 file if present
+        if (fq2) formData.append('fq2', fq2); // Add FASTQ R2 file if present
+        formData.append('description', description); // Add description, even if it's empty
+        formData.append('sample', sampleSelect);
+        formData.append('distribution', distribution);
+        formData.append('organization', organization); // Include the fetched organization
+        formData.append('sequencing_type', sequencingType); // Include the sequencing type
+        console.log('sequencing_type', sequencingType);
+
+        // Create a new XMLHttpRequest to send the form data
+        const xhr = new XMLHttpRequest();
+
+        // Set up the request
+        xhr.open('POST', 'api/upload', true);
+        xhr.setRequestHeader('Accept', 'application/json');
+        setLoading(true)
+
+        // Ensure credentials (such as cookies) are included with the request
+        xhr.withCredentials = true;
+
+        // Track progress and update state
+        xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable) {
+                const percentComplete = (event.loaded / event.total) * 100;
+                setUploadProgress(percentComplete); // Update the progress bar state
+            }
+        });
+
+        // Handle when the request is complete
+        xhr.onload = () => {
+            if (xhr.status === 201) {
+                alert('File(s) uploaded successfully!');
+                navigate('/'); // Navigate back to home page after successful upload
+            } else {
+                let errorData;
+                try {
+                    errorData = JSON.parse(xhr.responseText);
+                } catch (e) {
+                    console.error("Failed to parse JSON:", xhr.responseText);
+                    errorData = { error: "Unknown error" };
+                }
+                alert(`Failed to upload files: ${errorData.error}`);
+            }
+            setLoading(false); // Hide the loading spinner after the upload completes
+        };
+
+        // Handle network errors
+        xhr.onerror = () => {
+            console.error('Error uploading file');
+            alert('An error occurred while uploading. Please try again.');
+            setLoading(false); // Hide the loading spinner in case of an error
+        };
+
+        // Send the form data
+        xhr.send(formData);
+    };
+
+    return (
+        &lt;div className="page-container">
+            &lt;h1>Upload Sequencing Data&lt;/h1>
+
+            {/* Instructions list */}
+            &lt;br />
+            &lt;strong>Instructions&lt;/strong>
+            &lt;br />
+            &lt;ol>
+                &lt;li>Choose the corresponding distribution and sample you wish to upload data for.&lt;/li>
+                &lt;li>All files are &lt;strong>optional&lt;/strong>.&lt;/li>
+                &lt;li>Uploaded files will &lt;strong>overwrite&lt;/strong> those provided previously.&lt;/li>
+            &lt;/ol>
+            &lt;br />
+
+            {/* File upload form */}
+            &lt;form onSubmit={handleSubmit}>
+                {/* Distribution Dropdown */}
+                &lt;div className="input-group">
+                    &lt;label htmlFor="distribution" className="input-label">Distribution&lt;span style={{ color: '#b83030' }}>*&lt;/span>&lt;/label>
+                    &lt;select
+                        id="distribution"
+                        value={distribution}
+                        onChange={handleDistributionChange}
+                        className="input-field"
+                        disabled={loading} // Disable dropdown while loading
+                        required
+                    >
+                        &lt;option value="">Select Distribution&lt;/option>
+                        {loading ? (
+                            &lt;option value="">Loading distributions...&lt;/option>
+                        ) : (
+                            distributions.map((dist) => (
+                                &lt;option key={dist} value={dist}>
+                                    {dist}
+                                &lt;/option>
+                            ))
+                        )}
+                    &lt;/select>
+                &lt;/div>
+
+                {/* Sample Dropdown */}
+                &lt;div className="input-group">
+                    &lt;label htmlFor="sample" className="input-label">Sample&lt;span style={{ color: '#b83030' }}>*&lt;/span>&lt;/label>
+                    &lt;select
+                        id="sample"
+                        value={sampleSelect}
+                        onChange={handleSampleSelection}
+                        className="input-field"
+                        disabled={samplesLoading} // Disable dropdown while loading samples
+                        required
+                    >
+                        &lt;option value="">Select Sample&lt;/option>
+                        {samplesLoading ? (
+                            &lt;option value="">Loading samples...&lt;/option>
+                        ) : (
+                            sampleDetails.map((sample) => (
+                                &lt;option key={sample} value={sample}>
+                                    {sample}
+                                &lt;/option>
+                            ))
+                        )}
+                    &lt;/select>
+                &lt;/div>
+                {/* Sequencing Type Input with Autocompletion */}
+                &lt;div className="input-group">
+                    &lt;label htmlFor="sequencingType" className="input-label">
+                        Sequencing Type&lt;span style={{ color: '#b83030' }}>*&lt;/span>
+                    &lt;/label>
+                    &lt;input
+                        type="text"
+                        id="sequencingType"
+                        value={sequencingType}
+                        onChange={handleSequencingTypeChange}
+                        className="input-field"
+                        required
+                        list="sequencingOptions"
+                    />
+                    &lt;datalist id="sequencingOptions">
+                        &lt;option value="Illumina MiSeq" />
+                        &lt;option value="Illumina NextSeq" />
+                        &lt;option value="Illumina NovaSeq" />
+                        &lt;option value="Oxford Nanopore MinION" />
+                        &lt;option value="Oxford Nanopore GridION" />
+                        &lt;option value="PacBio Sequel" />
+                        &lt;option value="PacBio RS II" />
+                        &lt;option value="Ion Torrent PGM" />
+                        {/* Add or modify options as needed */}
+                    &lt;/datalist>
+                &lt;/div>
+                {/* FASTA File Input */}
+                &lt;div className="input-group">
+                    &lt;label htmlFor="fasta" className="input-label">FASTA File&lt;/label>
+                    &lt;input
+                        type="file"
+                        id="fasta"
+                        onChange={handleFastaChange}
+                        className="input-field"
+                    />
+                &lt;/div>
+
+                {/* BAM File Input */}
+                &lt;div className="input-group">
+                    &lt;label htmlFor="bam" className="input-label">BAM File&lt;/label>
+                    &lt;input
+                        type="file"
+                        id="bam"
+                        onChange={handleBamChange}
+                        className="input-field"
+                    />
+                &lt;/div>
+
+                {/* FASTQ R1 File Input */}
+                &lt;div className="input-group">
+                    &lt;label htmlFor="fq1" className="input-label">FASTQ R1 File&lt;/label>
+                    &lt;input
+                        type="file"
+                        id="fq1"
+                        onChange={handleFastq1Change}
+                        className="input-field"
+                    />
+                &lt;/div>
+
+                {/* FASTQ R2 File Input */}
+                &lt;div className="input-group">
+                    &lt;label htmlFor="fq2" className="input-label">FASTQ R2 File&lt;/label>
+                    &lt;input
+                        type="file"
+                        id="fq2"
+                        onChange={handleFastq2Change}
+                        className="input-field"
+                    />
+                &lt;/div>
+
+                {/* Description Input */}
+                &lt;div className="input-group">
+                    &lt;label htmlFor="description" className="input-label">Description&lt;/label>
+                    &lt;textarea
+                        id="description"
+                        value={description}
+                        onChange={handleDescriptionChange}
+                        className="input-field"
+                    >&lt;/textarea>
+                &lt;/div>
+
+                {/* Loading and Progress Bar */}
+                {loading &amp;&amp; (
+                    &lt;div className="loading-spinner">
+                        &lt;p>Uploading...&lt;/p>
+                        &lt;div className="progress-bar-container">
+                            &lt;div className="progress-bar" style={{ width: `${uploadProgress}%` }}>&lt;/div>
+                        &lt;/div>
+                    &lt;/div>
+                )}
+
+                {/* Submit Button */}
+                &lt;div className="input-group">
+                    &lt;button type="submit" className="login-button" disabled={loading}>
+                        {loading ? 'Uploading...' : 'Submit'}
+                    &lt;/button>
+                &lt;/div>
+            &lt;/form>
+        &lt;/div>
+    );
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="App.module_DataView.html">DataView</a></li><li><a href="App.module_Home.html">Home</a></li><li><a href="App.module_SamplePlot.html">SamplePlot</a></li><li><a href="App.module_SeqPlot.html">SeqPlot</a></li><li><a href="App.module_Toolbar.html">Toolbar</a></li><li><a href="App.module_Upload.html">Upload</a></li><li><a href="DataView.module_DownloadButton.html">DownloadButton</a></li><li><a href="module-About.html">About</a></li><li><a href="module-App.html">App</a></li><li><a href="module-index.html">index</a></li></ul><h3>Classes</h3><ul><li><a href="App.module_DataView-DataView.html">DataView</a></li><li><a href="module-App-App.html">App</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Sat Feb 22 2025 23:35:44 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

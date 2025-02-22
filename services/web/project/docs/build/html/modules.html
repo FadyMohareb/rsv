@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>project &#8212; rsv-neqas 0.0.1 documentation</title>
+    <title>Backend endpoints &#8212; rsv-neqas 0.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
@@ -15,7 +15,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="project package" href="project.html" />
-    <link rel="prev" title="rsv-neqas documentation" href="index.html" />
+    <link rel="prev" title="Backend management" href="manage.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -33,13 +33,14 @@
 
           <div class="body" role="main">
             
-  <section id="project">
-<h1>project<a class="headerlink" href="#project" title="Link to this heading">¶</a></h1>
+  <section id="backend-endpoints">
+<h1>Backend endpoints<a class="headerlink" href="#backend-endpoints" title="Link to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="project.html">project package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="project.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="project.html#module-project.admin">project.admin module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#admin-py">admin.py</a></li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.admin.assign_participant"><code class="docutils literal notranslate"><span class="pre">assign_participant()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.admin.create_or_restore_organization_with_user"><code class="docutils literal notranslate"><span class="pre">create_or_restore_organization_with_user()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.admin.distribution_manager"><code class="docutils literal notranslate"><span class="pre">distribution_manager()</span></code></a></li>
@@ -50,12 +51,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="project.html#module-project.authentication">project.authentication module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="project.html#project.authentication.LoginForm"><code class="docutils literal notranslate"><span class="pre">LoginForm</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="project.html#project.authentication.LoginForm.password"><code class="docutils literal notranslate"><span class="pre">LoginForm.password</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="project.html#project.authentication.LoginForm.submit"><code class="docutils literal notranslate"><span class="pre">LoginForm.submit</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="project.html#project.authentication.LoginForm.username"><code class="docutils literal notranslate"><span class="pre">LoginForm.username</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#authentication-py">authentication.py</a></li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.authentication.change_password"><code class="docutils literal notranslate"><span class="pre">change_password()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.authentication.flaskLoginUser"><code class="docutils literal notranslate"><span class="pre">flaskLoginUser</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="project.html#project.authentication.flaskLoginUser.is_active"><code class="docutils literal notranslate"><span class="pre">flaskLoginUser.is_active()</span></code></a></li>
@@ -71,16 +67,25 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="project.html#module-project.config">project.config module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#config-py">config.py</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="project.html#project.config.basedir"><code class="docutils literal notranslate"><span class="pre">basedir</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.config.Config"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="project.html#project.config.Config.MEDIA_FOLDER"><code class="docutils literal notranslate"><span class="pre">Config.MEDIA_FOLDER</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="project.html#project.config.Config.SQLALCHEMY_DATABASE_URI"><code class="docutils literal notranslate"><span class="pre">Config.SQLALCHEMY_DATABASE_URI</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="project.html#project.config.Config.SQLALCHEMY_TRACK_MODIFICATIONS"><code class="docutils literal notranslate"><span class="pre">Config.SQLALCHEMY_TRACK_MODIFICATIONS</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="project.html#project.config.Config.STATIC_FOLDER"><code class="docutils literal notranslate"><span class="pre">Config.STATIC_FOLDER</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="project.html#project.config.Config.MEDIA_FOLDER"><code class="docutils literal notranslate"><span class="pre">Config.MEDIA_FOLDER</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="project.html#id0"><code class="docutils literal notranslate"><span class="pre">Config.MEDIA_FOLDER</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="project.html#id1"><code class="docutils literal notranslate"><span class="pre">Config.SQLALCHEMY_DATABASE_URI</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="project.html#id2"><code class="docutils literal notranslate"><span class="pre">Config.SQLALCHEMY_TRACK_MODIFICATIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="project.html#id3"><code class="docutils literal notranslate"><span class="pre">Config.STATIC_FOLDER</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="project.html#module-project.data">project.data module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#data-py">data.py</a></li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.data.distribution_manager"><code class="docutils literal notranslate"><span class="pre">distribution_manager()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.data.download_docx"><code class="docutils literal notranslate"><span class="pre">download_docx()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.data.get_distribution_data"><code class="docutils literal notranslate"><span class="pre">get_distribution_data()</span></code></a></li>
@@ -100,6 +105,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="project.html#module-project.notifications">project.notifications module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#notifications-py">notifications.py</a></li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.notifications.dismiss_notification"><code class="docutils literal notranslate"><span class="pre">dismiss_notification()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.notifications.get_notifications"><code class="docutils literal notranslate"><span class="pre">get_notifications()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.notifications.handle_connect"><code class="docutils literal notranslate"><span class="pre">handle_connect()</span></code></a></li>
@@ -115,14 +121,13 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="project.html#module-project.upload">project.upload module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#upload-py">upload.py</a></li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.upload.launch_nextflow"><code class="docutils literal notranslate"><span class="pre">launch_nextflow()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="project.html#project.upload.upload_files"><code class="docutils literal notranslate"><span class="pre">upload_files()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="project.html#module-project">Module contents</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="project.html#project.create_task"><code class="docutils literal notranslate"><span class="pre">create_task()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="project.html#project.get_status"><code class="docutils literal notranslate"><span class="pre">get_status()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="project.html#project.run_task"><code class="docutils literal notranslate"><span class="pre">run_task()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#init-py">__init__.py</a></li>
 </ul>
 </li>
 </ul>
@@ -130,71 +135,377 @@
 </ul>
 </div>
 </section>
-<section id="project-utils">
-<h1>project.utils<a class="headerlink" href="#project-utils" title="Link to this heading">¶</a></h1>
+<section id="backend-utils">
+<h1>Backend utils<a class="headerlink" href="#backend-utils" title="Link to this heading">¶</a></h1>
 <section id="module-project.utils.docx">
 <span id="project-utils-docx"></span><h2>project.utils.docx<a class="headerlink" href="#module-project.utils.docx" title="Link to this heading">¶</a></h2>
+<section id="docx-py">
+<h3>docx.py<a class="headerlink" href="#docx-py" title="Link to this heading">¶</a></h3>
+<p>This utilities module is in charge of processing the data of a distribution and preparing its docx report.</p>
+<p>Functions:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>generate_sample_plot_pdf(sample_name, sample_data, role)</dt><dd><p>Creates a stacked bar and line graph for sample data visualization.</p>
+</dd>
+<dt>create_pygenometracks_plot(reference_genome, annotation, region, bed_path, bigwig_file, bigwig_consensus_file, output_dir, sample_name, user_lab)</dt><dd><p>Uses pyGenomeTracks to generate genome coverage plots.</p>
+</dd>
+<dt>create_element(name)</dt><dd><p>Creates an XML element for DOCX formatting.</p>
+</dd>
+<dt>create_attribute(element, name, value)</dt><dd><p>Adds an attribute to an XML element.</p>
+</dd>
+<dt>add_page_number(run)</dt><dd><p>Inserts a page number field in a DOCX document.</p>
+</dd>
+<dt>generate_docx_reportreport_data, base_dir, role, user_lab, distribution</dt><dd><p>Generates a DOCX report summarizing viric genome analysis results.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">author<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Kevin</p>
+</dd>
+<dt class="field-even">version<span class="colon">:</span></dt>
+<dd class="field-even"><p>0.0.1</p>
+</dd>
+<dt class="field-odd">date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2025-02-21</p>
+</dd>
+</dl>
+</section>
 <dl class="py function">
-<dt class="sig sig-object py" id="project.utils.docx.create_pygenometracks_plot">
-<span class="sig-prename descclassname"><span class="pre">project.utils.docx.</span></span><span class="sig-name descname"><span class="pre">create_pygenometracks_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_genome</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bed_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bigwig_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bigwig_consensus_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_lab</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/docx.html#create_pygenometracks_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.docx.create_pygenometracks_plot" title="Link to this definition">¶</a></dt>
-<dd><p>Generate a genome coverage plot using pyGenomeTracks for a specific user_lab.</p>
-<dl class="simple">
-<dt>Creates a tracks.ini file that includes:</dt><dd><ul class="simple">
-<li><p>a reference track (from the provided FASTA),</p></li>
-<li><p>an annotation track (from the provided GFF3), and</p></li>
-<li><p>a bigwig track (from the provided BigWig file).</p></li>
+<dt class="sig sig-object py" id="project.utils.docx.add_page_number">
+<span class="sig-prename descclassname"><span class="pre">project.utils.docx.</span></span><span class="sig-name descname"><span class="pre">add_page_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/docx.html#add_page_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.docx.add_page_number" title="Link to this definition">¶</a></dt>
+<dd><p>Inserts a page number field in a DOCX document.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>run</strong> (<em>docx.text.run.Run</em>) – A DOCX run object where the page number field is inserted.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="project.utils.docx.create_attribute">
+<span class="sig-prename descclassname"><span class="pre">project.utils.docx.</span></span><span class="sig-name descname"><span class="pre">create_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/docx.html#create_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.docx.create_attribute" title="Link to this definition">¶</a></dt>
+<dd><p>Adds an attribute to an XML element.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>element</strong> (<em>OxmlElement</em>) – The XML element to modify.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – The attribute name.</p></li>
+<li><p><strong>value</strong> (<em>str</em>) – The attribute value.</p></li>
 </ul>
 </dd>
 </dl>
-<p>The plot is generated for the given region.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="project.utils.docx.create_element">
+<span class="sig-prename descclassname"><span class="pre">project.utils.docx.</span></span><span class="sig-name descname"><span class="pre">create_element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/docx.html#create_element"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.docx.create_element" title="Link to this definition">¶</a></dt>
+<dd><p>Creates an XML element for use in DOCX formatting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the XML element.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created XML element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OxmlElement</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="project.utils.docx.create_pygenometracks_plot">
+<span class="sig-prename descclassname"><span class="pre">project.utils.docx.</span></span><span class="sig-name descname"><span class="pre">create_pygenometracks_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_genome</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bed_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bigwig_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bigwig_consensus_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_lab</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/docx.html#create_pygenometracks_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.docx.create_pygenometracks_plot" title="Link to this definition">¶</a></dt>
+<dd><p>Generates a genome coverage plot using pyGenomeTracks for a specific user_lab.</p>
+<dl class="simple">
+<dt>Creates a tracks.ini file that configures:</dt><dd><ul class="simple">
+<li><p>A reference track (FASTA),</p></li>
+<li><p>An annotation track (GFF3),</p></li>
+<li><p>A bigwig track (BigWig file).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_genome</strong> (<em>str</em>) – Path to the reference genome FASTA file.</p></li>
+<li><p><strong>annotation</strong> (<em>str</em>) – Path to the GFF3 annotation file.</p></li>
+<li><p><strong>region</strong> (<em>str</em>) – Genomic region to visualize.</p></li>
+<li><p><strong>bed_path</strong> (<em>str</em>) – Path to the BED file with sequence variants.</p></li>
+<li><p><strong>bigwig_file</strong> (<em>str</em>) – Path to the BigWig file containing read coverage data.</p></li>
+<li><p><strong>bigwig_consensus_file</strong> (<em>str</em>) – Path to the consensus BigWig file.</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – Directory where the plot and ini file will be saved.</p></li>
+<li><p><strong>sample_name</strong> (<em>str</em>) – Sample identifier.</p></li>
+<li><p><strong>user_lab</strong> (<em>str</em>) – User lab identifier.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>File path of the generated coverage plot.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.utils.docx.generate_docx_report">
 <span class="sig-prename descclassname"><span class="pre">project.utils.docx.</span></span><span class="sig-name descname"><span class="pre">generate_docx_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">role</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_lab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/docx.html#generate_docx_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.docx.generate_docx_report" title="Link to this definition">¶</a></dt>
-<dd><p>Route for generating the DOCX report.</p>
+<dd><p>Generates a DOCX report summarizing genomic analysis results for a given distribution.</p>
+<p>The report includes sample statistics, visualizations, and formatted text.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>report_data</strong> (<em>dict</em>) – Processed data containing genomic viral analysis results.</p></li>
+<li><p><strong>base_dir</strong> (<em>str</em>) – Base directory containing report-related files.</p></li>
+<li><p><strong>role</strong> (<em>str</em>) – User role determining report formatting.</p></li>
+<li><p><strong>user_lab</strong> (<em>str</em>) – User lab identifier.</p></li>
+<li><p><strong>distribution</strong> (<em>str</em>) – The distribution to .</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the generated DOCX report.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>docx</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.utils.docx.generate_sample_plot_pdf">
 <span class="sig-prename descclassname"><span class="pre">project.utils.docx.</span></span><span class="sig-name descname"><span class="pre">generate_sample_plot_pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">role</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/docx.html#generate_sample_plot_pdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.docx.generate_sample_plot_pdf" title="Link to this definition">¶</a></dt>
-<dd><p>Generates a Matplotlib stacked bar and line graph with dual y-axes for a single sample.</p>
+<dd><p>Generates a stacked bar and line graph using Matplotlib for a given sample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sample_name</strong> (<em>str</em>) – The name of the sample, used for file naming.</p></li>
+<li><p><strong>sample_data</strong> (<em>dict</em>) – Dictionary containing sample statistics (coverage, similarity, etc.).</p></li>
+<li><p><strong>role</strong> (<em>str</em>) – User role (affects visualisation style).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The file path of the generated plot image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
 <section id="module-project.utils.report_parser">
 <span id="project-utils-report-parser"></span><h2>project.utils.report_parser<a class="headerlink" href="#module-project.utils.report_parser" title="Link to this heading">¶</a></h2>
+<section id="report-parser-py">
+<h3>report_parser.py<a class="headerlink" href="#report-parser-py" title="Link to this heading">¶</a></h3>
+<p>This module provides functions to parse output files from Nextclade and Qualimap,
+as well as to read genome length from a file and process reports for multiple labs
+and samples. The parsed metrics include coverage, missing bases, substitutions,
+deletions, insertions, frame shifts, similarity, clade information, and subtype determination.</p>
+<p>Ideally, in the future these functions will populate the database with the parsed info in order to avoid redundant parsing, which would improve backend efficiency.
+This is a TO DO, especially if the ‘number of participants per sample’ or ‘samples per distribution’ increases.</p>
+<dl class="simple">
+<dt>Functions:</dt><dd><dl class="simple">
+<dt>parse_nextclade_file(nextclade_file_path, nextclade_alternative_file_path, genomeLength)</dt><dd><p>Parses Nextclade output files to extract quality metrics and determine the sample subtype.</p>
+</dd>
+<dt>parse_qualimap(genome_results_path, coverage_histogram_path)</dt><dd><p>Parses Qualimap output files to extract coverage metrics and uniformity.</p>
+</dd>
+<dt>read_genome_length(sample_path)</dt><dd><p>Reads and returns the genome length from a ‘genomeLength.txt’ file in the given sample directory.</p>
+</dd>
+<dt>process_all_reports(base_dir)</dt><dd><p>Processes report files from all labs and samples in a base directory and aggregates metrics.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">author<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Kevin</p>
+</dd>
+<dt class="field-even">version<span class="colon">:</span></dt>
+<dd class="field-even"><p>0.0.1</p>
+</dd>
+<dt class="field-odd">date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2025-02-21</p>
+</dd>
+</dl>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py" id="project.utils.report_parser.parse_nextclade_file">
 <span class="sig-prename descclassname"><span class="pre">project.utils.report_parser.</span></span><span class="sig-name descname"><span class="pre">parse_nextclade_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nextclade_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nextclade_alternative_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genomeLength</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/report_parser.html#parse_nextclade_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.report_parser.parse_nextclade_file" title="Link to this definition">¶</a></dt>
-<dd><p>Parses Nextclade output and calculates uniformity based on coverage and mutations.</p>
+<dd><p>Parse Nextclade output files to extract quality metrics and determine sample subtype.</p>
+<p>Reads the main Nextclade output file and an optional alternative file (if provided),
+compares the overall quality scores, and calculates metrics such as coverage, missing bases,
+substitutions, deletions, insertions, frame shifts, and similarity percentage. The subtype
+is determined by comparing the quality score with the alternative score (if available).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nextclade_file_path</strong> (<em>str</em>) – Path to the primary Nextclade output file.</p></li>
+<li><p><strong>nextclade_alternative_file_path</strong> (<em>str</em>) – Path to an alternative Nextclade output file (optional).</p></li>
+<li><p><strong>genomeLength</strong> (<em>int</em>) – The total genome length used for calculating similarity.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing metrics including ‘seqName’, ‘coverage’, ‘totalMissing’, ‘Ns’,
+‘substitutions’, ‘deletions’, ‘insertions’, ‘frameShifts’, ‘similarity’, ‘clade’, ‘G_clade’, and ‘subtype’.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.utils.report_parser.parse_qualimap">
 <span class="sig-prename descclassname"><span class="pre">project.utils.report_parser.</span></span><span class="sig-name descname"><span class="pre">parse_qualimap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">genome_results_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage_histogram_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/report_parser.html#parse_qualimap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.report_parser.parse_qualimap" title="Link to this definition">¶</a></dt>
-<dd><p>Parses Qualimap genome_results.txt and coverage histogram file.</p>
+<dd><p>Parse Qualimap output files to extract coverage and uniformity metrics.</p>
+<p>Reads the ‘genome_results.txt’ file to extract metrics such as the percentage of bases
+covered at 20X, mean coverage depth, and the standard deviation of coverage depth. Then it
+processes a coverage histogram file to compute the median read depth and the uniformity percentage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>genome_results_path</strong> (<em>str</em>) – Path to the Qualimap genome_results.txt file.</p></li>
+<li><p><strong>coverage_histogram_path</strong> (<em>str</em>) – Path to the Qualimap coverage histogram file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary with keys “Coverage at 20X (%)”, “Mean coverage depth”,
+“Standard deviation of coverage depth”, “Read depth (Median)”, and “Uniformity (%)”.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.utils.report_parser.process_all_reports">
 <span class="sig-prename descclassname"><span class="pre">project.utils.report_parser.</span></span><span class="sig-name descname"><span class="pre">process_all_reports</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/report_parser.html#process_all_reports"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.report_parser.process_all_reports" title="Link to this definition">¶</a></dt>
-<dd><p>Processes all samples in the given directory and extracts relevant metrics.</p>
+<dd><p>Process all lab and sample reports in the specified base directory and extract metrics.</p>
+<p>Iterates through each lab folder in the base directory, then through each sample folder,
+parsing Qualimap and Nextclade output files. Aggregates paths to FASTA, BAM, and BAI files,
+and updates the metrics dictionary with the parsed data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>base_dir</strong> (<em>str</em>) – The root directory containing lab-specific subdirectories with sample reports.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A nested dictionary where each key is a lab name mapping to sample dictionaries with
+their corresponding metrics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="project.utils.report_parser.read_genome_length">
 <span class="sig-prename descclassname"><span class="pre">project.utils.report_parser.</span></span><span class="sig-name descname"><span class="pre">read_genome_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/report_parser.html#read_genome_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.report_parser.read_genome_length" title="Link to this definition">¶</a></dt>
-<dd><p>Reads genome length from genomeLength.txt, handling missing file cases.</p>
+<dd><p>Read the genome length from a ‘genomeLength.txt’ file in the given sample directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sample_path</strong> (<em>str</em>) – The directory path where ‘genomeLength.txt’ is expected to be found.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The genome length as an integer if the file is found and correctly formatted, otherwise None.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int or None</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
 <section id="module-project.utils.sql_models">
 <span id="project-utils-sql-models"></span><h2>project.utils.sql_models<a class="headerlink" href="#module-project.utils.sql_models" title="Link to this heading">¶</a></h2>
+<section id="sql-models-py">
+<h3>sql_models.py<a class="headerlink" href="#sql-models-py" title="Link to this heading">¶</a></h3>
+<p>This module defines the database models for the application using SQLAlchemy.
+It includes models for Users, Organizations, Distributions, Notifications, and Submissions.
+The models are designed to work with the PostgreSQL database service (including JSON support).</p>
+<dl class="simple">
+<dt>Models:</dt><dd><p>User: Represents a user in the system.
+Organization: Represents an organization that users belong to.
+Distribution: Represents a distribution containing samples and associated organizations.
+Notification: Represents a notification sent to users.
+Submission: Represents a sample submission with associated sequencing data.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">author<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Kevin</p>
+</dd>
+<dt class="field-even">version<span class="colon">:</span></dt>
+<dd class="field-even"><p>1.0</p>
+</dd>
+<dt class="field-odd">date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2025-02-21</p>
+</dd>
+</dl>
+</section>
 <dl class="py class">
 <dt class="sig sig-object py" id="project.utils.sql_models.Distribution">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">project.utils.sql_models.</span></span><span class="sig-name descname"><span class="pre">Distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/sql_models.html#Distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.sql_models.Distribution" title="Link to this definition">¶</a></dt>
-<dd><dl class="py attribute">
+<dd><p>Distribution model representing a distribution of samples.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Distribution.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#project.utils.sql_models.Distribution.id" title="Link to this definition">¶</a></dt>
+<dd><p>Primary key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Distribution.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#project.utils.sql_models.Distribution.name" title="Link to this definition">¶</a></dt>
+<dd><p>Unique name of the distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Distribution.created_at">
+<span class="sig-name descname"><span class="pre">created_at</span></span><a class="headerlink" href="#project.utils.sql_models.Distribution.created_at" title="Link to this definition">¶</a></dt>
+<dd><p>Timestamp when the distribution was created.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>datetime</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Distribution.samples">
+<span class="sig-name descname"><span class="pre">samples</span></span><a class="headerlink" href="#project.utils.sql_models.Distribution.samples" title="Link to this definition">¶</a></dt>
+<dd><p>A JSON field storing a list of sample names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>JSON</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Distribution.organizations">
+<span class="sig-name descname"><span class="pre">organizations</span></span><a class="headerlink" href="#project.utils.sql_models.Distribution.organizations" title="Link to this definition">¶</a></dt>
+<dd><p>Organizations associated with this distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#project.utils.sql_models.Organization" title="project.utils.sql_models.Organization">Organization</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="project.utils.sql_models.Distribution.query">
 <span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">t.ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Query</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#project.utils.sql_models.Distribution.query" title="Link to this definition">¶</a></dt>
 <dd><p>A SQLAlchemy query for a model. Equivalent to <code class="docutils literal notranslate"><span class="pre">db.session.query(Model)</span></code>. Can be
@@ -211,7 +522,63 @@ customized per-model by overriding <code class="xref py py-attr docutils literal
 <dl class="py class">
 <dt class="sig sig-object py" id="project.utils.sql_models.Notification">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">project.utils.sql_models.</span></span><span class="sig-name descname"><span class="pre">Notification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/sql_models.html#Notification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.sql_models.Notification" title="Link to this definition">¶</a></dt>
-<dd><dl class="py attribute">
+<dd><p>Notification model representing a notification for a user.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Notification.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#project.utils.sql_models.Notification.id" title="Link to this definition">¶</a></dt>
+<dd><p>Primary key (autoincremented).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Notification.user_email">
+<span class="sig-name descname"><span class="pre">user_email</span></span><a class="headerlink" href="#project.utils.sql_models.Notification.user_email" title="Link to this definition">¶</a></dt>
+<dd><p>Email of the user receiving the notification.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Notification.message">
+<span class="sig-name descname"><span class="pre">message</span></span><a class="headerlink" href="#project.utils.sql_models.Notification.message" title="Link to this definition">¶</a></dt>
+<dd><p>The notification message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Notification.is_dismissed">
+<span class="sig-name descname"><span class="pre">is_dismissed</span></span><a class="headerlink" href="#project.utils.sql_models.Notification.is_dismissed" title="Link to this definition">¶</a></dt>
+<dd><p>Flag indicating if the notification has been dismissed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Notification.created_at">
+<span class="sig-name descname"><span class="pre">created_at</span></span><a class="headerlink" href="#project.utils.sql_models.Notification.created_at" title="Link to this definition">¶</a></dt>
+<dd><p>Timestamp when the notification was created.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>datetime</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="project.utils.sql_models.Notification.query">
 <span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">t.ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Query</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#project.utils.sql_models.Notification.query" title="Link to this definition">¶</a></dt>
 <dd><p>A SQLAlchemy query for a model. Equivalent to <code class="docutils literal notranslate"><span class="pre">db.session.query(Model)</span></code>. Can be
@@ -223,12 +590,71 @@ customized per-model by overriding <code class="xref py py-attr docutils literal
 </div>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="project.utils.sql_models.Notification.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/sql_models.html#Notification.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.sql_models.Notification.to_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Convert the Notification instance to a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary representation of the notification.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="project.utils.sql_models.Organization">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">project.utils.sql_models.</span></span><span class="sig-name descname"><span class="pre">Organization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/sql_models.html#Organization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.sql_models.Organization" title="Link to this definition">¶</a></dt>
-<dd><dl class="py attribute">
+<dd><p>Organization model representing an organization in the system.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Organization.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#project.utils.sql_models.Organization.id" title="Link to this definition">¶</a></dt>
+<dd><p>Primary key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Organization.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#project.utils.sql_models.Organization.name" title="Link to this definition">¶</a></dt>
+<dd><p>Unique name of the organization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Organization.users">
+<span class="sig-name descname"><span class="pre">users</span></span><a class="headerlink" href="#project.utils.sql_models.Organization.users" title="Link to this definition">¶</a></dt>
+<dd><p>List of User objects associated with this organization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#project.utils.sql_models.User" title="project.utils.sql_models.User">User</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Organization.distributions">
+<span class="sig-name descname"><span class="pre">distributions</span></span><a class="headerlink" href="#project.utils.sql_models.Organization.distributions" title="Link to this definition">¶</a></dt>
+<dd><p>List of Distribution objects linked via a many-to-many relationship.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#project.utils.sql_models.Distribution" title="project.utils.sql_models.Distribution">Distribution</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="project.utils.sql_models.Organization.query">
 <span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">t.ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Query</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#project.utils.sql_models.Organization.query" title="Link to this definition">¶</a></dt>
 <dd><p>A SQLAlchemy query for a model. Equivalent to <code class="docutils literal notranslate"><span class="pre">db.session.query(Model)</span></code>. Can be
@@ -245,7 +671,118 @@ customized per-model by overriding <code class="xref py py-attr docutils literal
 <dl class="py class">
 <dt class="sig sig-object py" id="project.utils.sql_models.Submission">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">project.utils.sql_models.</span></span><span class="sig-name descname"><span class="pre">Submission</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/sql_models.html#Submission"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.sql_models.Submission" title="Link to this definition">¶</a></dt>
-<dd><dl class="py attribute">
+<dd><p>Submission model representing a sample submission.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Submission.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#project.utils.sql_models.Submission.id" title="Link to this definition">¶</a></dt>
+<dd><p>Primary key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Submission.user_id">
+<span class="sig-name descname"><span class="pre">user_id</span></span><a class="headerlink" href="#project.utils.sql_models.Submission.user_id" title="Link to this definition">¶</a></dt>
+<dd><p>Foreign key referencing the User.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Submission.organization_id">
+<span class="sig-name descname"><span class="pre">organization_id</span></span><a class="headerlink" href="#project.utils.sql_models.Submission.organization_id" title="Link to this definition">¶</a></dt>
+<dd><p>Foreign key referencing the Organization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Submission.distribution_id">
+<span class="sig-name descname"><span class="pre">distribution_id</span></span><a class="headerlink" href="#project.utils.sql_models.Submission.distribution_id" title="Link to this definition">¶</a></dt>
+<dd><p>Foreign key referencing the Distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Submission.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><a class="headerlink" href="#project.utils.sql_models.Submission.sample" title="Link to this definition">¶</a></dt>
+<dd><p>The identifier of the submitted sample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Submission.sequencing_type">
+<span class="sig-name descname"><span class="pre">sequencing_type</span></span><a class="headerlink" href="#project.utils.sql_models.Submission.sequencing_type" title="Link to this definition">¶</a></dt>
+<dd><p>Type of sequencing performed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Submission.submission_date">
+<span class="sig-name descname"><span class="pre">submission_date</span></span><a class="headerlink" href="#project.utils.sql_models.Submission.submission_date" title="Link to this definition">¶</a></dt>
+<dd><p>Date and time of the submission.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>datetime</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Submission.user">
+<span class="sig-name descname"><span class="pre">user</span></span><a class="headerlink" href="#project.utils.sql_models.Submission.user" title="Link to this definition">¶</a></dt>
+<dd><p>Relationship to the User.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#project.utils.sql_models.User" title="project.utils.sql_models.User">User</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Submission.organization">
+<span class="sig-name descname"><span class="pre">organization</span></span><a class="headerlink" href="#project.utils.sql_models.Submission.organization" title="Link to this definition">¶</a></dt>
+<dd><p>Relationship to the Organization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#project.utils.sql_models.Organization" title="project.utils.sql_models.Organization">Organization</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.Submission.distribution">
+<span class="sig-name descname"><span class="pre">distribution</span></span><a class="headerlink" href="#project.utils.sql_models.Submission.distribution" title="Link to this definition">¶</a></dt>
+<dd><p>Relationship to the Distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#project.utils.sql_models.Distribution" title="project.utils.sql_models.Distribution">Distribution</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="project.utils.sql_models.Submission.query">
 <span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">t.ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Query</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#project.utils.sql_models.Submission.query" title="Link to this definition">¶</a></dt>
 <dd><p>A SQLAlchemy query for a model. Equivalent to <code class="docutils literal notranslate"><span class="pre">db.session.query(Model)</span></code>. Can be
@@ -262,7 +799,124 @@ customized per-model by overriding <code class="xref py py-attr docutils literal
 <dl class="py class">
 <dt class="sig sig-object py" id="project.utils.sql_models.User">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">project.utils.sql_models.</span></span><span class="sig-name descname"><span class="pre">User</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">organization</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">role</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'user'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/sql_models.html#User"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.sql_models.User" title="Link to this definition">¶</a></dt>
-<dd><dl class="py attribute">
+<dd><p>User model representing an application user.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.User.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#project.utils.sql_models.User.id" title="Link to this definition">¶</a></dt>
+<dd><p>Primary key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.User.email">
+<span class="sig-name descname"><span class="pre">email</span></span><a class="headerlink" href="#project.utils.sql_models.User.email" title="Link to this definition">¶</a></dt>
+<dd><p>Unique email address of the user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.User.username">
+<span class="sig-name descname"><span class="pre">username</span></span><a class="headerlink" href="#project.utils.sql_models.User.username" title="Link to this definition">¶</a></dt>
+<dd><p>Username for the user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.User.role">
+<span class="sig-name descname"><span class="pre">role</span></span><a class="headerlink" href="#project.utils.sql_models.User.role" title="Link to this definition">¶</a></dt>
+<dd><p>Role of the user (e.g., “user”, “superuser”).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.User.organization_id">
+<span class="sig-name descname"><span class="pre">organization_id</span></span><a class="headerlink" href="#project.utils.sql_models.User.organization_id" title="Link to this definition">¶</a></dt>
+<dd><p>Foreign key linking the user to an Organization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.User.password">
+<span class="sig-name descname"><span class="pre">password</span></span><a class="headerlink" href="#project.utils.sql_models.User.password" title="Link to this definition">¶</a></dt>
+<dd><p>Hashed password.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.User.active">
+<span class="sig-name descname"><span class="pre">active</span></span><a class="headerlink" href="#project.utils.sql_models.User.active" title="Link to this definition">¶</a></dt>
+<dd><p>Flag indicating if the user is active.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="project.utils.sql_models.User.organization">
+<span class="sig-name descname"><span class="pre">organization</span></span><a class="headerlink" href="#project.utils.sql_models.User.organization" title="Link to this definition">¶</a></dt>
+<dd><p>The Organization object associated with the user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#project.utils.sql_models.Organization" title="project.utils.sql_models.Organization">Organization</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="project.utils.sql_models.User.is_active">
+<span class="sig-name descname"><span class="pre">is_active</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/sql_models.html#User.is_active"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.sql_models.User.is_active" title="Link to this definition">¶</a></dt>
+<dd><p>Check if the user is active.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True, indicating the user is active.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="project.utils.sql_models.User.is_superuser">
+<span class="sig-name descname"><span class="pre">is_superuser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project/utils/sql_models.html#User.is_superuser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#project.utils.sql_models.User.is_superuser" title="Link to this definition">¶</a></dt>
+<dd><p>Check if the user has superuser privileges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if the user’s role is ‘superuser’, otherwise False.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="project.utils.sql_models.User.query">
 <span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">t.ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Query</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#project.utils.sql_models.User.query" title="Link to this definition">¶</a></dt>
 <dd><p>A SQLAlchemy query for a model. Equivalent to <code class="docutils literal notranslate"><span class="pre">db.session.query(Model)</span></code>. Can be
@@ -277,89 +931,6 @@ customized per-model by overriding <code class="xref py py-attr docutils literal
 </dd></dl>
 
 </section>
-</section>
-<section id="frontend-documentation">
-<h1>Frontend Documentation<a class="headerlink" href="#frontend-documentation" title="Link to this heading">¶</a></h1>
-<p>Here is the documentation for the frontend (React) code:</p>
-<dl class="js class">
-<dt class="sig sig-object js" id="App">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="n"><span class="pre">App</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">props</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#App" title="Link to this definition">¶</a></dt>
-<dd><p>Main application component.
-Manages user authentication, routing, and layout rendering.</p>
-<p>Initializes the App component and sets initial state.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Arguments<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>props</strong> (<em>Object</em>) – Component properties.</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="js function">
-<dt class="sig sig-object js" id="App.checkLoginStatus">
-<span class="sig-prename descclassname"><span class="n"><span class="pre">App</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">checkLoginStatus</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#App.checkLoginStatus" title="Link to this definition">¶</a></dt>
-<dd><p>Checks the user’s login status by making an API call.
-Updates state accordingly.</p>
-</dd></dl>
-
-<dl class="js function">
-<dt class="sig sig-object js" id="App.componentDidMount">
-<span class="sig-prename descclassname"><span class="n"><span class="pre">App</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">componentDidMount</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#App.componentDidMount" title="Link to this definition">¶</a></dt>
-<dd><p>Lifecycle method that runs when the component mounts.
-Checks login status and adds event listener for window resize.</p>
-</dd></dl>
-
-<dl class="js function">
-<dt class="sig sig-object js" id="App.componentWillUnmount">
-<span class="sig-prename descclassname"><span class="n"><span class="pre">App</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">componentWillUnmount</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#App.componentWillUnmount" title="Link to this definition">¶</a></dt>
-<dd><p>Lifecycle method that runs when the component unmounts.
-Removes event listener for window resize.</p>
-</dd></dl>
-
-<dl class="js function">
-<dt class="sig sig-object js" id="App.handleLogin">
-<span class="sig-prename descclassname"><span class="n"><span class="pre">App</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">handleLogin</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#App.handleLogin" title="Link to this definition">¶</a></dt>
-<dd><p>Handles user login by sending credentials to API.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Arguments<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>event</strong> (<em>Event</em>) – Form submit event.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="js function">
-<dt class="sig sig-object js" id="App.handleLogout">
-<span class="sig-prename descclassname"><span class="n"><span class="pre">App</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">handleLogout</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#App.handleLogout" title="Link to this definition">¶</a></dt>
-<dd><p>Handles user logout by making an API call.</p>
-</dd></dl>
-
-<dl class="js function">
-<dt class="sig sig-object js" id="App.handleResize">
-<span class="sig-prename descclassname"><span class="n"><span class="pre">App</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">handleResize</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#App.handleResize" title="Link to this definition">¶</a></dt>
-<dd><p>Updates window width state when resized.</p>
-</dd></dl>
-
-<dl class="js function">
-<dt class="sig sig-object js" id="App.render">
-<span class="sig-prename descclassname"><span class="n"><span class="pre">App</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">render</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#App.render" title="Link to this definition">¶</a></dt>
-<dd><p>Main render function.</p>
-</dd></dl>
-
-<dl class="js function">
-<dt class="sig sig-object js" id="App.renderApp">
-<span class="sig-prename descclassname"><span class="n"><span class="pre">App</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">renderApp</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#App.renderApp" title="Link to this definition">¶</a></dt>
-<dd><p>Renders the main application when the user is logged in.</p>
-</dd></dl>
-
-<dl class="js function">
-<dt class="sig sig-object js" id="App.renderLoginForm">
-<span class="sig-prename descclassname"><span class="n"><span class="pre">App</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">renderLoginForm</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#App.renderLoginForm" title="Link to this definition">¶</a></dt>
-<dd><p>Renders the login form when the user is not authenticated.</p>
-</dd></dl>
-
-</dd></dl>
-
 </section>
 
 
@@ -390,18 +961,24 @@ Removes event listener for window resize.</p>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">project</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="manage.html">Backend management</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Backend endpoints</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="project.html">project package</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#project-utils">project.utils</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="#backend-utils">Backend utils</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-project.utils.docx">project.utils.docx</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#docx-py">docx.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#project.utils.docx.add_page_number"><code class="docutils literal notranslate"><span class="pre">add_page_number()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#project.utils.docx.create_attribute"><code class="docutils literal notranslate"><span class="pre">create_attribute()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#project.utils.docx.create_element"><code class="docutils literal notranslate"><span class="pre">create_element()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#project.utils.docx.create_pygenometracks_plot"><code class="docutils literal notranslate"><span class="pre">create_pygenometracks_plot()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#project.utils.docx.generate_docx_report"><code class="docutils literal notranslate"><span class="pre">generate_docx_report()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#project.utils.docx.generate_sample_plot_pdf"><code class="docutils literal notranslate"><span class="pre">generate_sample_plot_pdf()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-project.utils.report_parser">project.utils.report_parser</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#report-parser-py">report_parser.py</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#project.utils.report_parser.parse_nextclade_file"><code class="docutils literal notranslate"><span class="pre">parse_nextclade_file()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#project.utils.report_parser.parse_qualimap"><code class="docutils literal notranslate"><span class="pre">parse_qualimap()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#project.utils.report_parser.process_all_reports"><code class="docutils literal notranslate"><span class="pre">process_all_reports()</span></code></a></li>
@@ -409,26 +986,12 @@ Removes event listener for window resize.</p>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-project.utils.sql_models">project.utils.sql_models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sql-models-py">sql_models.py</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#project.utils.sql_models.Distribution"><code class="docutils literal notranslate"><span class="pre">Distribution</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#project.utils.sql_models.Notification"><code class="docutils literal notranslate"><span class="pre">Notification</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#project.utils.sql_models.Organization"><code class="docutils literal notranslate"><span class="pre">Organization</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#project.utils.sql_models.Submission"><code class="docutils literal notranslate"><span class="pre">Submission</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#project.utils.sql_models.User"><code class="docutils literal notranslate"><span class="pre">User</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#frontend-documentation">Frontend Documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#App"><code class="docutils literal notranslate"><span class="pre">App</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#App.checkLoginStatus"><code class="docutils literal notranslate"><span class="pre">App.checkLoginStatus()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#App.componentDidMount"><code class="docutils literal notranslate"><span class="pre">App.componentDidMount()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#App.componentWillUnmount"><code class="docutils literal notranslate"><span class="pre">App.componentWillUnmount()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#App.handleLogin"><code class="docutils literal notranslate"><span class="pre">App.handleLogin()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#App.handleLogout"><code class="docutils literal notranslate"><span class="pre">App.handleLogout()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#App.handleResize"><code class="docutils literal notranslate"><span class="pre">App.handleResize()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#App.render"><code class="docutils literal notranslate"><span class="pre">App.render()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#App.renderApp"><code class="docutils literal notranslate"><span class="pre">App.renderApp()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#App.renderLoginForm"><code class="docutils literal notranslate"><span class="pre">App.renderLoginForm()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -439,7 +1002,7 @@ Removes event listener for window resize.</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">rsv-neqas documentation</a></li>
+      <li>Previous: <a href="manage.html" title="previous chapter">Backend management</a></li>
       <li>Next: <a href="project.html" title="next chapter">project package</a></li>
   </ul></li>
 </ul>

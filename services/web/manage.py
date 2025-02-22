@@ -1,3 +1,25 @@
+"""
+manage.py
+============
+
+This module enables live interaction with the web service, with the possibility to define new cli commands even once the server is up and running.
+
+Important functions:
+    seed_db()
+        Seeds the SQL database with distributions, organizations, users and submissions, based on what is mounted in the services/web/data/ volume. 
+        Will not produce changes if database is already seeded.
+
+    build_docs()
+        Automates the updating of Sphinx documentation of the Python web codebase. Can also receive the frontend JSDocs  and add it to the Sphinx docs.
+
+    **Usage:**
+    >>> (sudo) docker-compose exec web python3 manage.py seed_db    
+    >>> (sudo) docker-compose exec web python3 manage.py build_docs
+
+:author: Kevin
+:version: 0.0.1
+:date: 2025-02-20
+"""
 import os, subprocess
 import click
 from flask.cli import FlaskGroup
@@ -6,7 +28,8 @@ from rq import Worker, Connection
 from werkzeug.security import generate_password_hash
 from sqlalchemy.exc import IntegrityError
 
-from project import app, db, User, Distribution, Organization, Submission
+from project import app, db
+from project.utils.sql_models import User, Distribution, Organization, Submission
 
 
 cli = FlaskGroup(app)
@@ -76,6 +99,7 @@ def seed_db():
         # Add users
         db.session.add(User(email="elon@gmail.com", username="elonmusk", password=generate_password_hash("passwordtesla"), role="superuser", organization=org_dict.get("9999")))
         db.session.add(User(email="bill@gmail.com", username="bill", password=generate_password_hash("password1"),  organization=org_dict.get("WR099")))
+        db.session.add(User(email="wr024@gmail.com", username="wr024", password=generate_password_hash("passwordwr024"),  organization=org_dict.get("WR024")))
         db.session.add(User(email="jill@gmail.com", username="jill", password=generate_password_hash("password2"),  organization=org_dict.get("WR090")))
         db.session.add(User(email="testOrg@gmail.com", username="testOrg", password=generate_password_hash("testOrg"),  organization=org_dict.get("testOrg"), role="superuser"))
         db.session.add(User(email="testUser@gmail.com", username="testUser", password=generate_password_hash("testUser"),  organization=org_dict.get("testOrg")))

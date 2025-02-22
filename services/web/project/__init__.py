@@ -1,32 +1,30 @@
-from flask import Flask, jsonify, send_from_directory, send_file, request
-from flask_login import login_required, current_user 
+"""
+__init__.py
+============
 
-import os, subprocess, gzip, shutil
+This module initialises the app, registers module blueprints and sets app configs, and initiates the redis, login, socket, database and mail listeners and managers.
 
+Functions:
+    None
 
-from functools import wraps
+:author: Kevin
+:version: 0.0.1
+:date: 2025-02-20
+"""
+# Imports
+from flask import Flask, request
 from flask_cors import CORS
-from project.utils.report_parser import process_all_reports
-from project.utils.docx import generate_docx_report
-from project.utils.sql_models import db, User, Distribution, Notification, Organization, Submission
+import os, redis
+
 # Blueprints
 from .admin import mail,admin_bp
 from .notifications import socketio, notif_bp
 from .authentication import login_manager, auth_bp
 from .upload import upload_bp
 from .data import data_bp
-from werkzeug.utils import secure_filename
 
-from datetime import datetime
-import redis
-from rq import Queue, Connection
-from flask import jsonify, request, current_app
-import time
-
-from werkzeug.security import check_password_hash, generate_password_hash
-import pysam
-
-
+# Database utils
+from project.utils.sql_models import db
 
 # Define where files will be uploaded
 UPLOAD_FOLDER = 'data'
@@ -34,6 +32,8 @@ UPLOAD_FOLDER = 'data'
 website_name = os.environ.get("WEBSITE_NAME", "default_website_name")
 subdirectory_name = os.environ.get("SUBDIRECTORY_NAME", "default_subdirectory_name")
 redis_port = os.environ.get("REDIS_PORT", "6379")
+
+# Initiate app
 app = Flask(__name__)
 # Register blueprints (containing all the REST endpoints and extra logic) in the app
 for bp in [admin_bp,notif_bp,auth_bp,upload_bp, data_bp]:
@@ -67,6 +67,11 @@ socketio.init_app(app, message_queue=app.config["REDIS_URL"], path=f"{subdirecto
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+
+
+
+
+"""
 def create_task(task_type):
     time.sleep(int(task_type) * 10)
     return True
@@ -100,6 +105,6 @@ def get_status(task_id):
     else:
         response_object = {"status": "error"}
     return jsonify(response_object)
-
+"""
 
 

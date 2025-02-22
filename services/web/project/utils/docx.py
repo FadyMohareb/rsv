@@ -1,10 +1,39 @@
+"""
+docx.py
+=======
+This utilities module is in charge of processing the data of a distribution and preparing its docx report.
+
+Functions:
+
+    generate_sample_plot_pdf(sample_name, sample_data, role)
+        Creates a stacked bar and line graph for sample data visualization.
+
+    create_pygenometracks_plot(reference_genome, annotation, region, bed_path, bigwig_file, bigwig_consensus_file, output_dir, sample_name, user_lab)
+        Uses pyGenomeTracks to generate genome coverage plots.
+
+    create_element(name)
+        Creates an XML element for DOCX formatting.
+
+    create_attribute(element, name, value)
+        Adds an attribute to an XML element.
+
+    add_page_number(run)
+        Inserts a page number field in a DOCX document.
+    
+    generate_docx_reportreport_data, base_dir, role, user_lab, distribution
+        Generates a DOCX report summarizing viric genome analysis results.
+
+:author: Kevin
+:version: 0.0.1
+:date: 2025-02-21
+"""
+
 import datetime
 from io import BytesIO
 from docx import Document
 from docx.shared import Inches,Pt, Cm, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_BREAK, WD_COLOR_INDEX
 from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.enum.style import WD_STYLE
 from docx.oxml import OxmlElement, ns
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
@@ -16,7 +45,18 @@ import subprocess
 import shutil
 
 def generate_sample_plot_pdf(sample_name, sample_data, role):
-    """Generates a Matplotlib stacked bar and line graph with dual y-axes for a single sample."""
+    """
+    Generates a stacked bar and line graph using Matplotlib for a given sample.
+
+    :param sample_name: The name of the sample, used for file naming.
+    :type sample_name: str
+    :param sample_data: Dictionary containing sample statistics (coverage, similarity, etc.).
+    :type sample_data: dict
+    :param role: User role (affects visualisation style).
+    :type role: str
+    :return: The file path of the generated plot image.
+    :rtype: str
+    """
     
     # Extract the data for plotting (adjust based on your dataset structure)
     labs = list(sample_data.keys())
@@ -110,14 +150,33 @@ def generate_sample_plot_pdf(sample_name, sample_data, role):
 
 def create_pygenometracks_plot(reference_genome, annotation, region, bed_path, bigwig_file, bigwig_consensus_file, output_dir, sample_name, user_lab):
     """
-    Generate a genome coverage plot using pyGenomeTracks for a specific user_lab.
+    Generates a genome coverage plot using pyGenomeTracks for a specific user_lab.
 
-    Creates a tracks.ini file that includes:
-      - a reference track (from the provided FASTA),
-      - an annotation track (from the provided GFF3), and
-      - a bigwig track (from the provided BigWig file).
-      
-    The plot is generated for the given region.
+    Creates a tracks.ini file that configures:
+      - A reference track (FASTA),
+      - An annotation track (GFF3),
+      - A bigwig track (BigWig file).
+
+    :param reference_genome: Path to the reference genome FASTA file.
+    :type reference_genome: str
+    :param annotation: Path to the GFF3 annotation file.
+    :type annotation: str
+    :param region: Genomic region to visualize.
+    :type region: str
+    :param bed_path: Path to the BED file with sequence variants.
+    :type bed_path: str
+    :param bigwig_file: Path to the BigWig file containing read coverage data.
+    :type bigwig_file: str
+    :param bigwig_consensus_file: Path to the consensus BigWig file.
+    :type bigwig_consensus_file: str
+    :param output_dir: Directory where the plot and ini file will be saved.
+    :type output_dir: str
+    :param sample_name: Sample identifier.
+    :type sample_name: str
+    :param user_lab: User lab identifier.
+    :type user_lab: str
+    :return: File path of the generated coverage plot.
+    :rtype: str
     """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -181,12 +240,36 @@ def create_pygenometracks_plot(reference_genome, annotation, region, bed_path, b
 
 
 def create_element(name):
+    """
+    Creates an XML element for use in DOCX formatting.
+
+    :param name: The name of the XML element.
+    :type name: str
+    :return: The created XML element.
+    :rtype: OxmlElement
+    """
     return OxmlElement(name)
 
 def create_attribute(element, name, value):
+    """
+    Adds an attribute to an XML element.
+
+    :param element: The XML element to modify.
+    :type element: OxmlElement
+    :param name: The attribute name.
+    :type name: str
+    :param value: The attribute value.
+    :type value: str
+    """
     element.set(ns.qn(name), value)
 
 def add_page_number(run):
+    """
+    Inserts a page number field in a DOCX document.
+
+    :param run: A DOCX run object where the page number field is inserted.
+    :type run: docx.text.run.Run
+    """
     fldChar1 = create_element('w:fldChar')
     create_attribute(fldChar1, 'w:fldCharType', 'begin')
 
@@ -202,7 +285,24 @@ def add_page_number(run):
     run._r.append(fldChar2)
 
 def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
-    """Route for generating the DOCX report."""
+    """
+    Generates a DOCX report summarizing genomic analysis results for a given distribution.
+
+    The report includes sample statistics, visualizations, and formatted text.
+
+    :param report_data: Processed data containing genomic viral analysis results.
+    :type report_data: dict
+    :param base_dir: Base directory containing report-related files.
+    :type base_dir: str
+    :param role: User role determining report formatting.
+    :type role: str
+    :param user_lab: User lab identifier.
+    :type user_lab: str
+    :param distribution: The distribution to .
+    :type distribution: str
+    :return: the generated DOCX report.
+    :rtype: docx
+    """
     report_data = process_all_reports(base_dir)
     distribution=str(base_dir.split("/")[1])
     samples_file = f"{base_dir}/samples.txt"
@@ -211,9 +311,6 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         for line in f:
             sample_id, reference = line.strip().split()
             sample_reference_map[sample_id] = reference
-
-    lorem_text = """Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum vehicula quam sit amet feugiat ullamcorper. Phasellus non bibendum odio. Fusce nec purus et metus malesuada dapibus. Morbi gravida nisl vitae fringilla vulputate. Integer ac laoreet magna, sit amet rutrum lectus. Aliquam tincidunt, magna et mollis aliquam, nulla est dictum lectus, sit amet volutpat nunc nulla nec felis. Ut eu nunc eget felis varius tempus."""
-    lorem_text_short = """Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum vehicula quam sit amet feugiat ullamcorper."""
 
     from docx.oxml import OxmlElement, ns
 

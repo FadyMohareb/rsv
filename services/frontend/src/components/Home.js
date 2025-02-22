@@ -1,3 +1,10 @@
+/**
+ * @module Home
+ * @memberof App
+ * @description Renders the Home page with a welcome message and a navigation button to DataView.
+ * @returns {JSX.Element} The rendered Home page.
+ */
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook
 

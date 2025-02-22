@@ -31,7 +31,27 @@
           <div class="body" role="main">
             
   <h1>Source code for project.data</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">current_app</span><span class="p">,</span> <span class="n">send_file</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">data.py</span>
+<span class="sd">=======</span>
+
+<span class="sd">This module provides endpoints for managing distribution data and sample reports.</span>
+
+<span class="sd">It includes endpoints to:</span>
+<span class="sd">    Fetch distributions associated with the current user&#39;s organization.</span>
+<span class="sd">    Retrieve sample details and aggregated metrics for a distribution.</span>
+<span class="sd">    Proxy static genome files (FASTA, FAI, GZI, GFF3) for specified references.</span>
+<span class="sd">    Serve consensus BAM, BAI, and BigWig files for individual samples.</span>
+<span class="sd">    Generate and download DOCX reports based on lab reports.</span>
+
+<span class="sd">WARNING: the static files are consumed by JBrowse2, which cant send credentials hence the </span>
+<span class="sd">endpoints are available to everyone and pose a safety risk. Must be revamped.</span>
+
+<span class="sd">:author: Kevin</span>
+<span class="sd">:version: 0.0.1</span>
+<span class="sd">:date: 2025-02-21</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">current_app</span><span class="p">,</span> <span class="n">send_file</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flask_login</span><span class="w"> </span><span class="kn">import</span> <span class="n">current_user</span><span class="p">,</span> <span class="n">login_required</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">project.utils.sql_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Distribution</span><span class="p">,</span> <span class="n">Organization</span><span class="p">,</span> <span class="n">Submission</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -41,12 +61,22 @@
 <span class="c1"># Create the blueprint</span>
 <span class="n">data_bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
 <span class="n">website_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;WEBSITE_NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;default_website_name&quot;</span><span class="p">)</span>
+<span class="n">subdirectory_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SUBDIRECTORY_NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;default_subdirectory_name&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="distribution_manager">
 <a class="viewcode-back" href="../../project.html#project.data.distribution_manager">[docs]</a>
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/distribution_fetch&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">],</span> <span class="n">strict_slashes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="nd">@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">distribution_manager</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetch distributions associated with the current user&#39;s organization.</span>
+
+<span class="sd">    For GET requests, returns a JSON object with a list of distribution names</span>
+<span class="sd">    for which the user&#39;s organization is registered.</span>
+
+<span class="sd">    :return: JSON object with key &quot;distributions&quot; and a list of distribution names.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;GET&quot;</span><span class="p">:</span>
         <span class="c1"># Fetch all distributions from the database</span>
         <span class="n">distributions</span> <span class="o">=</span> <span class="n">Distribution</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Distribution</span><span class="o">.</span><span class="n">organizations</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">current_user</span><span class="o">.</span><span class="n">organization</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
@@ -61,6 +91,17 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/distributions/&lt;distribution&gt;/samples&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">],</span> <span class="n">strict_slashes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="nd">@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">samples_per_distro_manager</span><span class="p">(</span><span class="n">distribution</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve sample information for a specified distribution.</span>
+
+<span class="sd">    For GET requests, returns a JSON object containing the distribution name</span>
+<span class="sd">    and the list of samples registered to it.</span>
+
+<span class="sd">    :param distribution: The name of the distribution.</span>
+<span class="sd">    :type distribution: str</span>
+<span class="sd">    :return: JSON response with distribution and sample data.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;GET&quot;</span><span class="p">:</span>
         <span class="c1"># Fetch the distribution from the database</span>
         <span class="n">distribution_record</span> <span class="o">=</span> <span class="n">Distribution</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">distribution</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
@@ -79,6 +120,17 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/distribution_data/&lt;distribution&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
 <span class="nd">@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_distribution_data</span><span class="p">(</span><span class="n">distribution</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process and return aggregated report data for a given distribution.</span>
+
+<span class="sd">    Loads a sample-to-reference mapping from &#39;samples.txt&#39;, processes lab reports,</span>
+<span class="sd">    aggregates metrics for each sample, and returns the distribution data as JSON.</span>
+
+<span class="sd">    :param distribution: The name of the distribution.</span>
+<span class="sd">    :type distribution: str</span>
+<span class="sd">    :return: JSON object containing aggregated metrics per sample.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sample data request received&quot;</span><span class="p">)</span>  <span class="c1"># Debugging line</span>
     <span class="n">dist</span> <span class="o">=</span> <span class="n">Distribution</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">distribution</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
     <span class="n">base_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;data/</span><span class="si">{</span><span class="n">dist</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># Root directory for lab reports</span>
@@ -118,8 +170,14 @@
 <div class="viewcode-block" id="proxy_fasta1">
 <a class="viewcode-back" href="../../project.html#project.data.proxy_fasta1">[docs]</a>
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/proxy_fasta_EPI_ISL_412866&quot;</span><span class="p">)</span>
-<span class="c1">#@login_required</span>
+<span class="c1">#@login_required these endpoints are to serve files to JBrowse2, which cant send credentials.</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">proxy_fasta1</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serve the FASTA file for reference EPI_ISL_412866.</span>
+
+<span class="sd">    :return: FASTA file from the static genomes directory.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">send_static_file</span><span class="p">(</span><span class="s1">&#39;genomes/EPI_ISL_412866/EPI_ISL_412866.fasta&#39;</span><span class="p">)</span></div>
 
     
@@ -128,6 +186,12 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/proxy_fai_EPI_ISL_412866&quot;</span><span class="p">)</span>
 <span class="c1">#@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">proxy_fai1</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serve the FAI index file for reference EPI_ISL_412866.</span>
+
+<span class="sd">    :return: FAI file from the static genomes directory.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">send_static_file</span><span class="p">(</span><span class="s1">&#39;genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.fai&#39;</span><span class="p">)</span></div>
 
 
@@ -136,6 +200,12 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/proxy_gzi_EPI_ISL_412866&quot;</span><span class="p">)</span>
 <span class="c1">#@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">proxy_gzi1</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serve the gzipped FASTA file for reference EPI_ISL_412866.</span>
+
+<span class="sd">    :return: Gzipped FASTA file.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">send_static_file</span><span class="p">(</span><span class="s1">&#39;genomes/EPI_ISL_412866/EPI_ISL_412866.fasta.gz&#39;</span><span class="p">)</span></div>
 
 
@@ -144,6 +214,12 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/proxy_gff3_EPI_ISL_412866&quot;</span><span class="p">)</span>
 <span class="c1">#@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">proxy_gff1</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serve the GFF3 file for reference EPI_ISL_412866.</span>
+
+<span class="sd">    :return: GFF3 file.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">send_static_file</span><span class="p">(</span><span class="s1">&#39;genomes/EPI_ISL_412866/EPI_ISL_412866.gff3&#39;</span><span class="p">)</span></div>
 
 
@@ -152,6 +228,12 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/proxy_fasta_EPI_ISL_1653999&quot;</span><span class="p">)</span>
 <span class="c1">#@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">proxy_fasta2</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serve the FASTA file for reference EPI_ISL_1653999.</span>
+
+<span class="sd">    :return: FASTA file.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">send_static_file</span><span class="p">(</span><span class="s1">&#39;genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta&#39;</span><span class="p">)</span></div>
 
     
@@ -160,6 +242,12 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/proxy_fai_EPI_ISL_1653999&quot;</span><span class="p">)</span>
 <span class="c1">#@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">proxy_fai2</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serve the FAI index file for reference EPI_ISL_1653999.</span>
+
+<span class="sd">    :return: FAI file.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">send_static_file</span><span class="p">(</span><span class="s1">&#39;genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.fai&#39;</span><span class="p">)</span></div>
 
 
@@ -168,6 +256,12 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/proxy_gzi_EPI_ISL_1653999&quot;</span><span class="p">)</span>
 <span class="c1">#@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">proxy_gzi2</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serve the gzipped FASTA file for reference EPI_ISL_1653999.</span>
+
+<span class="sd">    :return: Gzipped FASTA file.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">send_static_file</span><span class="p">(</span><span class="s1">&#39;genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta.gz&#39;</span><span class="p">)</span></div>
 
 
@@ -176,6 +270,12 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/proxy_gff3_EPI_ISL_1653999&quot;</span><span class="p">)</span>
 <span class="c1">#@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">proxy_gff2</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serve the GFF3 file for reference EPI_ISL_1653999.</span>
+
+<span class="sd">    :return: GFF3 file.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">send_static_file</span><span class="p">(</span><span class="s1">&#39;genomes/EPI_ISL_1653999/EPI_ISL_1653999.gff3&#39;</span><span class="p">)</span></div>
 
 
@@ -185,6 +285,18 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/distribution_data/&lt;distribution&gt;/sample/&lt;selected_sample&gt;/participant/&lt;participant&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
 <span class="c1">#@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_sample_bam</span><span class="p">(</span><span class="n">distribution</span><span class="p">,</span><span class="n">selected_sample</span><span class="p">,</span><span class="n">participant</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serve the consensus BAM file for a given sample and participant within a distribution.</span>
+
+<span class="sd">    :param distribution: Name of the distribution.</span>
+<span class="sd">    :type distribution: str</span>
+<span class="sd">    :param selected_sample: Name of the sample.</span>
+<span class="sd">    :type selected_sample: str</span>
+<span class="sd">    :param participant: Participant&#39;s identifier (typically the lab name).</span>
+<span class="sd">    :type participant: str</span>
+<span class="sd">    :return: The consensus BAM file as an attachment.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request received for bams&quot;</span><span class="p">)</span>  <span class="c1"># Debugging line</span>
     <span class="c1"># Define the directory where your files are stored</span>
     <span class="n">dist</span> <span class="o">=</span> <span class="n">Distribution</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">distribution</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
@@ -208,6 +320,18 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/distribution_data/&lt;distribution&gt;/sample/&lt;selected_sample&gt;/participant/&lt;participant&gt;.bai&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
 <span class="c1">#@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_sample_bai</span><span class="p">(</span><span class="n">distribution</span><span class="p">,</span><span class="n">selected_sample</span><span class="p">,</span><span class="n">participant</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serve the BAI index file for a consensus BAM file.</span>
+
+<span class="sd">    :param distribution: Name of the distribution.</span>
+<span class="sd">    :type distribution: str</span>
+<span class="sd">    :param selected_sample: Name of the sample.</span>
+<span class="sd">    :type selected_sample: str</span>
+<span class="sd">    :param participant: Participant&#39;s identifier (typically the lab name).</span>
+<span class="sd">    :type participant: str</span>
+<span class="sd">    :return: The BAI file as an attachment.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request received for bais&quot;</span><span class="p">)</span>  <span class="c1"># Debugging line</span>
     <span class="c1"># Define the directory where your files are stored</span>
     <span class="n">dist</span> <span class="o">=</span> <span class="n">Distribution</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">distribution</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
@@ -231,6 +355,18 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/distribution_data/&lt;distribution&gt;/sample/&lt;selected_sample&gt;/participant/&lt;participant&gt;.bw&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
 <span class="c1">#@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_sample_bigwig</span><span class="p">(</span><span class="n">distribution</span><span class="p">,</span><span class="n">selected_sample</span><span class="p">,</span><span class="n">participant</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serve the BigWig file for a given sample and participant.</span>
+
+<span class="sd">    :param distribution: Name of the distribution.</span>
+<span class="sd">    :type distribution: str</span>
+<span class="sd">    :param selected_sample: Name of the sample.</span>
+<span class="sd">    :type selected_sample: str</span>
+<span class="sd">    :param participant: Participant&#39;s identifier (typically the lab name).</span>
+<span class="sd">    :type participant: str</span>
+<span class="sd">    :return: The BigWig file as an attachment.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request received for bams&quot;</span><span class="p">)</span>  <span class="c1"># Debugging line</span>
     <span class="c1"># Define the directory where your files are stored</span>
     <span class="n">dist</span> <span class="o">=</span> <span class="n">Distribution</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">distribution</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
@@ -253,6 +389,20 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/distribution_data/&lt;distribution&gt;/sample/&lt;selected_sample&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
 <span class="nd">@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_sample_details</span><span class="p">(</span><span class="n">distribution</span><span class="p">,</span> <span class="n">selected_sample</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve detailed report data and aggregated metrics for a specific sample within a distribution.</span>
+
+<span class="sd">    Processes lab reports from the distribution&#39;s data folder, aggregates metrics across participants,</span>
+<span class="sd">    and returns both individual and aggregated data. For superusers, all data is returned;</span>
+<span class="sd">    otherwise, only data relevant to the user&#39;s organization is provided.</span>
+
+<span class="sd">    :param distribution: Name of the distribution.</span>
+<span class="sd">    :type distribution: str</span>
+<span class="sd">    :param selected_sample: Name of the sample.</span>
+<span class="sd">    :type selected_sample: str</span>
+<span class="sd">    :return: A JSON object with table data, file URLs (BAM/BigWig), and aggregated sequencing metrics.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request received for sample: </span><span class="si">{</span><span class="n">selected_sample</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Debugging line</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">distribution</span><span class="p">)</span>
     <span class="n">dist</span> <span class="o">=</span> <span class="n">Distribution</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">distribution</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
@@ -318,8 +468,8 @@
                 <span class="s2">&quot;sequencing_type&quot;</span><span class="p">:</span> <span class="n">seq_type</span>
             <span class="p">})</span>
             <span class="k">if</span> <span class="n">read_coverage</span><span class="o">!=</span><span class="s2">&quot;N/A&quot;</span><span class="p">:</span>
-                <span class="n">bam_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">website_name</span><span class="si">}</span><span class="s2">/api/distribution_data/</span><span class="si">{</span><span class="n">distribution</span><span class="si">}</span><span class="s2">/sample/</span><span class="si">{</span><span class="n">selected_sample</span><span class="si">}</span><span class="s2">/participant/</span><span class="si">{</span><span class="n">lab</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="n">bigwig_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">website_name</span><span class="si">}</span><span class="s2">/api/distribution_data/</span><span class="si">{</span><span class="n">distribution</span><span class="si">}</span><span class="s2">/sample/</span><span class="si">{</span><span class="n">selected_sample</span><span class="si">}</span><span class="s2">/participant/</span><span class="si">{</span><span class="n">lab</span><span class="si">}</span><span class="s2">.bw&quot;</span>
+                <span class="n">bam_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">website_name</span><span class="si">}{</span><span class="n">subdirectory_name</span><span class="si">}</span><span class="s2">/api/distribution_data/</span><span class="si">{</span><span class="n">distribution</span><span class="si">}</span><span class="s2">/sample/</span><span class="si">{</span><span class="n">selected_sample</span><span class="si">}</span><span class="s2">/participant/</span><span class="si">{</span><span class="n">lab</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">bigwig_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">website_name</span><span class="si">}{</span><span class="n">subdirectory_name</span><span class="si">}</span><span class="s2">/api/distribution_data/</span><span class="si">{</span><span class="n">distribution</span><span class="si">}</span><span class="s2">/sample/</span><span class="si">{</span><span class="n">selected_sample</span><span class="si">}</span><span class="s2">/participant/</span><span class="si">{</span><span class="n">lab</span><span class="si">}</span><span class="s2">.bw&quot;</span>
                 <span class="n">bams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bam_url</span><span class="p">)</span>
                 <span class="n">bigwigs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bigwig_url</span><span class="p">)</span>
 
@@ -415,8 +565,8 @@
             <span class="n">user_bigwig_url</span><span class="o">=</span><span class="p">[]</span>
             <span class="n">plot_url</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
             <span class="k">if</span> <span class="s2">&quot;Mean coverage depth&quot;</span> <span class="ow">in</span> <span class="n">user_metrics</span> <span class="ow">and</span> <span class="n">user_metrics</span><span class="p">[</span><span class="s2">&quot;Mean coverage depth&quot;</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;N/A&quot;</span><span class="p">:</span>
-                <span class="n">user_bam_url</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">website_name</span><span class="si">}</span><span class="s2">/api/distribution_data/</span><span class="si">{</span><span class="n">distribution</span><span class="si">}</span><span class="s2">/sample/</span><span class="si">{</span><span class="n">selected_sample</span><span class="si">}</span><span class="s2">/participant/</span><span class="si">{</span><span class="n">user_lab</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
-                <span class="n">user_bigwig_url</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">website_name</span><span class="si">}</span><span class="s2">/api/distribution_data/</span><span class="si">{</span><span class="n">distribution</span><span class="si">}</span><span class="s2">/sample/</span><span class="si">{</span><span class="n">selected_sample</span><span class="si">}</span><span class="s2">/participant/</span><span class="si">{</span><span class="n">user_lab</span><span class="si">}</span><span class="s2">.bw&quot;</span><span class="p">]</span>
+                <span class="n">user_bam_url</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">website_name</span><span class="si">}{</span><span class="n">subdirectory_name</span><span class="si">}</span><span class="s2">/api/distribution_data/</span><span class="si">{</span><span class="n">distribution</span><span class="si">}</span><span class="s2">/sample/</span><span class="si">{</span><span class="n">selected_sample</span><span class="si">}</span><span class="s2">/participant/</span><span class="si">{</span><span class="n">user_lab</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
+                <span class="n">user_bigwig_url</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">website_name</span><span class="si">}{</span><span class="n">subdirectory_name</span><span class="si">}</span><span class="s2">/api/distribution_data/</span><span class="si">{</span><span class="n">distribution</span><span class="si">}</span><span class="s2">/sample/</span><span class="si">{</span><span class="n">selected_sample</span><span class="si">}</span><span class="s2">/participant/</span><span class="si">{</span><span class="n">user_lab</span><span class="si">}</span><span class="s2">.bw&quot;</span><span class="p">]</span>
 
             <span class="c1"># Aggregate metrics from other labs</span>
             <span class="n">aggregated_metrics</span> <span class="o">=</span> <span class="p">{</span>
@@ -538,7 +688,18 @@
 <span class="nd">@data_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/download_docx/&lt;distribution&gt;&quot;</span><span class="p">)</span>
 <span class="nd">@login_required</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">download_docx</span><span class="p">(</span><span class="n">distribution</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Route for generating the DOCX report.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate and send a DOCX report for a specified distribution.</span>
+
+<span class="sd">    Processes lab reports from the distribution&#39;s data folder to generate a DOCX report,</span>
+<span class="sd">    saves it temporarily, and returns the file as an attachment. Report is rendered differently,</span>
+<span class="sd">    depending on user&#39;s privileges.</span>
+
+<span class="sd">    :param distribution: The name of the distribution.</span>
+<span class="sd">    :type distribution: str</span>
+<span class="sd">    :return: The generated DOCX report file.</span>
+<span class="sd">    :rtype: flask.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dist</span> <span class="o">=</span> <span class="n">Distribution</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">distribution</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
     <span class="n">base_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;data/</span><span class="si">{</span><span class="n">dist</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># Root directory for lab reports</span>
     <span class="n">report_data</span> <span class="o">=</span> <span class="n">process_all_reports</span><span class="p">(</span><span class="n">base_dir</span><span class="p">)</span>
@@ -583,9 +744,9 @@
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html">project</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html#project-utils">project.utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html#frontend-documentation">Frontend Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../manage.html">Backend management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Backend endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html#backend-utils">Backend utils</a></li>
 </ul>
 
 <div class="relations">
@@ -593,8 +754,6 @@
 <ul>
   <li><a href="../../index.html">Documentation overview</a><ul>
   <li><a href="../index.html">Module code</a><ul>
-  <li><a href="../project.html">project</a><ul>
-  </ul></li>
   </ul></li>
   </ul></li>
 </ul>

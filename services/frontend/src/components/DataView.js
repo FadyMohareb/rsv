@@ -1,6 +1,12 @@
+/**
+ * @module DataView
+ * @memberof App
+ * @description Provides the dashboard UI for visualizing sample data, including distribution selection, sample details, plots, tables, and genomic tracks.
+ * @returns {JSX.Element} The rendered DataView component.
+ */
 import React, { Component } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import { themeQuartz, themeBalham, themeAlpine } from 'ag-grid-community';
+import { themeQuartz } from 'ag-grid-community';
 import SamplePlot from './SamplePlot.js';
 import SeqPlot from './SeqPlot.js';
 import ScaleLoader from 'react-spinners/ScaleLoader';
@@ -8,6 +14,10 @@ import DownloadButton from './DownloadButton.js';
 import { JBrowseLinearGenomeView, createViewState } from '@jbrowse/react-linear-genome-view';
 
 class DataView extends Component {
+   /**
+   * Initializes the DataView component and sets initial state. This is the main component for data visualisation.
+   * @param {Object} props - Component properties.
+   */
     constructor(props) {
         super(props);
         this.state = {
@@ -36,10 +46,20 @@ class DataView extends Component {
         this.handleTabChange = this.handleTabChange.bind(this);
     }
 
+   /**
+   * Lifecycle method invoked after component mount.
+   * Fetches distributions and initializes view state.
+   * @returns {void}
+   */
     componentDidMount() {
         this.fetchDistributions();
         this.createViewState([]); // Initialize the viewState with no tracks
     }
+   /**
+   * Creates the viewState for the Jbrowse2 genome view.
+   * @param {Array} tracks - Array of track objects to include.
+   * @returns {void}
+   */
     createViewState(tracks) {
         const { sampleSelect, sampleDetails } = this.state;
         const reference = sampleDetails[sampleSelect]?.reference || 'EPI_ISL_412866'; // Default to 'EPI_ISL_412866' if no reference found
@@ -81,7 +101,13 @@ class DataView extends Component {
         this.setState({ viewState });
     }
 
-
+   /**
+   * Loads sample plot and table data for a given sample.
+   * Fetches data from the API, creates BAM/BigWig tracks, and updates state.
+   * @async
+   * @param {string} sample - The sample identifier.
+   * @returns {Promise<void>}
+   */
     async loadSamplePlotAndData(sample) {
         try {
             this.setState({ loading: true, loadFailed: false, errorMessage: '' });
@@ -173,7 +199,11 @@ class DataView extends Component {
         }
     }
 
-    // Fetch the list of distributions
+   /**
+   * Fetches the list of distributions from the API and updates state.
+   * @async
+   * @returns {Promise<void>}
+   */
     async fetchDistributions() {
         try {
             this.setState({ loading: true });
@@ -197,7 +227,11 @@ class DataView extends Component {
             this.setState({ loading: false });
         }
     };
-
+   /**
+   * Fetches sample details for the current distribution from the API.
+   * @async
+   * @returns {Promise<void>}
+   */
     async loadSampleDetails() {
         try {
             this.setState({ loading: true });
@@ -215,7 +249,11 @@ class DataView extends Component {
         }
     }
 
-
+   /**
+   * Handles sample selection by updating state and loading associated plot and data.
+   * @param {string} sample - The selected sample identifier.
+   * @returns {void}
+   */
     handleSampleSelection(sample) {
         const { sampleDetails } = this.state;
         const numParticipants = sampleDetails[sample]?.participants || 0; // ✅ Get participants count
@@ -228,17 +266,29 @@ class DataView extends Component {
         });
     }
 
-
+   /**
+   * Handles distribution change events by updating state and fetching sample details.
+   * @param {Event} event - The change event from the distribution selector.
+   * @returns {void}
+   */
     handleDistributionChange(event) {
         this.setState({ distribution: event.target.value }, () => {
             this.loadSampleDetails(); // Executes after state update
         });
     }
-
+   /**
+   * Handles tab change events in the UI.
+   * @param {string} tabName - The new active tab.
+   * @returns {void}
+   */
     handleTabChange(tabName) {
         this.setState({ activeTab: tabName });
     }
-
+   /**
+   * Renders the DataView component UI including panels for distribution and sample selection,
+   * genome view, and tabbed data displays.
+   * @returns {JSX.Element} The rendered DataView component.
+   */
     render() {
         const {
             loading,
