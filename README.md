@@ -8,7 +8,7 @@
 
 ## App architecture
 
-The app's file structure can be inferred from the services present in `docker-compose.yml`.  Both production and development versions use all services, the only difference is the development version does not produce the optimised production build (`npm run build`), saving deployment time. 
+The app's file structure can be inferred from the services present in `docker-compose.yml`.  Both production and development versions use all services, the only difference is the development version does not produce the optimised production build for the frontend (`npm run build`), saving deployment time. 
 
 Some of these services do not require any codebase, as they are Docker images pulled from the Hub and whose functionalities require no further modification. The services that are built from custom code are:
 
