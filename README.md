@@ -8,9 +8,9 @@
 
 ## App architecture
 
-The app's file structure can be inferred from the services present in `docker-compose.yml`.  Both production and development versions use all services, the only difference is the development version does not produce the optimised production build for the frontend (`npm run build`), saving deployment time. 
+The application's file structure is determined by the services defined in `docker-compose.yml`.  Both production and development versions utilize all services, with the primary distinction being that the development version skips the production build (`npm run build`), reducing deployment time.
 
-Some of these services do not require any codebase, as they are Docker images pulled from the Hub and whose functionalities require no further modification. The services that are built from custom code are:
+Some services do not require custom code as they are pre-built Docker images pulled from Docker Hub. These services do not require further modifications. The services that are built from custom code include:
 
 ```
 docker-compose.yml
@@ -61,7 +61,7 @@ services/
 │   │── Dockerfile
 ```
 
-Detailed document for the Flask backend (`web` service) and client `frontend` are available, see [**Auto-generating documentation with Sphinx**](#auto-generating-documentation-with-sphinx) for more details. Both follow standard practices. The `nginx` service is very standard as well.
+Detailed document for the Flask backend (`web` service) and client `frontend` are available, see [**Auto-generating documentation with Sphinx**](#auto-generating-documentation-with-sphinx) for more details. Both follow standard development practices. The `nginx` service is also fairly standard.
 
 ## Deployment
 
@@ -83,13 +83,15 @@ To stop deployment:
 
 ```(sudo) docker-compose down```
 
-### Git ignored files
+### Data volume
 
-This repository does not contain the ```services/web/data/``` folder, which is were all sequencing and post-processing files would be stored. Hence, if deployed, no data will be available and dynamic seeding of databases will fail.
+This repository does not contain the ```services/web/data/``` folder which is used to store sequencing and post-processing files. As such, if you deploy immediately after cloning the repository, no data will be available, and dynamic seeding of the databases will fail.
+
+The ```services/web/data/``` folder is ignored by both Git and Docker, but it is mounted as a volume for use by the application. This folder must be populated before deployment. Any file uploads or processing within the containerised application will be reflected in this volume in real-time, ensuring that data retrieval works as if the application were not containerised.
 
 ### Launching the server to a specific web domain
 
-I have made so that ```docker-compose.yml``` receives the environment variables ```$WEBSITE_NAME``` and ```$WEBSITE_ROOT``` and propagates it internally to the services in question. Every other route should be relative within the application, with internal communication between the services. Therefore, only changes to docker-compose.yml should be required if deploying to a website other than ukneqastest.com. There is one exception; using a domain subdirectory such as *website.com/rsv*. In that case, refer to the next section.
+I have made it so that ```docker-compose.yml``` receives the environment variables ```$WEBSITE_NAME``` and ```$WEBSITE_ROOT``` and propagates them internally to the services in question. Every other route should be relative within the application, with internal communication between the services. Therefore, only changes to docker-compose.yml should be required if deploying to a website other than ukneqastest.com. There is one exception; using a domain subdirectory such as *website.com/rsv*. In that case, refer to the next section.
 
 To add https protocol, new locations and ports must be specified at ```services/nginx/```, to redirect traffic to the secure port. Speaking about ports, the docker-compose.yml specifies what ports the services are using.
 
