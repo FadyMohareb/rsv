@@ -887,8 +887,8 @@ h2 {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(128, 128, 128, 0.5); /* Gray and slightly transparent */
-  color: #333; /* Dark gray text for subtle contrast */
+  background-color: rgba(202, 201, 201, 0.5); /* Gray and slightly transparent */
+  color: #636363; /* Dark gray text for subtle contrast */
   border-radius: 50%;
   width: 20px;
   height: 20px;
@@ -904,11 +904,12 @@ h2 {
   bottom: 125%; /* Adjust the position as needed */
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.4); /* Dark, semi-transparent background */
+  background-color: rgba(0, 0, 0, 0.7); /* Dark, semi-transparent background */
   color: #fff;
   padding: 4px 6px;
   border-radius: 4px;
-  white-space: nowrap;
+  width: 250px;
+  white-space: normal;
   z-index: 10;
   opacity: 0;
   animation: fadeIn 0.2s forwards;

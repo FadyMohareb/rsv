@@ -382,7 +382,7 @@ export default function Upload() {
 
                 {/* FASTQ R1 File Input */}
                 <div className="input-group">
-                    <label htmlFor="fq1" className="input-label"><InteractiveTooltip tooltipText="FASTQ file with paired end R1 reads, or single end reads. Can be compressed wi " /> FASTQ R1 File</label>
+                    <label htmlFor="fq1" className="input-label"><InteractiveTooltip tooltipText="FASTQ file with paired end R1 reads, or single end reads. Can be compressed with gzip. " /> FASTQ R1 File</label>
                     <input
                         type="file"
                         id="fq1"
@@ -393,7 +393,7 @@ export default function Upload() {
 
                 {/* FASTQ R2 File Input */}
                 <div className="input-group">
-                    <label htmlFor="fq2" className="input-label">FASTQ R2 File</label>
+                    <label htmlFor="fq2" className="input-label"><InteractiveTooltip tooltipText="FASTQ file with paired end R2 reads only. Leave blank if single end. Can be compressed with gzip. " /> FASTQ R2 File</label>
                     <input
                         type="file"
                         id="fq2"
