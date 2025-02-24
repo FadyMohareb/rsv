@@ -25,7 +25,7 @@ services:
         - POSTGRES_USER=hello_flask
         - POSTGRES_PASSWORD=hello_flask
         - POSTGRES_DB=hello_flask_dev
-    worker:
+    worker: # this service must have the same build and environment variables as web, as these are background workers for the backend that share its filesystem and code
       build: ./services/web
       command: python3 manage.py run_worker
       volumes:
@@ -59,7 +59,7 @@ services:
       volumes:
         - ./services/frontend:/usr/src/app/frontend_mount  # Mount docs to the web service
       ports:
-        - 3000:3000  # Expose port 80 for the front-end
+        - 3000:3000  # Expose port 80 for the front-end using nginx
       depends_on:
         - web  # Wait for the web service to be ready
     nginx:
