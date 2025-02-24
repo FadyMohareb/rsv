@@ -9,6 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import InteractiveTooltip from './InteractiveTooltip'; // Adjust the path as needed
 
 export default function Upload() {
     const navigate = useNavigate(); // Create a navigation function
@@ -27,11 +28,11 @@ export default function Upload() {
     const [samplesLoading, setSamplesLoading] = useState(false); // State for loading samples
     const [uploadProgress, setUploadProgress] = useState(0); // State for upload progress
 
-   /**
-   * Fetches the logged-in user's organization from the API.
-   * @async
-   * @returns {Promise<void>}
-   */
+    /**
+    * Fetches the logged-in user's organization from the API.
+    * @async
+    * @returns {Promise<void>}
+    */
     const fetchUserOrganization = async () => {
         try {
             const response = await fetch('api/user', { credentials: 'include' });
@@ -46,11 +47,11 @@ export default function Upload() {
         }
     };
 
-   /**
-   * Fetches the list of distributions from the API and updates state.
-   * @async
-   * @returns {Promise<void>}
-   */
+    /**
+    * Fetches the list of distributions from the API and updates state.
+    * @async
+    * @returns {Promise<void>}
+    */
     const fetchDistributions = async () => {
         try {
             setLoading(true); // Set loading to true while fetching data
@@ -71,12 +72,12 @@ export default function Upload() {
         }
     };
 
-   /**
-   * Fetches samples for the selected distribution from the API.
-   * @async
-   * @param {string} selectedDistribution - The selected distribution.
-   * @returns {Promise<void>}
-   */
+    /**
+    * Fetches samples for the selected distribution from the API.
+    * @async
+    * @param {string} selectedDistribution - The selected distribution.
+    * @returns {Promise<void>}
+    */
     const fetchSamplesForDistribution = async (selectedDistribution) => {
         if (!selectedDistribution) return;
 
@@ -106,65 +107,65 @@ export default function Upload() {
         fetchDistributions(); // Fetch the distributions
     }, []); // Only run once on mount
 
-   /**
-   * Handles changes to the FASTA file input.
-   * @param {Event} event - The file input change event.
-   * @returns {void}
-   */
+    /**
+    * Handles changes to the FASTA file input.
+    * @param {Event} event - The file input change event.
+    * @returns {void}
+    */
     const handleFastaChange = (event) => {
         setFasta(event.target.files[0]);
     };
 
-  /**
-   * Handles changes to the BAM file input.
-   * @param {Event} event - The file input change event.
-   * @returns {void}
-   */
+    /**
+     * Handles changes to the BAM file input.
+     * @param {Event} event - The file input change event.
+     * @returns {void}
+     */
     const handleBamChange = (event) => {
         setBam(event.target.files[0]);
     };
 
-   /**
-   * Handles changes to the FASTQ R1 file input.
-   * @param {Event} event - The file input change event.
-   * @returns {void}
-   */
+    /**
+    * Handles changes to the FASTQ R1 file input.
+    * @param {Event} event - The file input change event.
+    * @returns {void}
+    */
     const handleFastq1Change = (event) => {
         setFastq1(event.target.files[0]);
     };
-   /**
-   * Handles changes to the FASTQ R2 file input.
-   * @param {Event} event - The file input change event.
-   * @returns {void}
-   */
+    /**
+    * Handles changes to the FASTQ R2 file input.
+    * @param {Event} event - The file input change event.
+    * @returns {void}
+    */
     const handleFastq2Change = (event) => {
         setFastq2(event.target.files[0]);
     };
 
-   /**
-   * Handles changes to the sequencing type input.
-   * @param {Event} event - The change event.
-   * @returns {void}
-   */
+    /**
+    * Handles changes to the sequencing type input.
+    * @param {Event} event - The change event.
+    * @returns {void}
+    */
     const handleSequencingTypeChange = (event) => {
         setSequencingType(event.target.value);
     };
 
-/**
-   * Handles changes to the description input.
-   * @param {Event} event - The change event.
-   * @returns {void}
-   */
+    /**
+       * Handles changes to the description input.
+       * @param {Event} event - The change event.
+       * @returns {void}
+       */
     const handleDescriptionChange = (event) => {
         setDescription(event.target.value);
     };
 
-   /**
-   * Handles changes to the distribution selector.
-   * Fetches the samples for the newly selected distribution.
-   * @param {Event} event - The change event.
-   * @returns {void}
-   */
+    /**
+    * Handles changes to the distribution selector.
+    * Fetches the samples for the newly selected distribution.
+    * @param {Event} event - The change event.
+    * @returns {void}
+    */
     const handleDistributionChange = (event) => {
         const selectedDistribution = event.target.value;
         setDistribution(selectedDistribution);
@@ -173,23 +174,23 @@ export default function Upload() {
         fetchSamplesForDistribution(selectedDistribution);
     };
 
-   /**
-   * Handles sample selection from the dropdown.
-   * Updates state with the selected sample and number of participants, then loads sample plot and data.
-   * @param {Event} event - The selection change event.
-   * @returns {void}
-   */
+    /**
+    * Handles sample selection from the dropdown.
+    * Updates state with the selected sample and number of participants, then loads sample plot and data.
+    * @param {Event} event - The selection change event.
+    * @returns {void}
+    */
     const handleSampleSelection = (event) => {
         setSampleSelect(event.target.value);
     };
 
-   /**
-   * Handles form submission for uploading files.
-   * Creates a FormData object with files and metadata, sends it via XMLHttpRequest,
-   * and tracks upload progress. Navigates to home upon success.
-   * @param {Event} event - The form submit event.
-   * @returns {void}
-   */
+    /**
+    * Handles form submission for uploading files.
+    * Creates a FormData object with files and metadata, sends it via XMLHttpRequest,
+    * and tracks upload progress. Navigates to home upon success.
+    * @param {Event} event - The form submit event.
+    * @returns {void}
+    */
     const handleSubmit = (event) => {
         event.preventDefault();
 
@@ -282,7 +283,10 @@ export default function Upload() {
             <form onSubmit={handleSubmit}>
                 {/* Distribution Dropdown */}
                 <div className="input-group">
-                    <label htmlFor="distribution" className="input-label">Distribution<span style={{ color: '#b83030' }}>*</span></label>
+                    <label htmlFor="distribution"
+                        className="input-label"
+                    ><InteractiveTooltip tooltipText="Choose the distribution associated with the sample you wish to upload data for. (Required)" /> Distribution<span style={{ color: '#b83030' }}>*</span>
+                        </label>
                     <select
                         id="distribution"
                         value={distribution}
@@ -290,6 +294,7 @@ export default function Upload() {
                         className="input-field"
                         disabled={loading} // Disable dropdown while loading
                         required
+
                     >
                         <option value="">Select Distribution</option>
                         {loading ? (
@@ -306,7 +311,9 @@ export default function Upload() {
 
                 {/* Sample Dropdown */}
                 <div className="input-group">
-                    <label htmlFor="sample" className="input-label">Sample<span style={{ color: '#b83030' }}>*</span></label>
+                    <label htmlFor="sample" className="input-label"><InteractiveTooltip tooltipText="Select the ID of the sample to be uploaded. (Required)" /> Sample<span style={{ color: '#b83030' }}>*</span>
+                        
+                    </label>
                     <select
                         id="sample"
                         value={sampleSelect}
@@ -330,7 +337,7 @@ export default function Upload() {
                 {/* Sequencing Type Input with Autocompletion */}
                 <div className="input-group">
                     <label htmlFor="sequencingType" className="input-label">
-                        Sequencing Type<span style={{ color: '#b83030' }}>*</span>
+                    <InteractiveTooltip tooltipText="Type in the name of the sequencing platform used for analysis. (Required)" /> Sequencing Platform<span style={{ color: '#b83030' }}>*</span>
                     </label>
                     <input
                         type="text"
@@ -342,20 +349,18 @@ export default function Upload() {
                         list="sequencingOptions"
                     />
                     <datalist id="sequencingOptions">
-                        <option value="Illumina MiSeq" />
-                        <option value="Illumina NextSeq" />
-                        <option value="Illumina NovaSeq" />
-                        <option value="Oxford Nanopore MinION" />
-                        <option value="Oxford Nanopore GridION" />
-                        <option value="PacBio Sequel" />
-                        <option value="PacBio RS II" />
-                        <option value="Ion Torrent PGM" />
-                        {/* Add or modify options as needed */}
+                        <option value="Real-Time Single Target" />
+                        <option value="CDC:RSV_RUO-01 mpx" />
+                        <option value="Allplex SARS, FluA/B, RSV" />
+                        <option value="Altona: RealStar" />
+                        <option value="Real-Time Multiplex" />
+                        <option value="Luminex: NxTAG Resp." />
+                        {/* Add or modify options as needed, although this could be improved by fetching options from API */}
                     </datalist>
                 </div>
                 {/* FASTA File Input */}
                 <div className="input-group">
-                    <label htmlFor="fasta" className="input-label">FASTA File</label>
+                    <label htmlFor="fasta" className="input-label"><InteractiveTooltip tooltipText="FASTA file with the consensus sequence of the sample. Only one entry is expected, known gaps can be included using N character. Can be compressed with gzip." /> FASTA File</label>
                     <input
                         type="file"
                         id="fasta"
@@ -366,7 +371,7 @@ export default function Upload() {
 
                 {/* BAM File Input */}
                 <div className="input-group">
-                    <label htmlFor="bam" className="input-label">BAM File</label>
+                    <label htmlFor="bam" className="input-label"><InteractiveTooltip tooltipText="BAM file with the aligned reads. These will be realigned to Nextclade's suggested reference sequence. " /> BAM File</label>
                     <input
                         type="file"
                         id="bam"
@@ -377,7 +382,7 @@ export default function Upload() {
 
                 {/* FASTQ R1 File Input */}
                 <div className="input-group">
-                    <label htmlFor="fq1" className="input-label">FASTQ R1 File</label>
+                    <label htmlFor="fq1" className="input-label"><InteractiveTooltip tooltipText="FASTQ file with paired end R1 reads, or single end reads. Can be compressed wi " /> FASTQ R1 File</label>
                     <input
                         type="file"
                         id="fq1"
@@ -399,7 +404,7 @@ export default function Upload() {
 
                 {/* Description Input */}
                 <div className="input-group">
-                    <label htmlFor="description" className="input-label">Description</label>
+                    <label htmlFor="description" className="input-label"> <InteractiveTooltip tooltipText="Currently unused. " /> Description</label>
                     <textarea
                         id="description"
                         value={description}
@@ -409,14 +414,16 @@ export default function Upload() {
                 </div>
 
                 {/* Loading and Progress Bar */}
-                {loading && (
-                    <div className="loading-spinner">
-                        <p>Uploading...</p>
-                        <div className="progress-bar-container">
-                            <div className="progress-bar" style={{ width: `${uploadProgress}%` }}></div>
+                {
+                    loading && (
+                        <div className="loading-spinner">
+                            <p>Uploading...</p>
+                            <div className="progress-bar-container">
+                                <div className="progress-bar" style={{ width: `${uploadProgress}%` }}></div>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )
+                }
 
                 {/* Submit Button */}
                 <div className="input-group">
@@ -424,7 +431,7 @@ export default function Upload() {
                         {loading ? 'Uploading...' : 'Submit'}
                     </button>
                 </div>
-            </form>
-        </div>
+            </form >
+        </div >
     );
 }

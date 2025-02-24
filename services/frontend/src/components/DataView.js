@@ -320,12 +320,12 @@ class DataView extends Component {
             { field: 'ns', headerName: 'Ns in Sequence (%)', sortable: true, filter: true, minWidth: 50, maxWidth: 200, flex: 1 },
             { field: 'read_coverage', headerName: 'Read Coverage (Mean)', sortable: true, filter: true, minWidth: 50, maxWidth: 200, flex: 1 },
         ];
-        // Build technique (aggregated by sequencing type) table data and column definitions.
+        // Build technique (aggregated by sequencing plaform) table data and column definitions.
         let techniqueTableData = [];
         if (aggregatedData) {
             for (let seq in aggregatedData) {
                 techniqueTableData.push({
-                sequencing_type: seq,
+                sequencing_platform: seq,
                 count:aggregatedData[seq].count,
                 coverage: aggregatedData[seq].coverage,
                 ns: aggregatedData[seq].Ns, // Note: ensure field names match those returned by your API
@@ -337,7 +337,7 @@ class DataView extends Component {
             }
         }
         const techniqueColumnDefs = [
-            { field: 'sequencing_type', headerName: 'Sequencing Type', sortable: true, filter: true, flex: 1 },
+            { field: 'sequencing_platform', headerName: 'Sequencing Platform', sortable: true, filter: true, flex: 1 },
             { field: 'count', headerName: 'Valid submissions', sortable: true, filter: true, flex: 1 },
             { field: 'clade', headerName: 'Dominant lineage', sortable: true, filter: true, flex: 1 },
             { field: 'G_clade', headerName: 'Dominant legacy lineage', sortable: true, filter: true, flex: 1 },

@@ -72,7 +72,7 @@ def generate_sample_plot_pdf(sample_name, sample_data, role):
     # Create the figure and primary axis (ax1) with a wider figure size
     fig, ax1 = plt.subplots(figsize=(16, 8))  # Increased width for a wider figure
     
-    if role == "user":
+    """    if role == "user":
         # Horizontal Bar Plot Configuration
         y_pos = np.arange(len(labs))
         bar_height = 0.3  # Limiting bar height (make it a bit thinner)
@@ -97,46 +97,47 @@ def generate_sample_plot_pdf(sample_name, sample_data, role):
         ax2.set_xlim(left=0, right=max(read_coverage) * 1.1)
 
     else:
-        # Vertical Bar Plot Configuration (Default)
-        bar_width = 0.3  # Limiting bar width (make it a bit narrower)
-        x_pos = np.arange(len(labs))
+    """
+    # Vertical Bar Plot Configuration (Default)
+    bar_width = 0.3  # Limiting bar width (make it a bit narrower)
+    x_pos = np.arange(len(labs))
 
-        # Plot bars for Genome Coverage and Ns
-        ax1.bar(x_pos, genome_coverage_percent, bar_width, label="Genome Coverage (%)", color="#1E3A5F", zorder=3)
-        ax1.bar(x_pos, num_ns_percent, bar_width, bottom=genome_coverage_percent, label="Ns in Sequence (%)", color="#FBC02D", zorder=3)
+    # Plot bars for Genome Coverage and Ns
+    ax1.bar(x_pos, genome_coverage_percent, bar_width, label="Genome Coverage (%)", color="#1E3A5F", zorder=3)
+    ax1.bar(x_pos, num_ns_percent, bar_width, bottom=genome_coverage_percent, label="Ns in Sequence (%)", color="#FBC02D", zorder=3)
 
-        # Plot a separate bar for Similarity
-        ax1.bar(x_pos + bar_width, similarity_percent, bar_width, label="Similarity (%)", color="#F57C00", zorder=3)
+    # Plot a separate bar for Similarity
+    ax1.bar(x_pos + bar_width, similarity_percent, bar_width, label="Similarity (%)", color="#F57C00", zorder=3)
 
-        ax1.set_xlabel("Participant", fontsize=18)
-        ax1.set_ylabel("Percentage (%)", fontsize=18)
-        ax1.set_xticks(x_pos + bar_width / 2)
-        ax1.set_xticklabels(anonymized_labs, rotation=45, ha="right", fontsize=16)
+    ax1.set_xlabel("Participant", fontsize=18)
+    ax1.set_ylabel("Percentage (%)", fontsize=18)
+    ax1.set_xticks(x_pos + bar_width / 2)
+    ax1.set_xticklabels(anonymized_labs, rotation=45, ha="right", fontsize=16)
 
-        # Secondary axis for Read Coverage
-        ax2 = ax1.twinx()
-        ax2.plot(x_pos, read_coverage, label="Read Coverage (Mean)", color="black", marker="o", linestyle="--", linewidth=2)
-        ax2.set_ylabel("Read Coverage (Mean)", fontsize=18)
-        ax2.set_ylim(bottom=0, top=max(read_coverage) * 1.1)
+    # Secondary axis for Read Coverage
+    ax2 = ax1.twinx()
+    ax2.plot(x_pos, read_coverage, label="Read Coverage (Mean)", color="black", marker="o", linestyle="--", linewidth=2)
+    ax2.set_ylabel("Read Coverage (Mean)", fontsize=18)
+    ax2.set_ylim(bottom=0, top=max(read_coverage) * 1.1)
 
     # Add horizontal lines for thresholds
-    if role == "user":
+    '''if role == "user":
         ax1.axvline(90, color="grey", linestyle="--", linewidth=1, label="_nolegend_", zorder=-1)
         ax1.axvline(98, color="blue", linestyle="--", linewidth=1, zorder=-1)
-    else:
-        ax1.axhline(90, color="grey", linestyle="--", linewidth=1, label="_nolegend_", zorder=-1)
-        ax1.axhline(98, color="blue", linestyle="--", linewidth=1, zorder=-1)
+    else:'''
+    ax1.axhline(90, color="grey", linestyle="--", linewidth=1, label="_nolegend_", zorder=-1)
+    ax1.axhline(98, color="blue", linestyle="--", linewidth=1, zorder=-1)
 
     # Adjust the legend placement to the right of the plot to save vertical space
     handles1, labels1 = ax1.get_legend_handles_labels()
     handles2, labels2 = ax2.get_legend_handles_labels()
     
-    if role == "user":
+    '''if role == "user":
         # Combine the legends and place them to the right with a larger font size
         ax1.legend(handles=handles1 + handles2, labels=labels1 + labels2, 
                 loc='upper left', bbox_to_anchor=(1, 1),fontsize=16, frameon=False)
-    else:
-        ax1.legend(handles=handles1 + handles2, labels=labels1 + labels2, 
+    else:'''
+    ax1.legend(handles=handles1 + handles2, labels=labels1 + labels2, 
                loc='upper center', bbox_to_anchor=(0.5, -0.27), ncol=3, fontsize=18)
         
     # Adjust the layout to prevent clipping of labels and legends
