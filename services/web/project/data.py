@@ -21,9 +21,10 @@ endpoints are available to everyone and pose a safety risk. Must be revamped.
 from flask import Blueprint, jsonify, request, current_app, send_file
 from flask_login import current_user, login_required
 from project.utils.sql_models import Distribution, Organization, Submission
-import os
+import os, zipfile
 from project.utils.docx import generate_docx_report
 from project.utils.report_parser import process_all_reports
+from datetime import datetime
 
 # Create the blueprint
 data_bp = Blueprint('data', __name__)
@@ -628,9 +629,47 @@ def download_docx(distribution):
     doc = generate_docx_report(report_data, base_dir, current_user.role, current_user.organization, distribution)
 
     # Save the DOCX file to a temporary file
-    file_path = "/usr/src/app/project/temp_report.docx"
+    file_path = f"/usr/src/app/project/static/reports/MIC_{current_user.organization}_WG_{distribution}_Report.docx" # save to pdf
     doc.save(file_path)
 
     # Send the file to the user
     return send_file(file_path, as_attachment=True)
 
+@data_bp.route("/api/download_docx_all/<distribution>")
+@login_required
+def download_docx_all(distribution):
+    """
+    Generate and send a ZIP containing DOCX reports for all organizations in a distribution.
+
+    TO DO: send this task to a worker instead of having the main application do all the work. And create necessary views to serve the final zip elsewhere.
+
+    :param distribution: The name of the distribution.
+    :type distribution: str
+    :return: A ZIP file containing the generated DOCX reports.
+    :rtype: flask.Response
+    """
+    dist = Distribution.query.filter_by(name=distribution).first()
+    base_dir = f"data/{dist.name}"  # Root directory for lab reports
+    temp_dir = f"/usr/src/app/project/static/reports/all_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    os.makedirs(temp_dir, exist_ok=True)
+    zip_filename = f"reports_{distribution}_{datetime.now().strftime('%Y%m%d%H%M%S')}.zip"
+    zip_path = os.path.join(temp_dir, zip_filename)
+
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for org in dist.organizations:
+            report_data = process_all_reports(base_dir)
+            doc = generate_docx_report(report_data, base_dir, "user", org.name, distribution)
+
+            # Save each DOCX report
+            docx_filename = f"MIC_{org.name}_WG_{distribution}_Report.docx"
+            docx_path = os.path.join(temp_dir, docx_filename)
+            doc.save(docx_path)
+
+            # Add to ZIP
+            zipf.write(docx_path, arcname=docx_filename)
+
+            # Optional: Clean up individual DOCX file after adding it to ZIP
+            os.remove(docx_path)
+
+    # Send the ZIP file to the user
+    return send_file(zip_path, as_attachment=True, download_name=zip_filename)

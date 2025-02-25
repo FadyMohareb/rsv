@@ -5,3 +5,4 @@ services/frontend/node_modules/
 services/frontend/build/
 services/web/project/static/plots
 services/web/services/
+services/web/project/static/reports

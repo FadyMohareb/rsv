@@ -137,7 +137,7 @@ def login():
         login_user(flaskLoginUser(user.email,role=user.role, organization=user.organization.name))
 
         # Return a successful response with user role and other information
-        return jsonify({"message": "Login successful", "role": user.role, "email": user.email}), 200
+        return jsonify({"message": "Login successful", "role": user.role, "email": user.email, "organization":user.organization.name}), 200
 
     # If the user is not found or the password is incorrect
     return jsonify({"error": "Invalid username or password"}), 401

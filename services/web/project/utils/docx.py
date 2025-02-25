@@ -187,8 +187,7 @@ def create_pygenometracks_plot(reference_genome, annotation, region, bed_path, b
 
     # Create tracks.ini configuration with three sections:
     # Reference, Annotation, and BigWig
-    with open(tracks_ini, "w") as ini:
-        ini.write(f"""
+    tracks=f"""
         [annotation]
         file = {annotation}
         title = {reference_genome.split("/")[-1].split(".")[0]} genes
@@ -212,17 +211,21 @@ def create_pygenometracks_plot(reference_genome, annotation, region, bed_path, b
         color = grey
         height = 1
         file_type = bigwig
-
-
-
+        """
+    # Only write the read coverage bigwig section if reads were uploaded
+    if bigwig_file!=None:
+            tracks+=f"""
+            
         [bigwig]
         file = {bigwig_file}
         title = Read Coverage
         color = blue
         height = 3
         file_type = bigwig
-        """)
-    
+        """
+    with open(tracks_ini, "w") as ini:
+        ini.write(tracks)
+
     # Run pyGenomeTracks to generate the plot for the given region
     command = [
         "pyGenomeTracks",
@@ -432,6 +435,8 @@ The summary of the EQA participation, marking criteria applied, and the scoring 
             lab_pass = 0
             reference_metrics = lab_data.get("9999", {})  # Extract reference metrics
             user_metrics = lab_data.get(user_lab, {})  # Extract user metrics
+            if user_metrics=={}:
+                continue
             #subtype
             intended_subtype = "RSV-B" if sample_reference_map[sample_name]=="EPI_ISL_1653999" else "RSV-A"
             print(sample_name)
@@ -549,7 +554,7 @@ The summary of the EQA participation, marking criteria applied, and the scoring 
             lab_count = 0
             lab_pass = 0
             reference_coverage = reference_metrics["Mean coverage depth"]
-            user_coverage = user_metrics["Mean coverage depth"]
+            user_coverage = round(user_metrics["Mean coverage depth"],0) if user_metrics["Mean coverage depth"]!="N/A" else "N/A"
             aggregated_metrics = []
             for lab, metrics in lab_data.items():
                 if lab==user_lab or lab == "9999" or metrics["coverage"]=="N/A":
@@ -560,7 +565,9 @@ The summary of the EQA participation, marking criteria applied, and the scoring 
                         aggregated_metrics.append(metrics["Mean coverage depth"])
                         if metrics["Mean coverage depth"]>50:
                             lab_pass+=1
-            coverage=[sample_name, round(user_coverage,0), "50 or higher", round(reference_coverage,0), "Pass" if user_similarity >50 else "Fail", format_IQR_string(aggregated_metrics), f"{lab_pass}/{lab_count} ({(lab_pass * 100) // lab_count}%)"]
+            print(user_lab)
+            print(sample_name)
+            coverage=[sample_name, user_coverage, "50 or higher", round(reference_coverage,0), "Pass" if user_similarity >50 else "Fail", format_IQR_string(aggregated_metrics), f"{lab_pass}/{lab_count} ({(lab_pass * 100) // lab_count}%)"]
             evaluation_data["Read Coverage (mean)"].append(coverage)
         
         print(evaluation_data)
@@ -1126,11 +1133,14 @@ The summary of the EQA participation, marking criteria applied, and the scoring 
             print(reference_genome)
             print(annotation)
             bigwig_file_path = os.path.join(f"data/{distribution}/{user_lab}/{sample}", f"{user_lab}_{sample}.bw")
-            bigwig_copy=os.path.join(output_dir,f"{user_lab}_{sample}.bw")
-            shutil.copy(bigwig_file_path,bigwig_copy)
-            bigwig_file_path = os.path.join(f"data/{distribution}/{user_lab}/{sample}", f"{user_lab}_{sample}_consensus.bw")
+            if os.path.exists(bigwig_file_path):
+                bigwig_copy=os.path.join(output_dir,f"{user_lab}_{sample}.bw")
+                shutil.copy(bigwig_file_path,bigwig_copy)
+            else:
+                bigwig_copy=None
+            bigwig_consensus_file_path = os.path.join(f"data/{distribution}/{user_lab}/{sample}", f"{user_lab}_{sample}_consensus.bw")
             bigwig_consensus_copy=os.path.join(output_dir,f"{user_lab}_{sample}_consensus.bw")
-            shutil.copy(bigwig_file_path,bigwig_consensus_copy)
+            shutil.copy(bigwig_consensus_file_path,bigwig_consensus_copy)
             bed_path = os.path.join(f"data/{distribution}/{user_lab}/{sample}", f"{user_lab}_{sample}_mutations.bed")
             bed_path_copy=os.path.join(output_dir,f"{user_lab}_{sample}_mutations.bed")
             shutil.copy(bed_path,bed_path_copy)

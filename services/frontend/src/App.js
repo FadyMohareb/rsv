@@ -45,6 +45,7 @@ class App extends Component {
       loggedIn: false,
       username: '',
       password: '',
+      organization: '',
       email: '',
       loginError: '',
       oldPassword: '', // Added state for old password
@@ -131,13 +132,13 @@ class App extends Component {
 
       if (response.ok) {
         const data = await response.json();
-        this.setState({ loggedIn: true, loginError: '', role: data.role, email: data.email || '' });
+        this.setState({ loggedIn: true, loginError: '', role: data.role, email: data.email, organization: data.organization || '' });
       } else {
         this.setState({ loginError: 'Invalid username or password', role: '', email:'' });
       }
     } catch (error) {
       console.error('Error during login:', error);
-      this.setState({ loginError: 'An error occurred. Please try again.', role: '', email:'' });
+      this.setState({ loginError: 'An error occurred. Please try again.', role: '', email:'', organization: '' });
     }
   }
   /**
@@ -337,7 +338,7 @@ class App extends Component {
    * @returns {JSX.Element} The main application layout with routing.
    */
   renderApp() {
-    const { role, email, windowWidth } = this.state;
+    const { role, email, windowWidth, organization } = this.state;
     const SUBDIRECTORY=process.env.REACT_APP_SUBDIRECTORY_NAME || ""
     console.log(SUBDIRECTORY);
     
@@ -355,7 +356,7 @@ class App extends Component {
               <Route path={`${SUBDIRECTORY}/upload`} element={<Upload />} />
               <Route path={`${SUBDIRECTORY}/about`} element={<About />} />
               <Route path={`${SUBDIRECTORY}/settings`} element={<Settings />} />
-              <Route path={`${SUBDIRECTORY}/dataview`} element={<DataView role={role} />} />
+              <Route path={`${SUBDIRECTORY}/dataview`} element={<DataView role={role} organization={organization} />} />
               <Route path={`${SUBDIRECTORY}/admin`} element={<DistributionManager />} />
               <Route path={`${SUBDIRECTORY}/change-password`} element={this.renderPasswordChange()} />
             </Routes>

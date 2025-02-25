@@ -1,5 +1,5 @@
 /**
- * @module DownloadButton
+ * @module DownloadButtonAll
  * @memberof DataView
  * @description Renders a button to download a DOCX report for a specified distribution.
  *
@@ -11,7 +11,7 @@
 
 import React, { useState } from 'react';
 
-const DownloadButton = ({ distribution, organization, disabled }) => {
+const DownloadButtonAll = ({ distribution, organization, disabled }) => {
    /**
    * Handles file download by fetching the report from the API and triggering a download.
    *
@@ -24,7 +24,7 @@ const DownloadButton = ({ distribution, organization, disabled }) => {
 
         try {
             setLoading(true);
-            const response = await fetch(`api/download_docx/${distribution}`, {
+            const response = await fetch(`api/download_docx_all/${distribution}`, {
                 method: 'GET',
                 credentials: 'include',
             });
@@ -37,7 +37,7 @@ const DownloadButton = ({ distribution, organization, disabled }) => {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `MIC_${organization}_WG_${distribution}_Report.docx`;
+            a.download = `MIC_${organization}_All_Report.zip`;
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -55,9 +55,9 @@ const DownloadButton = ({ distribution, organization, disabled }) => {
             style={{ marginLeft: "90px", width: "170px", opacity: disabled ? 0.5 : 1, cursor: disabled ? "not-allowed" : "pointer" }}
             disabled={loading || disabled} // Disable when loading or explicitly disabled
         >
-            {loading ? 'Downloading...' : 'Download Report'}
+            {loading ? 'Downloading...' : 'Download All'}
         </button>
     );
 };
 
-export default DownloadButton;
+export default DownloadButtonAll;

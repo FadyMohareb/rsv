@@ -11,13 +11,14 @@ import SamplePlot from './SamplePlot.js';
 import SeqPlot from './SeqPlot.js';
 import ScaleLoader from 'react-spinners/ScaleLoader';
 import DownloadButton from './DownloadButton.js';
+import DownloadButtonAll from './DownloadButtonAll.js';
 import { JBrowseLinearGenomeView, createViewState } from '@jbrowse/react-linear-genome-view';
 
 class DataView extends Component {
-   /**
-   * Initializes the DataView component and sets initial state. This is the main component for data visualisation.
-   * @param {Object} props - Component properties.
-   */
+    /**
+    * Initializes the DataView component and sets initial state. This is the main component for data visualisation.
+    * @param {Object} props - Component properties.
+    */
     constructor(props) {
         super(props);
         this.state = {
@@ -33,6 +34,7 @@ class DataView extends Component {
             numParticipants: 0,
             errorMessage: "",
             role: this.props.role,
+            organization: this.props.organization,
             loadFailed: false,
             activeTab: 'normal', // 'normal' or 'technique'
         };
@@ -46,20 +48,20 @@ class DataView extends Component {
         this.handleTabChange = this.handleTabChange.bind(this);
     }
 
-   /**
-   * Lifecycle method invoked after component mount.
-   * Fetches distributions and initializes view state.
-   * @returns {void}
-   */
+    /**
+    * Lifecycle method invoked after component mount.
+    * Fetches distributions and initializes view state.
+    * @returns {void}
+    */
     componentDidMount() {
         this.fetchDistributions();
         this.createViewState([]); // Initialize the viewState with no tracks
     }
-   /**
-   * Creates the viewState for the Jbrowse2 genome view.
-   * @param {Array} tracks - Array of track objects to include.
-   * @returns {void}
-   */
+    /**
+    * Creates the viewState for the Jbrowse2 genome view.
+    * @param {Array} tracks - Array of track objects to include.
+    * @returns {void}
+    */
     createViewState(tracks) {
         const { sampleSelect, sampleDetails } = this.state;
         const reference = sampleDetails[sampleSelect]?.reference || 'EPI_ISL_412866'; // Default to 'EPI_ISL_412866' if no reference found
@@ -101,13 +103,13 @@ class DataView extends Component {
         this.setState({ viewState });
     }
 
-   /**
-   * Loads sample plot and table data for a given sample.
-   * Fetches data from the API, creates BAM/BigWig tracks, and updates state.
-   * @async
-   * @param {string} sample - The sample identifier.
-   * @returns {Promise<void>}
-   */
+    /**
+    * Loads sample plot and table data for a given sample.
+    * Fetches data from the API, creates BAM/BigWig tracks, and updates state.
+    * @async
+    * @param {string} sample - The sample identifier.
+    * @returns {Promise<void>}
+    */
     async loadSamplePlotAndData(sample) {
         try {
             this.setState({ loading: true, loadFailed: false, errorMessage: '' });
@@ -199,11 +201,11 @@ class DataView extends Component {
         }
     }
 
-   /**
-   * Fetches the list of distributions from the API and updates state.
-   * @async
-   * @returns {Promise<void>}
-   */
+    /**
+    * Fetches the list of distributions from the API and updates state.
+    * @async
+    * @returns {Promise<void>}
+    */
     async fetchDistributions() {
         try {
             this.setState({ loading: true });
@@ -227,11 +229,11 @@ class DataView extends Component {
             this.setState({ loading: false });
         }
     };
-   /**
-   * Fetches sample details for the current distribution from the API.
-   * @async
-   * @returns {Promise<void>}
-   */
+    /**
+    * Fetches sample details for the current distribution from the API.
+    * @async
+    * @returns {Promise<void>}
+    */
     async loadSampleDetails() {
         try {
             this.setState({ loading: true });
@@ -249,11 +251,11 @@ class DataView extends Component {
         }
     }
 
-   /**
-   * Handles sample selection by updating state and loading associated plot and data.
-   * @param {string} sample - The selected sample identifier.
-   * @returns {void}
-   */
+    /**
+    * Handles sample selection by updating state and loading associated plot and data.
+    * @param {string} sample - The selected sample identifier.
+    * @returns {void}
+    */
     handleSampleSelection(sample) {
         const { sampleDetails } = this.state;
         const numParticipants = sampleDetails[sample]?.participants || 0; // ✅ Get participants count
@@ -266,29 +268,29 @@ class DataView extends Component {
         });
     }
 
-   /**
-   * Handles distribution change events by updating state and fetching sample details.
-   * @param {Event} event - The change event from the distribution selector.
-   * @returns {void}
-   */
+    /**
+    * Handles distribution change events by updating state and fetching sample details.
+    * @param {Event} event - The change event from the distribution selector.
+    * @returns {void}
+    */
     handleDistributionChange(event) {
         this.setState({ distribution: event.target.value }, () => {
             this.loadSampleDetails(); // Executes after state update
         });
     }
-   /**
-   * Handles tab change events in the UI.
-   * @param {string} tabName - The new active tab.
-   * @returns {void}
-   */
+    /**
+    * Handles tab change events in the UI.
+    * @param {string} tabName - The new active tab.
+    * @returns {void}
+    */
     handleTabChange(tabName) {
         this.setState({ activeTab: tabName });
     }
-   /**
-   * Renders the DataView component UI including panels for distribution and sample selection,
-   * genome view, and tabbed data displays.
-   * @returns {JSX.Element} The rendered DataView component.
-   */
+    /**
+    * Renders the DataView component UI including panels for distribution and sample selection,
+    * genome view, and tabbed data displays.
+    * @returns {JSX.Element} The rendered DataView component.
+    */
     render() {
         const {
             loading,
@@ -297,9 +299,9 @@ class DataView extends Component {
             aggregatedData,
             distribution,
             distributions,
+            organization,
             viewState,
             errorMessage,
-            bamTracks,
             numParticipants,
             role,
             loadFailed,
@@ -309,7 +311,7 @@ class DataView extends Component {
 
         const shouldShowData = !loading && tableData && numParticipants >= 4 && !loadFailed;
 
-        const chartOrientation = role === 'superuser' ? 'vertical' : 'horizontal'; // Determine chart orientation
+        const chartOrientation = 'vertical' // Determine chart orientation, before role === 'superuser' ? 'vertical' : 'horizontal';
 
         const columnDefs = [
             { field: 'participant', headerName: 'Participant', sortable: true, filter: true, minWidth: 75, maxWidth: 125, flex: 2 },
@@ -325,14 +327,14 @@ class DataView extends Component {
         if (aggregatedData) {
             for (let seq in aggregatedData) {
                 techniqueTableData.push({
-                sequencing_platform: seq,
-                count:aggregatedData[seq].count,
-                coverage: aggregatedData[seq].coverage,
-                ns: aggregatedData[seq].Ns, // Note: ensure field names match those returned by your API
-                similarity: aggregatedData[seq].similarity,
-                read_coverage: aggregatedData[seq].read_coverage,
-                clade: aggregatedData[seq].clade,
-                G_clade: aggregatedData[seq].G_clade,
+                    sequencing_platform: seq,
+                    count: aggregatedData[seq].count,
+                    coverage: aggregatedData[seq].coverage,
+                    ns: aggregatedData[seq].Ns, // Note: ensure field names match those returned by your API
+                    similarity: aggregatedData[seq].similarity,
+                    read_coverage: aggregatedData[seq].read_coverage,
+                    clade: aggregatedData[seq].clade,
+                    G_clade: aggregatedData[seq].G_clade,
                 });
             }
         }
@@ -345,7 +347,7 @@ class DataView extends Component {
             { field: 'ns', headerName: 'Avg Ns (%)', sortable: true, filter: true, flex: 1 },
             { field: 'similarity', headerName: 'Avg Similarity (%)', sortable: true, filter: true, flex: 1 },
             { field: 'read_coverage', headerName: 'Avg Read Coverage', sortable: true, filter: true, flex: 1 },
-          ];
+        ];
 
         const myTheme = themeQuartz.withParams({
             backgroundColor: '#ffffff', // Matches even row background
@@ -425,7 +427,10 @@ class DataView extends Component {
                             Per Technique
                         </button>
                         {/* Button to Download DOCX */}
-                        <DownloadButton distribution={distribution} disabled={numParticipants < 4} />
+                        <DownloadButton distribution={distribution} organization={organization} disabled={numParticipants < 4} />
+                        {role === "superuser" && (
+                            <DownloadButtonAll distribution={distribution} organization={organization} disabled={numParticipants < 4} />
+                        )}
                     </div>
 
                     {activeTab === 'normal' ? (
@@ -475,52 +480,52 @@ class DataView extends Component {
                         )
                     ) : activeTab === 'technique' ? (
                         shouldShowData ? (
-                          <>
-                            <div className={`plot-container ${loading || !aggregatedData ? 'hidden' : ''}`} id="technique-plot-container">
-                              {loading ? (
-                                <div className="spinner">
-                                  <ScaleLoader color="#21afde" />
+                            <>
+                                <div className={`plot-container ${loading || !aggregatedData ? 'hidden' : ''}`} id="technique-plot-container">
+                                    {loading ? (
+                                        <div className="spinner">
+                                            <ScaleLoader color="#21afde" />
+                                        </div>
+                                    ) : (
+                                        // Display aggregated data using the SamplePlot component.
+                                        // You might need to adjust how SamplePlot renders aggregated data.
+                                        <SeqPlot sampleData={techniqueTableData} chartOrientation="vertical" />
+                                    )}
                                 </div>
-                              ) : (
-                                // Display aggregated data using the SamplePlot component.
-                                // You might need to adjust how SamplePlot renders aggregated data.
-                                <SeqPlot sampleData={techniqueTableData} chartOrientation="vertical" />
-                              )}
-                            </div>
-                            <div
-                              className={`table-container ${loading || !aggregatedData ? 'hidden' : ''}`}
-                              id="technique-table-container"
-                              style={{ width: '100%', overflowX: 'auto' }}
-                            >
-                              {loading ? (
-                                <div className="spinner">
-                                  <ScaleLoader color="#21afde" />
+                                <div
+                                    className={`table-container ${loading || !aggregatedData ? 'hidden' : ''}`}
+                                    id="technique-table-container"
+                                    style={{ width: '100%', overflowX: 'auto' }}
+                                >
+                                    {loading ? (
+                                        <div className="spinner">
+                                            <ScaleLoader color="#21afde" />
+                                        </div>
+                                    ) : (
+                                        techniqueTableData && (
+                                            <div style={{ width: '100%', height: '350px' }}>
+                                                <AgGridReact
+                                                    rowData={techniqueTableData}
+                                                    columnDefs={techniqueColumnDefs}
+                                                    defaultColDef={{
+                                                        sortable: true,
+                                                        filter: true,
+                                                        resizable: true,
+                                                    }}
+                                                    theme={myTheme}
+                                                    domLayout="normal"
+                                                />
+                                            </div>
+                                        )
+                                    )}
                                 </div>
-                              ) : (
-                                techniqueTableData && (
-                                  <div style={{ width: '100%', height: '350px' }}>
-                                    <AgGridReact
-                                      rowData={techniqueTableData}
-                                      columnDefs={techniqueColumnDefs}
-                                      defaultColDef={{
-                                        sortable: true,
-                                        filter: true,
-                                        resizable: true,
-                                      }}
-                                      theme={myTheme}
-                                      domLayout="normal"
-                                    />
-                                  </div>
-                                )
-                              )}
-                            </div>
-                          </>
+                            </>
                         ) : (
-                          <div className="error-message">
-                            {errorMessage || 'Insufficient participant data'}
-                          </div>
+                            <div className="error-message">
+                                {errorMessage || 'Insufficient participant data'}
+                            </div>
                         )
-                      ) : null}
+                    ) : null}
                 </div>
             </div>
         );
