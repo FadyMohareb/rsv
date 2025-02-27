@@ -33,10 +33,9 @@ from io import BytesIO
 from docx import Document
 from docx.shared import Inches,Pt, Cm, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_BREAK, WD_COLOR_INDEX
-from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.oxml import OxmlElement, ns
-from docx.oxml.ns import nsdecls
-from docx.oxml import parse_xml
+from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ROW_HEIGHT_RULE
+from docx.oxml import OxmlElement, ns, parse_xml
+from docx.oxml.ns import nsdecls, qn
 from project.utils.report_parser import process_all_reports
 import matplotlib.pyplot as plt
 import numpy as np
@@ -342,6 +341,10 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
     # Create DOCX document
     doc = Document()
 
+    # Counts
+    table_count=1
+    figure_count=1
+
     # Style
     font = doc.styles['Normal'].font
     font.name = 'Arial'
@@ -355,53 +358,139 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         section.left_margin = Cm(1)
         section.right_margin = Cm(1)
 
-    # Add UK-NEQAS logo to the header (centered)
+    def remove_empty_header_paragraphs(header):
+        """Remove any empty paragraphs from the header."""
+        for paragraph in header.paragraphs:
+            if not paragraph.text.strip():
+                p_element = paragraph._element
+                p_element.getparent().remove(p_element)
+
+    # Create DOCX document
+    doc = Document()
+
+    # Set overall document style for Normal text
+    font = doc.styles['Normal'].font
+    font.name = 'Arial'
+    font.size = Pt(12)
+
+    # Set page margins for all sections
+    for section in doc.sections:
+        section.top_margin = Cm(1)
+        section.bottom_margin = Cm(1)
+        section.left_margin = Cm(1)
+        section.right_margin = Cm(1)
+
+    # HEADER
     header = doc.sections[0].header
-    paragraph = header.paragraphs[0]
-    logo_run = paragraph.add_run()
-    logo_run.add_picture("project/static/uk-neqas-logo.jpg", width=Inches(2.5))
-    date = doc.add_paragraph()
-    date.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
-    text_run = date.add_run()
-    text_run.text = '\t' + datetime.datetime.now().strftime("%b %d, %Y")  # For center align of text
-    text_run.style = "Heading 2 Char"
+    # Remove any empty paragraphs (new lines) in the header
+    remove_empty_header_paragraphs(header)
 
-    # Add a title to the document
-    doc.add_heading('Quality Metrics Report', 0)
+    # Create a table with 5 rows and 5 columns in the header.
+    # The third argument sets the overall width (here just as a placeholder)
+    table = header.add_table(5, 5, Cm(19.75))
+    table.style = 'TableGrid'
 
-    # First page
-    # Adding the lorem ipsum text to the document
-    figure_count = 1
-    table_count = 1
-    intro = doc.add_paragraph()
-    intro_run = intro.add_run("Introduction")
-    intro_run.bold = True
-    doc.add_paragraph(f"""Thank you for participating in the distribution {distribution} of UK NEQAS Microbiology pilot External Quality Assessment (EQA).
+    # --- Merge the entire leftmost column (column 0) ---
+    logo_cell = table.cell(0, 0)
+    for row_idx in range(1, 5):
+        logo_cell = logo_cell.merge(table.cell(row_idx, 0))
 
-Samples for this EQA are distributed by UK NEQAS Microbiology and those with detectable virus are either sequenced inhouse or forwarded to the appropriate laboratory for sequencing according to routine practice.
+    # Insert the logo image into the merged cell (set width as desired)
+    logo_paragraph = logo_cell.paragraphs[0]
+    logo_run = logo_paragraph.add_run()
+    logo_run.add_picture("project/static/uk-neqas-logo.jpg", width=Cm(4.46))
 
-A survey of sequencing technology is completed as part of the sequencing result upload process. FASTA, BAM and/or FASTQ files are requested to evaluate RSV sequencing quality. The sequence data submitted is also processed by the EQA to generate a lineage using Nextclade.
+    # --- Populate the content cells ---
+    # Content rows: 0, 2, and 4. Blank separator columns are 1 and 3.
+    # Row 0 (content row)
+    table.cell(0, 2).text = "WHO RSV Sequencing EQA"
+    table.cell(0, 4).text = f"Laboratory : {user_lab}"
 
-Your individual sequencing quality and lineage assignment report (docx format) are available on the XXXXXX website. If you have any problems accessing your reports then please contact XXXXXXXXXXXXXXXXXX (email address). 
+    # Row 2 (content row)
+    # For distribution, create a paragraph and set the run bold
+    dist_cell = table.cell(2, 2)
+    p = dist_cell.paragraphs[0]
+    run = p.add_run(f"Distribution : {distribution}")
+    run.bold = True
+    table.cell(2, 4).text = "Page x of y"
 
-The purpose of this EQA is to assess:
- ➢  The accuracy of RSV sequencing.
- ➢  Provide a measurement of the quality of viral sequencing.
+    # Row 4 (content row)
+    current_date = datetime.datetime.now().strftime("%d-%b-%Y")
+    table.cell(4, 2).text = f"Dispatch Date : {current_date}"
+    table.cell(4, 4).text = ""  # Leave empty if not needed
 
-The summary of the EQA participation, marking criteria applied, and the scoring is provided as Appendix 1.
-""")
-    breaks = doc.add_paragraph().add_run()
-    for _ in range(4):
-        breaks.add_break()
+    # --- Set column widths ---
+    table.autofit = False
+    table.columns[0].width = Cm(4.71)  # Logo (merged) column
+    table.columns[1].width = Cm(0.18)    # Blank separator
+    table.columns[2].width = Cm(10.18)   # First content column
+    table.columns[3].width = Cm(0.18)    # Blank separator
+    table.columns[4].width = Cm(4.71)    # Second content column
 
-    # Add the copyright of CONFIDENTIAL label
-    copyright_paragraph = doc.add_paragraph()
-    copyright_run = copyright_paragraph.add_run("CONFIDENTIAL. Copyright © UKNEQAS for Microbiology")
-    copyright_run.bold = True  # Bold for emphasis
-    copyright_run.italic = True  # Italicize for stylistic effect
-    copyright_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER  # Center the text
-    copyright_run.font.size = Pt(10)  # Adjust font size for the copyright
-    #copyright_run.add_break(WD_BREAK.PAGE)
+
+    def set_cell_border(cell: _Cell, **kwargs):
+        """
+        Set cell`s border
+        Usage:
+
+        set_cell_border(
+            cell,
+            top={"sz": 12, "val": "single", "color": "#FF0000", "space": "0"},
+            bottom={"sz": 12, "color": "#00FF00", "val": "single"},
+            start={"sz": 24, "val": "dashed", "shadow": "true"},
+            end={"sz": 12, "val": "dashed"},
+        )
+        """
+        tc = cell._tc
+        tcPr = tc.get_or_add_tcPr()
+
+        # check for tag existnace, if none found, then create one
+        tcBorders = tcPr.first_child_found_in("w:tcBorders")
+        if tcBorders is None:
+            tcBorders = OxmlElement('w:tcBorders')
+            tcPr.append(tcBorders)
+
+        # list over all available tags
+        for edge in ('start', 'top', 'end', 'bottom', 'insideH', 'insideV'):
+            edge_data = kwargs.get(edge)
+            if edge_data:
+                tag = 'w:{}'.format(edge)
+
+                # check for tag existnace, if none found, then create one
+                element = tcBorders.find(qn(tag))
+                if element is None:
+                    element = OxmlElement(tag)
+                    tcBorders.append(element)
+
+                # looks like order of attributes is important
+                for key in ["sz", "val", "color", "space", "shadow"]:
+                    if key in edge_data:
+                        element.set(qn('w:{}'.format(key)), str(edge_data[key]))
+
+
+
+    # --- Set row heights ---
+    for row_idx in [0, 2, 4]:
+        row = table.rows[row_idx]
+        row.height = Cm(0.71)
+        row.height_rule = WD_ROW_HEIGHT_RULE.EXACTLY
+    for row_idx in [1, 3]:
+        row = table.rows[row_idx]
+        
+        
+        row.height = Cm(0.11)
+        row.height_rule = WD_ROW_HEIGHT_RULE.EXACTLY
+
+    # --- Optionally, adjust cell alignment and apply custom borders ---
+    for row in table.rows:
+        for cell in row.cells:
+            for paragraph in cell.paragraphs:
+                paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+
+    cell = table.rows[0].cells[0]
+    set_cell_border(cell, top={"sz": 0, "val": "nil", "color": "auto"})
+
+
 
 
 
@@ -412,11 +501,6 @@ The summary of the EQA participation, marking criteria applied, and the scoring 
         elif user_subtype=="alternative":
             return "RSV-B" if intended_subtype=="RSV-A" else "RSV-A"
         return user_subtype  
-
-
-
-
-
 
     sample_html_reports = {}
 
