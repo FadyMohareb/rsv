@@ -34,6 +34,7 @@ from docx import Document
 from docx.shared import Inches,Pt, Cm, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_BREAK, WD_COLOR_INDEX
 from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ROW_HEIGHT_RULE
+from docx.enum.style import WD_STYLE_TYPE
 from docx.oxml import OxmlElement, ns, parse_xml
 from docx.oxml.ns import nsdecls, qn
 from project.utils.report_parser import process_all_reports
@@ -338,86 +339,67 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         run._r.append(instrText)
         run._r.append(fldChar2)
 
-    # Create DOCX document
-    doc = Document()
-
-    # Counts
+    # Load the existing template
+    doc = Document("project/static/templateV3.docx")
     table_count=1
     figure_count=1
 
-    # Style
-    font = doc.styles['Normal'].font
-    font.name = 'Arial'
-    font.size = Pt(10)
-    
-    #changing the page margins
-    sections = doc.sections
-    for section in sections:
-        section.top_margin = Cm(1)
-        section.bottom_margin = Cm(1)
-        section.left_margin = Cm(1)
-        section.right_margin = Cm(1)
+    # Create or update Heading 1 style
+    styles = doc.styles
+    try:
+        heading1 = styles['Heading 1']
+    except KeyError:
+        heading1 = styles.add_style('Heading 1', WD_STYLE_TYPE.PARAGRAPH)
+    heading1.font.name = 'Arial'
+    heading1.font.size = Pt(14)
+    heading1.font.bold = True
+    heading1.font.color.rgb = RGBColor(0x00, 0x33, 0x66)  # Dark blue
 
-    def remove_empty_header_paragraphs(header):
-        """Remove any empty paragraphs from the header."""
-        for paragraph in header.paragraphs:
-            if not paragraph.text.strip():
-                p_element = paragraph._element
-                p_element.getparent().remove(p_element)
+    # Create or update Heading 2 style
+    try:
+        heading2 = styles['Heading 2']
+    except KeyError:
+        heading2 = styles.add_style('Heading 2', WD_STYLE_TYPE.PARAGRAPH)
+    heading2.font.name = 'Arial'
+    heading2.font.size = Pt(12)
+    heading2.font.bold = True
+    heading2.font.color.rgb = RGBColor(0x33, 0x66, 0x99)  # Medium blue
 
-    # Create DOCX document
-    doc = Document()
+    # Create or update Heading 3 style
+    try:
+        heading3 = styles['Heading 3']
+    except KeyError:
+        heading3 = styles.add_style('Heading 3', WD_STYLE_TYPE.PARAGRAPH)
+    heading3.font.name = 'Arial'
+    heading3.font.size = Pt(10)
+    heading3.font.bold = True
+    heading3.font.color.rgb = RGBColor(0x66, 0x99, 0xCC)  # Lighter blue
 
-    # Set overall document style for Normal text
-    font = doc.styles['Normal'].font
-    font.name = 'Arial'
-    font.size = Pt(12)
-
-    # Set page margins for all sections
-    for section in doc.sections:
-        section.top_margin = Cm(1)
-        section.bottom_margin = Cm(1)
-        section.left_margin = Cm(1)
-        section.right_margin = Cm(1)
-
-    # HEADER
+    # Access the header
     header = doc.sections[0].header
-    # Remove any empty paragraphs (new lines) in the header
-    remove_empty_header_paragraphs(header)
 
-    # Create a table with 5 rows and 5 columns in the header.
-    # The third argument sets the overall width (here just as a placeholder)
-    table = header.add_table(5, 5, Cm(19.75))
-    table.style = 'TableGrid'
+    # Retrieve the first table in the header (assumes your template already has one)
+    table = header.tables[0]
 
-    # --- Merge the entire leftmost column (column 0) ---
-    logo_cell = table.cell(0, 0)
-    for row_idx in range(1, 5):
-        logo_cell = logo_cell.merge(table.cell(row_idx, 0))
-
-    # Insert the logo image into the merged cell (set width as desired)
-    logo_paragraph = logo_cell.paragraphs[0]
-    logo_run = logo_paragraph.add_run()
-    logo_run.add_picture("project/static/uk-neqas-logo.jpg", width=Cm(4.46))
 
     # --- Populate the content cells ---
-    # Content rows: 0, 2, and 4. Blank separator columns are 1 and 3.
     # Row 0 (content row)
-    table.cell(0, 2).text = "WHO RSV Sequencing EQA"
-    table.cell(0, 4).text = f"Laboratory : {user_lab}"
+    cell = table.cell(0, 2).paragraphs[0].add_run("WHO RSV Sequencing EQA")
+    cell = table.cell(0, 4).paragraphs[0].add_run(f"Laboratory : {user_lab}")
 
     # Row 2 (content row)
-    # For distribution, create a paragraph and set the run bold
+    # Create a paragraph in the cell and set the run to bold for the distribution text.
     dist_cell = table.cell(2, 2)
-    p = dist_cell.paragraphs[0]
-    run = p.add_run(f"Distribution : {distribution}")
-    run.bold = True
-    table.cell(2, 4).text = "Page x of y"
+    dist_paragraph = dist_cell.paragraphs[0]
+    dist_paragraph.clear()  # Clear previous content if any
+    run_label = dist_paragraph.add_run("Distribution : ")
+    run_value = dist_paragraph.add_run(f"{distribution}")
+    run_value.bold = True
+
 
     # Row 4 (content row)
     current_date = datetime.datetime.now().strftime("%d-%b-%Y")
-    table.cell(4, 2).text = f"Dispatch Date : {current_date}"
-    table.cell(4, 4).text = ""  # Leave empty if not needed
+    cell = table.cell(4, 2).paragraphs[0].add_run(f"Dispatch Date : {current_date}")
 
     # --- Set column widths ---
     table.autofit = False
@@ -426,48 +408,6 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
     table.columns[2].width = Cm(10.18)   # First content column
     table.columns[3].width = Cm(0.18)    # Blank separator
     table.columns[4].width = Cm(4.71)    # Second content column
-
-
-    def set_cell_border(cell: _Cell, **kwargs):
-        """
-        Set cell`s border
-        Usage:
-
-        set_cell_border(
-            cell,
-            top={"sz": 12, "val": "single", "color": "#FF0000", "space": "0"},
-            bottom={"sz": 12, "color": "#00FF00", "val": "single"},
-            start={"sz": 24, "val": "dashed", "shadow": "true"},
-            end={"sz": 12, "val": "dashed"},
-        )
-        """
-        tc = cell._tc
-        tcPr = tc.get_or_add_tcPr()
-
-        # check for tag existnace, if none found, then create one
-        tcBorders = tcPr.first_child_found_in("w:tcBorders")
-        if tcBorders is None:
-            tcBorders = OxmlElement('w:tcBorders')
-            tcPr.append(tcBorders)
-
-        # list over all available tags
-        for edge in ('start', 'top', 'end', 'bottom', 'insideH', 'insideV'):
-            edge_data = kwargs.get(edge)
-            if edge_data:
-                tag = 'w:{}'.format(edge)
-
-                # check for tag existnace, if none found, then create one
-                element = tcBorders.find(qn(tag))
-                if element is None:
-                    element = OxmlElement(tag)
-                    tcBorders.append(element)
-
-                # looks like order of attributes is important
-                for key in ["sz", "val", "color", "space", "shadow"]:
-                    if key in edge_data:
-                        element.set(qn('w:{}'.format(key)), str(edge_data[key]))
-
-
 
     # --- Set row heights ---
     for row_idx in [0, 2, 4]:
@@ -486,11 +426,6 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         for cell in row.cells:
             for paragraph in cell.paragraphs:
                 paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-
-    cell = table.rows[0].cells[0]
-    set_cell_border(cell, top={"sz": 0, "val": "nil", "color": "auto"})
-
-
 
 
 
@@ -686,7 +621,6 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         # Table 1: RSV Subtyping and Clade Assignment
         doc.add_heading("Table 1: RSV subtyping and lineage assignment", level=2)
         table1 = doc.add_table(rows=1, cols=7)  # 7 Columns: Indicator, Specimen ID, Your result, Intended, Reference, Score, Participants
-        table1.style = "Table Grid"
         table1.alignment = WD_TABLE_ALIGNMENT.CENTER
 
         # Table 1 Header
@@ -743,7 +677,6 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         # Table 2: Sequencing Quality
         doc.add_heading("Table 2: Sequencing Quality", level=2)
         table2 = doc.add_table(rows=1, cols=8)  # 8 Columns: Indicator, Specimen ID, Your result, Recommended, Reference, Score, Mean (IQR), Participants meeting threshold
-        table2.style = "Table Grid"
         table2.alignment = WD_TABLE_ALIGNMENT.CENTER
 
         # Create the first header row
@@ -996,7 +929,6 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
 
         # Add the Clade and G_clade table with RSV subtype
         clade_table = doc.add_table(rows=1, cols=4)  # Creating a table with 4 columns (Participant, Subtype, Clade, Legacy clade)
-        clade_table.style = 'Table Grid'
 
         # Adding the header row for the table
         clade_hdr_cells = clade_table.rows[0].cells
@@ -1133,7 +1065,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         last_paragraph = doc.paragraphs[-1] 
         last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         para = doc.add_paragraph()
-        runner = para.add_run(f"Figure {str(figure_count)}. Quality metrics for sample {sample} for participants that submitted appropriate data files")
+        runner = para.add_run(f"Figure {str(figure_count)}. Quality metrics for sample {sample} for participants that submitted appropriate data files\n\n\n")
         runner.bold = True
         runner.italic = True
         last_paragraph = doc.paragraphs[-1] 
@@ -1149,7 +1081,6 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
 
         # Generate and insert the metrics table for the sample
         table = doc.add_table(rows=1, cols=5)  # Creating a table with 5 columns for metrics
-        table.style = 'Table Grid'
 
         # Adding the header row for the table
         hdr_cells = table.rows[0].cells
@@ -1309,21 +1240,9 @@ Sequencing was carried out according to the laboratory's normal procedure.\n\n""
     runner.bold = True
     runner.italic = True
     runner=appendix1.add_run(f"""All participating laboratories complied with Scheme instructions.\n\n""")
-
-    #add generator mention
-    current_year = datetime.datetime.now().year
-    automention=doc.add_paragraph() 
-    automention.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-    rights=automention.add_run(f"\n\n\n\n\n\n\n\n\n\nAutomatically generated by xxx. All rights reserved © UKNEQAS for Microbiology; {current_year}")
-    rights.bold = True
-    rights.italic = True
-    
-
-
-    # Save the document to a BytesIO object and add footers
+ 
+    # Save the document to a BytesIO object
     docx_io = BytesIO()
-    add_page_number(doc.sections[0].footer.paragraphs[0].add_run("RSV Sequencing Distributions ... Pilot EQA Summary Report\t\t"))
-    doc.sections[0].footer.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
     doc.save(docx_io)
     docx_io.seek(0)
     return doc
