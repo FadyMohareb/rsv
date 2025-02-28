@@ -21,7 +21,7 @@ endpoints are available to everyone and pose a safety risk. Must be revamped.
 from flask import Blueprint, jsonify, request, current_app, send_file
 from flask_login import current_user, login_required
 from project.utils.sql_models import Distribution, Organization, Submission
-import os, zipfile
+import os, zipfile, subprocess
 from project.utils.docx import generate_docx_report
 from project.utils.report_parser import process_all_reports
 from datetime import datetime
@@ -665,11 +665,25 @@ def download_docx_all(distribution):
             docx_path = os.path.join(temp_dir, docx_filename)
             doc.save(docx_path)
 
-            # Add to ZIP
-            zipf.write(docx_path, arcname=docx_filename)
+            # Build the PDF filename and path (assumes .docx becomes .pdf)
+            pdf_filename = docx_filename.replace(".docx", ".pdf")
+            pdf_path = os.path.join(temp_dir, pdf_filename)
 
-            # Optional: Clean up individual DOCX file after adding it to ZIP
+            # Convert the DOCX to PDF using LibreOffice in headless mode
+            subprocess.run([
+                "soffice",
+                "--headless",
+                "--convert-to", "pdf",
+                docx_path,
+                "--outdir", temp_dir
+            ], check=True)
+
+            # Add the PDF file to the ZIP archive
+            zipf.write(pdf_path, arcname=pdf_filename)
+
+            # Clean up: remove the temporary DOCX and PDF files
             os.remove(docx_path)
+            os.remove(pdf_path)
 
     # Send the ZIP file to the user
     return send_file(zip_path, as_attachment=True, download_name=zip_filename)

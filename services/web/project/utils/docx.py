@@ -62,7 +62,7 @@ def generate_sample_plot_pdf(sample_name, sample_data, role):
     labs = list(sample_data.keys())
     
     # Replace 'WR006' with 'reference' and anonymize the rest of the participants
-    anonymized_labs = [lab for i, lab in enumerate(labs)]  # ['reference' if lab == 'WR024' else f'{i}' for i, lab in enumerate(labs)]
+    anonymized_labs = [lab if lab!='Reference' else 'Reference Lab' for i, lab in enumerate(labs)]  # ['reference' if lab == 'WR024' else f'{i}' for i, lab in enumerate(labs)]
     
     genome_coverage_percent = [sample_data[lab]["coverage"] * 100 if sample_data[lab]["coverage"]!="N/A" else 0 for lab in labs]  # Genome coverage at a specific threshold
     similarity_percent = [sample_data[lab]["similarity"] if sample_data[lab]["coverage"]!="N/A" else 0 for lab in labs]  # Could be uniformity or another similarity metric
@@ -340,7 +340,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         run._r.append(fldChar2)
 
     # Load the existing template
-    doc = Document("project/static/templateV3.docx")
+    doc = Document("project/static/templateV4.docx")
     table_count=1
     figure_count=1
 
@@ -444,6 +444,8 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
             if sample_name not in sample_html_reports:
                 sample_html_reports[sample_name] = {}
             sample_html_reports[sample_name][lab] = metrics
+
+    sample_html_reports = dict(sorted(sample_html_reports.items()))
 
     def compute_evaluation_data(sample_html_reports, sample_reference_map, user_lab):
         """Computes evaluation data from sample reports."""
@@ -621,6 +623,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         # Table 1: RSV Subtyping and Clade Assignment
         doc.add_heading("Table 1: RSV subtyping and lineage assignment", level=2)
         table1 = doc.add_table(rows=1, cols=7)  # 7 Columns: Indicator, Specimen ID, Your result, Intended, Reference, Score, Participants
+        table1.style = "Table Grid"
         table1.alignment = WD_TABLE_ALIGNMENT.CENTER
 
         # Table 1 Header
@@ -677,6 +680,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         # Table 2: Sequencing Quality
         doc.add_heading("Table 2: Sequencing Quality", level=2)
         table2 = doc.add_table(rows=1, cols=8)  # 8 Columns: Indicator, Specimen ID, Your result, Recommended, Reference, Score, Mean (IQR), Participants meeting threshold
+        table2.style = "Table Grid"
         table2.alignment = WD_TABLE_ALIGNMENT.CENTER
 
         # Create the first header row
@@ -866,17 +870,22 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
             # Replace the sample data with anonymized data
             sample_html_reports[sample] = anonymized_data
 
-    # Sort sample_html_reports such that '9999' comes first
+    # Sort sample_html_reports such that user_lab comes first, reference second
     for sample, data in sample_html_reports.items():
         sorted_data = {
             key: data[key]
-            for key in sorted(data, key=lambda k: (k != '9999', k))  # '9999' comes first, then rest in order
+            for key in sorted(
+            data,
+            key=lambda k: (
+                0 if k == user_lab else (1 if (k.lower() == "reference" or k=="9999") else 2),
+                k
+            )
+        )
         }
         sample_html_reports[sample] = sorted_data
 
     # Sort the sample_html_reports dictionary by sample name
     sample_html_reports = dict(sorted(sample_html_reports.items()))
-
 
 
     # Add sample plots and tables to the DOCX file
@@ -929,6 +938,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
 
         # Add the Clade and G_clade table with RSV subtype
         clade_table = doc.add_table(rows=1, cols=4)  # Creating a table with 4 columns (Participant, Subtype, Clade, Legacy clade)
+        clade_table.style = "Table Grid"
 
         # Adding the header row for the table
         clade_hdr_cells = clade_table.rows[0].cells
@@ -944,7 +954,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         # Adding data rows for each participant and highlighting mismatches
         labCount = 0
         for lab, metrics in data.items():
-            labName=lab
+            labName=lab if lab!='Reference' else 'Reference Lab'
 
             # Add a new row to the table
             row_cells = clade_table.add_row().cells
@@ -1081,6 +1091,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
 
         # Generate and insert the metrics table for the sample
         table = doc.add_table(rows=1, cols=5)  # Creating a table with 5 columns for metrics
+        table.style = "Table Grid"
 
         # Adding the header row for the table
         hdr_cells = table.rows[0].cells
@@ -1103,7 +1114,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
             #else:
             #labCount += 1
             #labName = str(labCount)
-            labName=lab
+            labName=lab if lab!='Reference' else 'Reference Lab'
 
             # Add a new row to the table
             row_cells = table.add_row().cells
@@ -1219,7 +1230,7 @@ Sequencing was carried out according to the laboratory's normal procedure.\n\n""
     runner=appendix1.add_run(f"Data submission and analysis\n")
     runner.bold = True
     runner.italic = True
-    runner=appendix1.add_run(f"""Data collection, quality control (QC), storage and analysis to  WHO defined standards and requirements was carried out by University of Cranfield in collaborations with UK NEQAS for Microbiology and Micropathology ltd.\nParticipants were required to submit FASTA, FASTQ or BAM files which are used to assess quality metrics. FASTQ files are processed preferentially over BAM files. If a FASTQ file is not provided but a BAM file is, it will realigned to reference sequence. Should a FASTA not be provided, a consensus sequence will be automatically generated from the FASTQ/BAM, otherwise the provided FASTA will be assumed to be the consensus sequence.\n\n""")
+    runner=appendix1.add_run(f"""Data collection, quality control (QC), storage and analysis to  WHO defined standards and requirements was carried out by Cranfield University in collaborations with UK NEQAS for Microbiology and Micropathology ltd.\nParticipants were required to submit FASTA, FASTQ or BAM files which are used to assess quality metrics. FASTQ files are processed preferentially over BAM files. If a FASTQ file is not provided but a BAM file is, it will realigned to reference sequence. Should a FASTA not be provided, a consensus sequence will be automatically generated from the FASTQ/BAM, otherwise the provided FASTA will be assumed to be the consensus sequence.\n\n""")
     runner=appendix1.add_run(f"Validated results\n")
     runner.bold = True
     runner.italic = True
@@ -1231,11 +1242,12 @@ Sequencing was carried out according to the laboratory's normal procedure.\n\n""
 ➢  Genome Coverage (%) - The percentage of reference bases covered, with a threshold typically set at ≥90%. Computed using Nextclade.
 ➢  Ns in Sequence (%) - The percentage of ambiguous bases (N's) in the sequence, with a threshold typically set at ≤2%. Computed using Nextclade.
 ➢  Similarity (%) - The percentage of sequence similarity compared to the reference, with a threshold typically set at ≥98%. Computed using Nextclade.
-➢  Read Coverage (Mean Depth) - The average depth of sequencing reads, with a threshold typically set at ≥50. Computed using Qualimap2.\n\n""") 
+➢  Read Coverage (Mean Depth) - The average depth of sequencing reads, with a threshold typically set at ≥50. Computed using Qualimap2.
+NOTICE: A 100% similarity is not expected because GISAID sequences are used as reference for sequence alignment, a requirement for lineage assignment by Nextclade. This is because significant evidence is required to designate the sample's sequence produced by the reference lab as 100% accurate. For this reason, establishing whether the sample constitutes a distinctive and novel lineage is a determination that is beyond the scope of the EQA. \n\n""") 
     runner=appendix1.add_run(f"Participation and scoring submissions\n")
     runner.bold = True
     runner.italic = True
-    runner=appendix1.add_run(f"""xxxxxxxxxxxxxxxxxx\n\n""")
+    runner=appendix1.add_run(f"""[Details to be inserted]\n\n""")
     runner=appendix1.add_run(f"Scheme compliance\n")
     runner.bold = True
     runner.italic = True
