@@ -1,0 +1,22 @@
+LAB	Platform
+WR003	Illumina iSeq100
+WR006	Illumina NextSeq 2000
+WR008	Unknown
+WR010	ONT GridION
+WR016	Illumina MiSeq
+WR017	Illumina NextSeq 1000/2000
+WR018	ONT MinION
+WR023	Illumina MiSeq
+WR024	ONT MinION
+WR039	Illumina NextSeq 500/2000
+WR042	Illumina NextSeq 500
+WR044	Illumina NextSeq 1000
+WR049	Illumina iSeq100
+WR072	ONT MinION
+WR073	ONT GridION
+WR077	Illumina NextSeq 2000
+WR090	Illumina MiSeq
+WR096	ONT MinION
+WR098	Unknown
+WR099	Illumina NextSeq 500/550
+9999	Unknown

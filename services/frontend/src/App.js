@@ -1,7 +1,7 @@
 /**
  * @module App
  * 
- * @description Main application component, React-based. Manages user authentication, routing, and layout rendering.
+ * @description Main application component, React-based. Manages user authentication, routing, and layout rendering. WARNING: React classes are considered legacy code now, and using functional components is preferred. Nevertheless, this class might help bring up to speed developers that are new to React but familiar with OOP, by explaining how React's state and rendering works.
  */
 
 import React, { Component } from 'react';

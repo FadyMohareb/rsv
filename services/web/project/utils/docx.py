@@ -5,8 +5,11 @@ This utilities module is in charge of processing the data of a distribution and 
 
 Functions:
 
-    generate_sample_plot_pdf(sample_name, sample_data, role)
-        Creates a stacked bar and line graph for sample data visualization.
+    generate_two_plots(sample_name, sample_data, role)
+        Generates two vertical bar plots from sample data: a percentage plot (stacked bars for Genome Coverage and Ns, and offset bars for Similarity) and a read coverage plot (black bars).
+
+    generate_aggregated_plot_by_platform(sample_name, sample_data)
+        Generates two vertical bar plots with aggregated (average) metrics by sequencing platform.
 
     create_pygenometracks_plot(reference_genome, annotation, region, bed_path, bigwig_file, bigwig_consensus_file, output_dir, sample_name, user_lab)
         Uses pyGenomeTracks to generate genome coverage plots.
@@ -20,7 +23,7 @@ Functions:
     add_page_number(run)
         Inserts a page number field in a DOCX document.
     
-    generate_docx_reportreport_data, base_dir, role, user_lab, distribution
+    generate_docx_report(report_data, base_dir, role, user_lab, distribution)
         Generates a DOCX report summarizing viric genome analysis results.
 
 :author: Kevin
@@ -34,6 +37,7 @@ from docx import Document
 from docx.shared import Inches,Pt, Cm, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_BREAK, WD_COLOR_INDEX
 from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ROW_HEIGHT_RULE
+from project.utils.sql_models import Distribution, Organization, Submission
 from docx.enum.style import WD_STYLE_TYPE
 from docx.oxml import OxmlElement, ns, parse_xml
 from docx.oxml.ns import nsdecls, qn
@@ -43,111 +47,245 @@ import numpy as np
 import os
 import subprocess
 import shutil
+import copy
 
-def generate_sample_plot_pdf(sample_name, sample_data, role):
+def generate_two_plots(sample_name, sample_data, role):
     """
-    Generates a stacked bar and line graph using Matplotlib for a given sample.
-
+    Generates two vertical bar plots from sample data:
+      1. A percentage plot (stacked bars for Genome Coverage and Ns, and offset bars for Similarity).
+      2. A read coverage plot (black bars).
+    
     :param sample_name: The name of the sample, used for file naming.
     :type sample_name: str
-    :param sample_data: Dictionary containing sample statistics (coverage, similarity, etc.).
+    :param sample_data: Dictionary containing sample statistics for each lab.
+                        Each value is expected to be a dict with keys:
+                        "coverage", "similarity", "Ns", "Mean coverage depth", and optionally "sequencing_platform".
     :type sample_data: dict
-    :param role: User role (affects visualisation style).
+    :param role: User role (affects visualization style, if needed).
     :type role: str
-    :return: The file path of the generated plot image.
-    :rtype: str
+    :return: A tuple with the file paths of the generated percentage plot and read coverage plot.
+    :rtype: (str, str)
     """
-    
-    # Extract the data for plotting (adjust based on your dataset structure)
+    # Extract the lab names and anonymize them (for display)
     labs = list(sample_data.keys())
+    anonymized_labs = [lab if lab != 'Reference' else 'Reference Lab (NEQAS)' for lab in labs]
     
-    # Replace 'WR006' with 'reference' and anonymize the rest of the participants
-    anonymized_labs = [lab if lab!='Reference' else 'Reference Lab' for i, lab in enumerate(labs)]  # ['reference' if lab == 'WR024' else f'{i}' for i, lab in enumerate(labs)]
+    # Extract percentage metrics
+    genome_coverage_percent = [
+        sample_data[lab]["coverage"] * 100 if sample_data[lab]["coverage"] != "N/A" else 0 
+        for lab in labs
+    ]
+    similarity_percent = [
+        sample_data[lab]["similarity"] if sample_data[lab]["coverage"] != "N/A" else 0 
+        for lab in labs
+    ]
+    num_ns_percent = [
+        sample_data[lab]["Ns"] if sample_data[lab]["coverage"] != "N/A" else 0 
+        for lab in labs
+    ]
     
-    genome_coverage_percent = [sample_data[lab]["coverage"] * 100 if sample_data[lab]["coverage"]!="N/A" else 0 for lab in labs]  # Genome coverage at a specific threshold
-    similarity_percent = [sample_data[lab]["similarity"] if sample_data[lab]["coverage"]!="N/A" else 0 for lab in labs]  # Could be uniformity or another similarity metric
-    num_ns_percent = [sample_data[lab]["Ns"]if sample_data[lab]["coverage"]!="N/A" else 0 for lab in labs]  # Total number of non-ACGTNs
-    read_coverage = [sample_data[lab]["Mean coverage depth"] if sample_data[lab]["Mean coverage depth"]!="N/A" else 0 for lab in labs]  # Read depth or other coverage metric
-
-    # Create the figure and primary axis (ax1) with a wider figure size
-    fig, ax1 = plt.subplots(figsize=(16, 8))  # Increased width for a wider figure
+    # Extract read coverage metric
+    read_coverage = [
+        sample_data[lab]["Mean coverage depth"] if sample_data[lab]["Mean coverage depth"] != "N/A" else 0 
+        for lab in labs
+    ]
     
-    """    if role == "user":
-        # Horizontal Bar Plot Configuration
-        y_pos = np.arange(len(labs))
-        bar_height = 0.3  # Limiting bar height (make it a bit thinner)
-
-        # Plot bars for Genome Coverage and Ns
-        ax1.barh(y_pos, genome_coverage_percent, bar_height, label="Genome Coverage (%)", color="#1E3A5F", zorder=3)
-        ax1.barh(y_pos, num_ns_percent, bar_height, left=genome_coverage_percent, label="Ns in Sequence (%)", color="#FBC02D", zorder=3)
-
-        # Plot a separate bar for Similarity
-        ax1.barh(y_pos + bar_height, similarity_percent, bar_height, label="Similarity (%)", color="#F57C00", zorder=3)
-
-        ax1.set_ylabel("Participant", fontsize=18)
-        ax1.set_xlabel("Percentage (%)", fontsize=18)
-        ax1.set_yticks(y_pos + bar_height / 2)
-        ax1.set_yticklabels(anonymized_labs, fontsize=16)
-        ax1.invert_yaxis()  # Invert y-axis for better readability
-
-        # Secondary axis for Read Coverage
-        ax2 = ax1.twiny()
-        ax2.plot(read_coverage, y_pos, label="Read Coverage (Mean)", color="black", marker="o", linestyle="--", linewidth=2)
-        ax2.set_xlabel("Read Coverage (Mean)", fontsize=18)
-        ax2.set_xlim(left=0, right=max(read_coverage) * 1.1)
-
-    else:
-    """
-    # Vertical Bar Plot Configuration (Default)
-    bar_width = 0.3  # Limiting bar width (make it a bit narrower)
+    # Plot 1: Percentage Metrics Plot
+    fig1, ax1 = plt.subplots(figsize=(16, 8))
+    bar_width = 0.3
     x_pos = np.arange(len(labs))
-
-    # Plot bars for Genome Coverage and Ns
-    ax1.bar(x_pos, genome_coverage_percent, bar_width, label="Genome Coverage (%)", color="#1E3A5F", zorder=3)
-    ax1.bar(x_pos, num_ns_percent, bar_width, bottom=genome_coverage_percent, label="Ns in Sequence (%)", color="#FBC02D", zorder=3)
-
-    # Plot a separate bar for Similarity
-    ax1.bar(x_pos + bar_width, similarity_percent, bar_width, label="Similarity (%)", color="#F57C00", zorder=3)
-
+    
+    # Stacked bars for Genome Coverage and Ns
+    ax1.bar(x_pos, genome_coverage_percent, bar_width, 
+            label="Genome Coverage (%)", color="#1E3A5F", zorder=3)
+    ax1.bar(x_pos, num_ns_percent, bar_width, 
+            bottom=genome_coverage_percent, label="Ns in Sequence (%)", color="#FBC02D", zorder=3)
+    
+    # Offset bars for Similarity
+    ax1.bar(x_pos + bar_width, similarity_percent, bar_width, 
+            label="Similarity (%)", color="#F57C00", zorder=3)
+    
     ax1.set_xlabel("Participant", fontsize=18)
     ax1.set_ylabel("Percentage (%)", fontsize=18)
     ax1.set_xticks(x_pos + bar_width / 2)
     ax1.set_xticklabels(anonymized_labs, rotation=45, ha="right", fontsize=16)
-
-    # Secondary axis for Read Coverage
-    ax2 = ax1.twinx()
-    ax2.plot(x_pos, read_coverage, label="Read Coverage (Mean)", color="black", marker="o", linestyle="--", linewidth=2)
-    ax2.set_ylabel("Read Coverage (Mean)", fontsize=18)
-    ax2.set_ylim(bottom=0, top=max(read_coverage) * 1.1)
-
-    # Add horizontal lines for thresholds
-    '''if role == "user":
-        ax1.axvline(90, color="grey", linestyle="--", linewidth=1, label="_nolegend_", zorder=-1)
-        ax1.axvline(98, color="blue", linestyle="--", linewidth=1, zorder=-1)
-    else:'''
-    ax1.axhline(90, color="grey", linestyle="--", linewidth=1, label="_nolegend_", zorder=-1)
-    ax1.axhline(98, color="blue", linestyle="--", linewidth=1, zorder=-1)
-
-    # Adjust the legend placement to the right of the plot to save vertical space
-    handles1, labels1 = ax1.get_legend_handles_labels()
-    handles2, labels2 = ax2.get_legend_handles_labels()
     
-    '''if role == "user":
-        # Combine the legends and place them to the right with a larger font size
-        ax1.legend(handles=handles1 + handles2, labels=labels1 + labels2, 
-                loc='upper left', bbox_to_anchor=(1, 1),fontsize=16, frameon=False)
-    else:'''
-    ax1.legend(handles=handles1 + handles2, labels=labels1 + labels2, 
-               loc='upper center', bbox_to_anchor=(0.5, -0.27), ncol=3, fontsize=18)
-        
-    # Adjust the layout to prevent clipping of labels and legends
-    fig.tight_layout()  # Increase padding to avoid overlapping and give extra space to the legend
+    # Horizontal threshold lines, if desired
+    ax1.axhline(90, color="grey", linestyle="--", linewidth=1, zorder=-1)
+    ax1.axhline(95, color="blue", linestyle="--", linewidth=1, zorder=-1)
+    
+    # Combine legend from ax1 (percentage plot)
+    handles1, labels1 = ax1.get_legend_handles_labels()
+    ax1.legend(handles=handles1, labels=labels1, loc="upper center", 
+               bbox_to_anchor=(0.5, 1.2), ncol=2, fontsize=14, bbox_transform=ax1.transAxes)
+    
+    fig1.tight_layout()
+    percentage_plot_file = f"{sample_name}_percentage_plot.png"
+    plt.savefig(percentage_plot_file, dpi=300, bbox_inches="tight")
+    plt.close(fig1)
+    
+    # Plot 2: Read Coverage Plot (Black Bars)
+    fig2, ax2 = plt.subplots(figsize=(16, 8))
+    bar_width2 = 0.5
+    x_pos2 = np.arange(len(labs))
+    
+    # Create black bars for read coverage
+    ax2.bar(x_pos2, read_coverage, bar_width2, color="grey", label="Read Coverage (Mean)")
+    ax2.axhline(50, color="grey", linestyle="--", linewidth=1, zorder=-1)
+    ax2.set_xlabel("Participant", fontsize=18)
+    ax2.set_ylabel("Read Coverage (Mean)", fontsize=18)
+    ax2.set_xticks(x_pos2)
+    ax2.set_xticklabels(anonymized_labs, rotation=45, ha="right", fontsize=16)
+    ax2.legend(loc="upper center", bbox_to_anchor=(0.5, 1.2), fontsize=14)
+    
+    fig2.tight_layout()
+    read_coverage_plot_file = f"{sample_name}_read_coverage_plot.png"
+    plt.savefig(read_coverage_plot_file, dpi=300, bbox_inches="tight")
+    plt.close(fig2)
+    
+    return percentage_plot_file, read_coverage_plot_file
 
-    # Save the plot as a PNG image (or you can save as PDF if required)
-    plt.savefig(f'{sample_name}_metrics_plot.png', dpi=300, bbox_inches='tight')  # Ensure tight bounding box
+def generate_aggregated_plot_by_platform(sample_name, sample_data, user_lab):
+    """
+    Generates two vertical bar plots with aggregated (average) metrics by sequencing platform.
+    The first plot shows percentage metrics (stacked bars for Genome Coverage and Ns, with offset bars for Similarity).
+    The second plot shows Read Coverage as black bars.
+    The sequencing platform used by user_lab is highlighted by placing it first in the order.
+    
+    :param sample_name: The name of the sample, used for file naming.
+    :type sample_name: str
+    :param sample_data: Dictionary containing sample statistics for each lab.
+                        Each value is expected to be a dict with keys:
+                        "coverage", "similarity", "Ns", "Mean coverage depth", and "sequencing_platform".
+    :type sample_data: dict
+    :param user_lab: The lab identifier to highlight in the plot.
+    :type user_lab: str
+    :return: A tuple with the file paths of the generated percentage plot, read coverage plot, and the user platform.
+    :rtype: (str, str, str)
+    """
+    # Group data by sequencing platform
+    grouped = {}
+    user_platform = None  # Will be set when we find user_lab
+    for lab, metrics in sample_data.items():
+        platform = metrics.get("sequencing_platform", "Unknown")
+        if lab == user_lab:
+            user_platform = platform
+        if platform not in grouped:
+            grouped[platform] = {
+                "coverage": [],
+                "similarity": [],
+                "Ns": [],
+                "read_cov": []
+            }
+        grouped[platform]["coverage"].append(metrics["coverage"] * 100 if metrics["coverage"] != "N/A" else 0)
+        grouped[platform]["similarity"].append(metrics["similarity"] if metrics["similarity"] != "N/A" else 0)
+        grouped[platform]["Ns"].append(metrics["Ns"] if metrics["Ns"] != "N/A" else 0)
+        grouped[platform]["read_cov"].append(metrics["Mean coverage depth"] if metrics["Mean coverage depth"] != "N/A" else 0)
+    
+    # Reorder platforms: user's platform first (if found), then alphabetical.
+    all_platforms = list(grouped.keys())
+    if user_platform in all_platforms:
+        sorted_platforms = [user_platform] + sorted([p for p in all_platforms if p != user_platform])
+    else:
+        sorted_platforms = sorted(all_platforms)
+    
+    # Build lists for plotting and include the submission counts in labels.
+    platforms = []
+    platformNames = []
+    avg_coverage = []
+    avg_similarity = []
+    avg_ns = []
+    avg_read_cov = []
+    
+    for platform in sorted_platforms:
+        vals = grouped[platform]
+        count = len(vals["coverage"])
+        platforms.append(f"{platform} ({count})")
+        platformNames.append(platform)
+        avg_coverage.append(np.mean(vals["coverage"]))
+        avg_similarity.append(np.mean(vals["similarity"]))
+        avg_ns.append(np.mean(vals["Ns"]))
+        avg_read_cov.append(np.mean(vals["read_cov"]))
+    
+    # --------------------------
+    # Plot 1: Percentage Metrics Plot
+    # --------------------------
+    fig1, ax1 = plt.subplots(figsize=(16, 8))
+    bar_width = 0.3
+    x_pos = np.arange(len(platforms))
+    
+    # Stacked bars: Genome Coverage and Ns
+    ax1.bar(x_pos, avg_coverage, bar_width, label="Genome Coverage (%)", color="#1E3A5F", zorder=3)
+    ax1.bar(x_pos, avg_ns, bar_width, bottom=avg_coverage, label="Ns in Sequence (%)", color="#FBC02D", zorder=3)
+    # Offset bars for Similarity
+    ax1.bar(x_pos + bar_width, avg_similarity, bar_width, label="Similarity (%)", color="#F57C00", zorder=3)
+    
+    ax1.set_xlabel("Sequencing Platform", fontsize=18)
+    ax1.set_ylabel("Percentage (%)", fontsize=18)
+    ax1.set_xticks(x_pos + bar_width / 2)
+    ax1.set_xticklabels(platforms, rotation=45, ha="right", fontsize=16)
+    
+    # Optional horizontal thresholds
+    ax1.axhline(90, color="grey", linestyle="--", linewidth=1, zorder=-1)
+    ax1.axhline(95, color="blue", linestyle="--", linewidth=1, zorder=-1)
 
-    return f'{sample_name}_metrics_plot.png'  # Path to the saved plot image
+    # Highlight the user_lab's sequencing platform
+    if user_platform in platformNames:
+        index = platformNames.index(user_platform)
+        ax1.annotate(
+            "Your Platform", 
+            xy=(x_pos[index], max(avg_coverage[index] + avg_ns[index], avg_similarity[index]) + 5),
+            xytext=(x_pos[index], max(avg_coverage[index] + avg_ns[index], avg_similarity[index]) + 15),
+            arrowprops=dict(facecolor='red', arrowstyle="->"),
+            ha="center",
+            fontsize=14,
+            color="red"
+        )
+    
+    # Legend for percentage plot
+    handles1, labels1 = ax1.get_legend_handles_labels()
+    ax1.legend(handles=handles1, labels=labels1, loc="upper center", 
+               bbox_to_anchor=(0.5, 1.2), ncol=2, fontsize=14, bbox_transform=ax1.transAxes)
+    
+    fig1.tight_layout()
+    percentage_plot_file = f"{sample_name}_aggregated_percentage_plot.png"
+    plt.savefig(percentage_plot_file, dpi=300, bbox_inches="tight")
+    plt.close(fig1)
+    
+    # --------------------------
+    # Plot 2: Read Coverage Plot
+    # --------------------------
+    fig2, ax2 = plt.subplots(figsize=(16, 8))
+    bar_width2 = 0.5
+    x_pos2 = np.arange(len(platforms))
+    
+    ax2.bar(x_pos2, avg_read_cov, bar_width2, color="grey", label="Read Coverage (Mean)")
+    ax2.axhline(50, color="grey", linestyle="--", linewidth=1, zorder=-1)
+    ax2.set_xlabel("Sequencing Platform", fontsize=18)
+    ax2.set_ylabel("Read Coverage (Mean)", fontsize=18)
+    ax2.set_xticks(x_pos2)
+    ax2.set_xticklabels(platforms, rotation=45, ha="right", fontsize=16)
+    ax2.legend(loc="upper center", bbox_to_anchor=(0.5, 1.2), fontsize=14)
 
+    # Highlight the user_lab's sequencing platform
+    if user_platform in platformNames:
+        index = platformNames.index(user_platform)
+        ax2.annotate(
+            "Your Platform", 
+            xy=(x_pos[index], np.nanmax(avg_read_cov) + np.nanmax(avg_read_cov)*0.05),
+            xytext=(x_pos[index], np.nanmax(avg_read_cov) + np.nanmax(avg_read_cov)*0.15),
+            arrowprops=dict(facecolor='red', arrowstyle="->"),
+            ha="center",
+            fontsize=14,
+            color="red"
+        )
+    
+    fig2.tight_layout()
+    read_coverage_plot_file = f"{sample_name}_aggregated_readcov_plot.png"
+    plt.savefig(read_coverage_plot_file, dpi=300, bbox_inches="tight")
+    plt.close(fig2)
+    
+    return percentage_plot_file, read_coverage_plot_file, user_platform
 
 def create_pygenometracks_plot(reference_genome, annotation, region, bed_path, bigwig_file, bigwig_consensus_file, output_dir, sample_name, user_lab):
     """
@@ -371,7 +509,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
     except KeyError:
         heading3 = styles.add_style('Heading 3', WD_STYLE_TYPE.PARAGRAPH)
     heading3.font.name = 'Arial'
-    heading3.font.size = Pt(10)
+    heading3.font.size = Pt(9)
     heading3.font.bold = True
     heading3.font.color.rgb = RGBColor(0x66, 0x99, 0xCC)  # Lighter blue
 
@@ -428,8 +566,6 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
                 paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
 
 
-
-
     def subtype_assignment(user_subtype, intended_subtype):
         if user_subtype=="original":
             return intended_subtype
@@ -443,9 +579,25 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         for sample_name, metrics in samples.items():
             if sample_name not in sample_html_reports:
                 sample_html_reports[sample_name] = {}
+            submission = (
+                Submission.query
+                .join(Organization)
+                .filter(
+                    Distribution.name == distribution,
+                    Submission.sample == sample_name,
+                    Organization.name == lab
+                )
+                .first()
+            )
+            if submission:
+                seq_type = submission.sequencing_type
+            else:
+                seq_type = "N/A"
             sample_html_reports[sample_name][lab] = metrics
+            sample_html_reports[sample_name][lab]["sequencing_platform"]=seq_type
 
     sample_html_reports = dict(sorted(sample_html_reports.items()))
+    print(sample_html_reports)
 
     def compute_evaluation_data(sample_html_reports, sample_reference_map, user_lab):
         """Computes evaluation data from sample reports."""
@@ -566,9 +718,9 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
                 else:
                     lab_count+=1
                     aggregated_metrics.append(metrics["similarity"])
-                    if metrics["similarity"]>98:
+                    if metrics["similarity"]>95:
                         lab_pass+=1
-            similarity=[sample_name, round(user_similarity,1), "98% or higher", round(reference_similarity,1), "Pass" if user_similarity >98 else "Fail", format_IQR_string(aggregated_metrics), f"{lab_pass}/{lab_count} ({(lab_pass * 100) // lab_count}%)"]
+            similarity=[sample_name, round(user_similarity,1), "95% or higher", round(reference_similarity,1), "Pass" if user_similarity >95 else "Fail", format_IQR_string(aggregated_metrics), f"{lab_pass}/{lab_count} ({(lab_pass * 100) // lab_count}%)"]
             evaluation_data["Similarity (%)"].append(similarity)
 
             #Mean coverage depth
@@ -617,11 +769,9 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
                 for run in paragraph.runs:
                     run.font.size = Pt(size_pt)
 
-        doc.add_page_break()
         doc.add_heading(f"Evaluation Report: {run_id}", level=1)
 
-        # Table 1: RSV Subtyping and Clade Assignment
-        doc.add_heading("Table 1: RSV subtyping and lineage assignment", level=2)
+        # Table Summary: RSV Subtyping and Clade Assignment
         table1 = doc.add_table(rows=1, cols=7)  # 7 Columns: Indicator, Specimen ID, Your result, Intended, Reference, Score, Participants
         table1.style = "Table Grid"
         table1.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -632,7 +782,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         for i, text in enumerate(headers):
             hdr_cells[i].text = text
             hdr_cells[i].paragraphs[0].runs[0].bold = True
-            hdr_cells[i].paragraphs[0].runs[0].font.size = Pt(10)  # Slightly smaller font size
+            hdr_cells[i].paragraphs[0].runs[0].font.size = Pt(9)  # Slightly smaller font size
 
         # Apply background color to the header row (light grey)
         for cell in hdr_cells:
@@ -674,11 +824,55 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
                 for cell in row_cells:
                     apply_background_color(cell, row_color)  # Apply unique color per indicator
                     apply_font_size(cell, 9)  # Set font size to 6 pt for the row
+        doc.add_paragraph()
+        doc.add_paragraph()
+            # Create a table with one row and one cell
+        table = doc.add_table(rows=1, cols=1)
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
-        doc.add_paragraph()  # Spacing before Table 2
+        # Apply a built‑in style that has a border (e.g., 'Table Grid')
+        table.style = "Table Grid"
+
+        # Remove extra cell margins if desired (requires modifying underlying XML)
+        cell = table.rows[0].cells[0]
+        cell.paragraphs[0].add_run("Purpose of the EQA:\n").bold=True
+        cell.paragraphs[0].add_run(
+            "   •   Assess the accuracy of RSV sequencing.\n"
+            "   •   Measure the quality of viral sequencing.\n\n"
+            "Appendix 1 provides a summary of the procedures for specimen preparation, data submission, "
+            "and analysis, along with details on result validation, quality metrics, and laboratory compliance.\n\n"
+            "Specimens for this EQA were distributed by UK NEQAS Microbiology as part of the WHO Molecular Detection of RSV "
+            "Distribution 5791. Specimens with detectable virus are either sequenced in-house or sent to a reference laboratory "
+            "following routine procedures.\n\n"
+            "As part of the sequencing result submission, participants complete a survey on sequencing technology. "
+            "FASTA, FASTQ and/or BAM files are evaluated for sequencing quality metrics, including read coverage and accuracy "
+            "based on the comparison to GISAID reference sequences EPI_ISL_412866 (RSV A) or EPI_ISL_1653999 (RSV B) (see Appendix 1 for definitions).\n"
+            "Each participant receives a report outlining the comparison to: 1-a reference lab which sequenced the distributed samples, "
+            "and 2-against the aggregated results submitted by other participants.\n"
+            "Additionally, the comparison to GISAID reference sequences enables lineage assignment of the submitted sequence data "
+            "using Nextclade (https://clades.nextstrain.org/dataset).\n\n"
+            "In the Figures on page 3 and subsequent pages results are presented for the different Quality Metrics.\n"
+            "This information is provided for your own use and does not form part of your\n\n"
+        )
+        cell.paragraphs[0].add_run("Enquiries: ").bold=True
+        cell.paragraphs[0].add_run("Pre-distribution test results are available should you experience a technical failure and wish to discuss "
+            "the results. Written enquiries about this distribution should be addressed to Dr Sanjiv Rughooputh at the email address below.\n\n")
+        cell.paragraphs[0].add_run("Acknowledgements: ").bold=True
+        cell.paragraphs[0].add_run("We would like to thank NICD, VIDRL and UKHSA for the provision of clinical isolates, UKHSA Manchester, "
+            "VRD for their kind assistance with pre-distribution tests, and the Bioinformatics Group at Cranfield University’s School of Engineering "
+            "and Applied Sciences for bioinformatics analysis."
+        )
+
+        # Optionally, modify the font of the text
+        for paragraph in cell.paragraphs:
+            for run in paragraph.runs:
+                run.font.name = 'Arial'
+                run.font.size = Pt(9)
+
+        doc.add_page_break()
 
         # Table 2: Sequencing Quality
-        doc.add_heading("Table 2: Sequencing Quality", level=2)
+        doc.add_heading("Table 1: Sequencing Quality", level=2)
         table2 = doc.add_table(rows=1, cols=8)  # 8 Columns: Indicator, Specimen ID, Your result, Recommended, Reference, Score, Mean (IQR), Participants meeting threshold
         table2.style = "Table Grid"
         table2.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -689,7 +883,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         for i, text in enumerate(headers):
             table2_header[i].text = text
             table2_header[i].paragraphs[0].runs[0].bold = True
-            table2_header[i].paragraphs[0].runs[0].font.size = Pt(10)  # Slightly smaller font size
+            table2_header[i].paragraphs[0].runs[0].font.size = Pt(9)  # Slightly smaller font size
         table2_header[6].merge(table2_header[7])
 
         # Apply background color to the header row (light grey)
@@ -708,8 +902,8 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         empty_row[7].text = "Participants meeting threshold"
 
         # Optional: Bold the new header cells and make their font smaller
-        empty_row[6].paragraphs[0].runs[0].font.size = Pt(10)  # Smaller font size
-        empty_row[7].paragraphs[0].runs[0].font.size = Pt(10)  # Smaller font size
+        empty_row[6].paragraphs[0].runs[0].font.size = Pt(9)  # Smaller font size
+        empty_row[7].paragraphs[0].runs[0].font.size = Pt(9)  # Smaller font size
 
         # Apply background color to the empty row (light blue)
         for cell in empty_row:
@@ -755,7 +949,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         bullet_points = [
             "Obtained sufficient genome coverage (90% or higher).",
             "Maintained Ns in Sequence within acceptable limits (2% or lower).",
-            "Obtained sufficient Similarity (98% or higher).",
+            "Obtained sufficient Similarity (95% or higher).",
             "Obtained sufficient Read Coverage (Mean depth of 50 or higher)."
         ]
         for point in bullet_points:
@@ -774,6 +968,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
     # If the user is not a superuser, filter and aggregate data
     others_label=""
     agg_users={}
+    sample_html_reports_original=copy.deepcopy(sample_html_reports)
     if not role == "superuser":
         processed_reports = {}
         for sample_name, labs_data in sample_html_reports.items():
@@ -890,10 +1085,11 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
 
     # Add sample plots and tables to the DOCX file
     for sample, data in sample_html_reports.items():
-        plot_path = generate_sample_plot_pdf(sample, data, role)  # Generate and get the plot path
+        plot_path, read_plot_path = generate_two_plots(sample, data, role)  # Generate and get the plot path
+        platform_plot_path, read_platform_plot_path, user_platform = generate_aggregated_plot_by_platform(sample, sample_html_reports_original[sample], user_lab)
         intended_subtype = "RSV-B" if sample_reference_map[sample]=="EPI_ISL_1653999" else "RSV-A"
-        doc.add_heading(f'Sample {sample}', level=1)
-        doc.add_heading(f'Lineage assignment', level=2)
+        doc.add_heading(f'Sample {sample}\n', level=1)
+        doc.add_heading(f'Lineage assignment\n', level=2)
 
         # Extract Clade and G_clade assignments for the 'reference'
         reference_clade = None
@@ -931,7 +1127,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         # Caption for the Clade table
         clade_caption = doc.add_paragraph()
         clade_caption.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-        clade_runner = clade_caption.add_run(f"Table {str(table_count)}. Lineage assignments for sample {sample}, including RSV subtype.")
+        clade_runner = clade_caption.add_run(f"\nTable {str(table_count)}. Lineage assignments for sample {sample}, including RSV subtype.")
         clade_runner.bold = True
         clade_runner.italic = True
         table_count += 1  # Increment the table count
@@ -954,7 +1150,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
         # Adding data rows for each participant and highlighting mismatches
         labCount = 0
         for lab, metrics in data.items():
-            labName=lab if lab!='Reference' else 'Reference Lab'
+            labName=lab if lab!='Reference' else 'Reference Lab (NEQAS)'
 
             # Add a new row to the table
             row_cells = clade_table.add_row().cells
@@ -967,25 +1163,29 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
             subtype_cell = row_cells[1]
             subtype_cell.text = subtype_assignment(metrics['subtype'],intended_subtype)
             # Highlight mismatched Clade values
-            if metrics['subtype'] == "alternative":
-                subtype_cell.paragraphs[0].runs[0].font.highlight_color = WD_COLOR_INDEX.YELLOW
+            #if metrics['subtype'] == "alternative":
+            #    subtype_cell.paragraphs[0].runs[0].font.highlight_color = WD_COLOR_INDEX.YELLOW
 
             # Clade column
             clade_cell = row_cells[2]
             clade_cell.text = metrics['clade']
             # Highlight mismatched Clade values
-            if metrics['clade'] != reference_clade:
-                clade_cell.paragraphs[0].runs[0].font.highlight_color = WD_COLOR_INDEX.YELLOW
+            #if metrics['clade'] != reference_clade:
+            #    clade_cell.paragraphs[0].runs[0].font.highlight_color = WD_COLOR_INDEX.YELLOW
 
             # Legacy clade column
             g_clade_cell = row_cells[3]
             g_clade_cell.text = metrics['G_clade']
             # Highlight mismatched Legacy clade values
-            if metrics['G_clade'] != reference_g_clade:
-                g_clade_cell.paragraphs[0].runs[0].font.highlight_color = WD_COLOR_INDEX.YELLOW
+            #if metrics['G_clade'] != reference_g_clade:
+            #    g_clade_cell.paragraphs[0].runs[0].font.highlight_color = WD_COLOR_INDEX.YELLOW
+            if labName==user_lab:
+                for i in range(4):
+                    shading_elm = parse_xml(r'<w:shd {} w:fill="EFFA75"/>'.format(nsdecls('w')))
+                    row_cells[i]._tc.get_or_add_tcPr().append(shading_elm)
 
 
-        doc.add_heading(f'Sequencing quality', level=2)
+        doc.add_heading(f'\nSequencing quality\n', level=2)
 
                 # Initialize flags to check if any participants fail to meet thresholds
         failed_coverage = []
@@ -1009,7 +1209,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
                     failed_coverage.append(labName)
                 if metrics['coverage'] == 'N/A' or metrics['Ns'] > 2:
                     failed_ns.append(labName)
-                if metrics['coverage'] == 'N/A' or metrics['similarity'] < 98:
+                if metrics['coverage'] == 'N/A' or metrics['similarity'] < 95:
                     failed_similarity.append(labName)
                 if metrics['Mean coverage depth'] == 'N/A' or float(metrics['Mean coverage depth']) < 50:
                     failed_coverage_depth.append(labName)
@@ -1020,7 +1220,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
                     user_failed_coverage = True
                 if metrics['coverage'] == 'N/A' or metrics['Ns'] > 2:
                     user_failed_ns = True
-                if metrics['coverage'] == 'N/A' or metrics['similarity'] < 98:
+                if metrics['coverage'] == 'N/A' or metrics['similarity'] < 95:
                     user_failed_similarity = True
                 if metrics['Mean coverage depth'] == 'N/A' or float(metrics['Mean coverage depth']) < 50:
                     user_failed_coverage_depth = True
@@ -1039,9 +1239,9 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
                 doc.add_paragraph("All participants maintained Ns in Sequence within acceptable limits (2% or lower).", style='List Bullet')
 
             if failed_similarity:
-                doc.add_paragraph(f"Participants {', '.join(failed_similarity)} failed to satisfy the threshold for Similarity (98%).", style='List Bullet')
+                doc.add_paragraph(f"Participants {', '.join(failed_similarity)} failed to satisfy the threshold for Similarity (95%).", style='List Bullet')
             else:
-                doc.add_paragraph("All participants obtained sufficient Similarity (98% or higher).", style='List Bullet')
+                doc.add_paragraph("All participants obtained sufficient Similarity (95% or higher).", style='List Bullet')
 
             if failed_coverage_depth:
                 doc.add_paragraph(f"Participants {', '.join(failed_coverage_depth)} failed to satisfy the threshold for Read Coverage (Mean depth of 50).", style='List Bullet')
@@ -1061,9 +1261,9 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
                 doc.add_paragraph("Obtained sufficient Ns in Sequence (2% or lower).", style='List Bullet')
 
             if user_failed_similarity:
-                doc.add_paragraph("Failed to satisfy the threshold for Similarity (98%).", style='List Bullet')
+                doc.add_paragraph("Failed to satisfy the threshold for Similarity (95%).", style='List Bullet')
             else:
-                doc.add_paragraph("Obtained sufficient Similarity (98% or higher).", style='List Bullet')
+                doc.add_paragraph("Obtained sufficient Similarity (95% or higher).", style='List Bullet')
 
             if user_failed_coverage_depth:
                 doc.add_paragraph("Failed to satisfy the threshold for Read Coverage (Mean depth of 50).", style='List Bullet')
@@ -1071,11 +1271,25 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
                 doc.add_paragraph("Obtained sufficient Read Coverage (Mean depth of 50 or higher).", style='List Bullet')
         
         # Add the plot image to DOCX with a caption
-        doc.add_picture(plot_path, width=Inches(6))  # Adjust size as needed
+        last_paragraph = doc.paragraphs[-1] 
+        runner = last_paragraph.add_run(f"\n\n")
+        doc.add_picture(plot_path, width=Inches(7.5))  # Adjust size as needed
         last_paragraph = doc.paragraphs[-1] 
         last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         para = doc.add_paragraph()
-        runner = para.add_run(f"Figure {str(figure_count)}. Quality metrics for sample {sample} for participants that submitted appropriate data files\n\n\n")
+        runner = para.add_run(f"Figure {str(figure_count)}. Quality metrics for sample {sample} for participants that submitted appropriate data files.\n\n")
+        runner.bold = True
+        runner.italic = True
+        last_paragraph = doc.paragraphs[-1] 
+        last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        figure_count+=1
+
+        # Add the read coverage plot image to DOCX with a caption
+        doc.add_picture(read_plot_path, width=Inches(7.5))  # Adjust size as needed
+        last_paragraph = doc.paragraphs[-1] 
+        last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        para = doc.add_paragraph()
+        runner = para.add_run(f"Figure {str(figure_count)}. Read coverages for sample {sample} for participants that submitted appropriate data files.\n\n\n")
         runner.bold = True
         runner.italic = True
         last_paragraph = doc.paragraphs[-1] 
@@ -1114,7 +1328,7 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
             #else:
             #labCount += 1
             #labName = str(labCount)
-            labName=lab if lab!='Reference' else 'Reference Lab'
+            labName=lab if lab!='Reference' else 'Reference Lab (NEQAS)'
 
             # Add a new row to the table
             row_cells = table.add_row().cells
@@ -1127,28 +1341,37 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
             coverage_value = metrics['coverage'] * 100 if metrics['coverage']!="N/A" else "N/A"
             if metrics['coverage']!="N/A":
                 row_cells[1].text = f"{coverage_value:.1f}"
-                if coverage_value < 90:
-                    row_cells[1].paragraphs[0].runs[0].font.highlight_color = WD_COLOR_INDEX.YELLOW  # Highlight if less than 90%
+                #if coverage_value < 90:
+                #    row_cells[1].paragraphs[0].runs[0].font.highlight_color = WD_COLOR_INDEX.YELLOW  # Highlight if less than 90%
                 # Ns column (highlight if higher than 2%)
                 ns_value = metrics['Ns']
                 row_cells[2].text = f"{ns_value:.1f}"
-                if ns_value > 2:
-                    row_cells[2].paragraphs[0].runs[0].font.highlight_color = WD_COLOR_INDEX.YELLOW  # Highlight if higher than 2%
+                #if ns_value > 2:
+                #    row_cells[2].paragraphs[0].runs[0].font.highlight_color = WD_COLOR_INDEX.YELLOW  # Highlight if higher than 2%
 
-                # Similarity column (highlight if less than 98%)
+                # Similarity column (highlight if less than 95%)
                 similarity_value = metrics['similarity']
                 row_cells[3].text = f"{similarity_value:.1f}"
-                if similarity_value < 98:
-                    row_cells[3].paragraphs[0].runs[0].font.highlight_color = WD_COLOR_INDEX.YELLOW  # Highlight if less than 98%
+                #if similarity_value < 95:
+                #    row_cells[3].paragraphs[0].runs[0].font.highlight_color = WD_COLOR_INDEX.YELLOW  # Highlight if less than 95%
 
             # Mean coverage depth column
             mean_coverage_depth_value = metrics['Mean coverage depth']
             if metrics['Mean coverage depth']!="N/A":
                 row_cells[4].text = f"{mean_coverage_depth_value:.1f}"
 
+            if labName==user_lab:
+                for i in range(5):
+                    shading_elm = parse_xml(r'<w:shd {} w:fill="EFFA75"/>'.format(nsdecls('w')))
+                    row_cells[i]._tc.get_or_add_tcPr().append(shading_elm)
+
         # Increment figure and table count
         table_count += 1
+        last_paragraph = doc.add_paragraph() 
+        last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        last_paragraph.add_run().add_break(WD_BREAK.PAGE)
 
+        #genome tracks
         if role != "superuser":
             reference_genome = "project/static/genomes/EPI_ISL_412866/EPI_ISL_412866.fasta" if sample_reference_map[sample]=="EPI_ISL_412866" else "project/static/genomes/EPI_ISL_1653999/EPI_ISL_1653999.fasta"
             region="EPI_ISL_412866:1-15225" if sample_reference_map[sample]=="EPI_ISL_412866" else "EPI_ISL_1653999:1-15222"
@@ -1174,18 +1397,159 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
             plot_path = create_pygenometracks_plot( reference_genome, annotation, region, bed_path_copy, bigwig_copy, bigwig_consensus_copy, output_dir, sample, user_lab)
             
             # Add the plot image to DOCX with a caption
-            doc.add_picture(plot_path, width=Inches(7.5))  # Adjust size as needed
+            doc.add_picture(plot_path, width=Inches(6.5))  # Adjust size as needed
             last_paragraph = doc.paragraphs[-1] 
             last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             last_paragraph = doc.paragraphs[-1]
             para = doc.add_paragraph()
-            runner = para.add_run(f"Figure {str(figure_count)}. Genomic visualisation of submitted sequence and reads.")
+            para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            runner = para.add_run(f"Figure {str(figure_count)}. Genomic visualisation of submitted sequence and reads.\n")
             runner.bold = True
             runner.italic = True
-            last_paragraph = doc.paragraphs[-1] 
-            last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-            last_paragraph.add_run().add_break(WD_BREAK.PAGE)
             figure_count+=1
+        
+        doc.add_heading(f'Sequencing platforms\n\n', level=2)
+
+        # Add the plot image to DOCX with a caption
+        doc.add_picture(platform_plot_path, width=Inches(7.5))  # Adjust size as needed
+        last_paragraph = doc.paragraphs[-1] 
+        last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        last_paragraph = doc.paragraphs[-1]
+        para = doc.add_paragraph()
+        para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        runner = para.add_run(f"Figure {str(figure_count)}. Quality metrics per sequencing platform.\n\n")
+        runner.bold = True
+        runner.italic = True
+        figure_count+=1
+
+        # Add the read coverage plot image to DOCX with a caption
+        doc.add_picture(read_platform_plot_path, width=Inches(7.5))  # Adjust size as needed
+        last_paragraph = doc.paragraphs[-1] 
+        last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        last_paragraph = doc.paragraphs[-1]
+        para = doc.add_paragraph()
+        para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        runner = para.add_run(f"Figure {str(figure_count)}. Read coverage per sequencing platform.\n\n\n")
+        runner.bold = True
+        runner.italic = True
+        figure_count+=1
+
+        def aggregate_sample_data(sample_data, user_platform):
+            """
+            Aggregates sample metrics by sequencing platform.
+            
+            :param sample_data: Dictionary where each key is a lab and each value is a dict with metrics,
+                                including 'coverage', 'similarity', 'Ns', 'Mean coverage depth',
+                                and 'sequencing_platform'.
+            :return: A dictionary keyed by sequencing platform with averaged metric values.
+            """
+            platform_data = {}
+            for lab, metrics in sample_data.items():
+                # Get the sequencing platform; default to "Unknown" if not provided.
+                platform = metrics.get("sequencing_platform", "Unknown")
+                if platform not in platform_data:
+                    platform_data[platform] = {"coverage": [], "similarity": [], "Ns": [], "Mean coverage depth": []}
+                # Multiply coverage by 100 to get percentage, if available.
+                if metrics.get("coverage") != "N/A":
+                    platform_data[platform]["coverage"].append(metrics["coverage"] * 100)
+                else:
+                    platform_data[platform]["coverage"].append(0)
+                # Similarity, Ns and Mean coverage depth
+                if metrics.get("similarity") != "N/A":
+                    platform_data[platform]["similarity"].append(metrics["similarity"])
+                else:
+                    platform_data[platform]["similarity"].append(0)
+                if metrics.get("Ns") != "N/A":
+                    platform_data[platform]["Ns"].append(metrics["Ns"])
+                else:
+                    platform_data[platform]["Ns"].append(0)
+                if metrics.get("Mean coverage depth") != "N/A":
+                    platform_data[platform]["Mean coverage depth"].append(metrics["Mean coverage depth"])
+            
+            # Compute averages for each platform
+            aggregated = {}
+            for platform, lists in platform_data.items():
+                count = len(lists["coverage"])
+                platformName=f"{platform} ({count})"
+                aggregated[platformName] = {
+                    "coverage": np.mean(lists["coverage"]) if lists["coverage"] else 0,
+                    "similarity": np.mean(lists["similarity"]) if lists["similarity"] else 0,
+                    "Ns": np.mean(lists["Ns"]) if lists["Ns"] else 0,
+                    "Mean coverage depth": np.mean(lists["Mean coverage depth"]) if lists["Mean coverage depth"] else "N/A"
+                }
+            aggregatedFinal = {
+                key: aggregated[key]
+                for key in sorted(
+                aggregated,
+                key=lambda k: (
+                    0 if " ".join(k.split(" ")[:-1]) == user_platform else 1,
+                    k
+                )
+            )
+            }
+            return aggregatedFinal
+
+        def create_platform_table(doc, aggregated_data, user_platform):
+            """
+            Creates a DOCX table with aggregated quality metrics per sequencing platform.
+            
+            :param doc: The Document object to add the table to.
+            :param aggregated_data: Dictionary with sequencing platform as key and averaged metrics as values.
+            :return: The created table.
+            """
+            # Caption for the table
+            para = doc.add_paragraph()
+            para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            runner = para.add_run(f"Table {str(table_count)}. Quality metrics across sequencing platforms.")
+            runner.bold = True
+            runner.italic = True
+            
+            # Create a table with one header row and 5 columns.
+            table = doc.add_table(rows=1, cols=5)
+            table.style = "Table Grid"
+            
+            # Define header titles.
+            headers = [
+                'Sequencing Platform',
+                'Genome Coverage (%)',
+                'Ns in Sequence (%)',
+                'Similarity (%)',
+                'Read Coverage (Mean)'
+            ]
+            
+            hdr_cells = table.rows[0].cells
+            for i, title in enumerate(headers):
+                hdr_cells[i].text = title
+                # Center-align and bold the header text.
+                for paragraph in hdr_cells[i].paragraphs:
+                    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                    for run in paragraph.runs:
+                        run.bold = True
+            
+            # Add a row for each sequencing platform.
+            for platform, metrics in aggregated_data.items():
+                row_cells = table.add_row().cells
+                row_cells[0].text = platform
+                row_cells[1].text = f"{metrics['coverage']:.1f}" if metrics['coverage'] is not None else "N/A"
+                row_cells[2].text = f"{metrics['Ns']:.1f}" if metrics['Ns'] is not None else "N/A"
+                row_cells[3].text = f"{metrics['similarity']:.1f}" if metrics['similarity'] is not None else "N/A"
+                row_cells[4].text = f"{metrics['Mean coverage depth']:.1f}" if metrics['Mean coverage depth'] != "N/A" else "N/A"
+                for cell in row_cells:
+                    for paragraph in cell.paragraphs:
+                        paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                if " ".join(platform.split(" ")[:-1])==user_platform:
+                    for i in range(5):
+                        shading_elm = parse_xml(r'<w:shd {} w:fill="EFFA75"/>'.format(nsdecls('w')))
+                        row_cells[i]._tc.get_or_add_tcPr().append(shading_elm)
+
+            return table
+
+        aggregated_data=aggregate_sample_data(sample_html_reports_original[sample], user_platform)
+        create_platform_table(doc, aggregated_data, user_platform)
+
+        last_paragraph = doc.add_paragraph() 
+        last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        last_paragraph.add_run().add_break(WD_BREAK.PAGE)
         
         
 
@@ -1241,9 +1605,9 @@ Sequencing was carried out according to the laboratory's normal procedure.\n\n""
     runner = appendix1.add_run(f"""Where appropriate data files have been provided by the participant, the following quality metrics will be stated on the reports:
 ➢  Genome Coverage (%) - The percentage of reference bases covered, with a threshold typically set at ≥90%. Computed using Nextclade.
 ➢  Ns in Sequence (%) - The percentage of ambiguous bases (N's) in the sequence, with a threshold typically set at ≤2%. Computed using Nextclade.
-➢  Similarity (%) - The percentage of sequence similarity compared to the reference, with a threshold typically set at ≥98%. Computed using Nextclade.
+➢  Similarity (%) - The percentage of sequence similarity compared to the reference, with a threshold typically set at ≥95%. Computed using Nextclade.
 ➢  Read Coverage (Mean Depth) - The average depth of sequencing reads, with a threshold typically set at ≥50. Computed using Qualimap2.
-NOTICE: A 100% similarity is not expected because GISAID sequences are used as reference for sequence alignment, a requirement for lineage assignment by Nextclade. This is because significant evidence is required to designate the sample's sequence produced by the reference lab as 100% accurate. For this reason, establishing whether the sample constitutes a distinctive and novel lineage is a determination that is beyond the scope of the EQA. \n\n""") 
+NOTICE: A 100% similarity is not expected because Nextclade requires GISAID reference sequences for alignment and lineage assignment. \n\n""") 
     runner=appendix1.add_run(f"Participation and scoring submissions\n")
     runner.bold = True
     runner.italic = True

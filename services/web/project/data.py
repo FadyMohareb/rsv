@@ -401,8 +401,8 @@ def get_sample_details(distribution, selected_sample):
         seq_aggregates = {}
         for lab, metrics in sample_details[selected_sample]["metrics"].items():
             # Exclude the logged-in user's lab and reference lab from this aggregation
-            if lab == current_user.organization or lab == "9999":
-                continue
+            # if lab == current_user.organization or lab == "9999":
+            #    continue
             submission = (
                 Submission.query
                 .join(Organization)
@@ -424,6 +424,7 @@ def get_sample_details(distribution, selected_sample):
                     "similarity": 0,
                     "read_coverage": 0,
                     "count": 0,
+                    "read_count": 0,
                     "clade_counts": {},
                     "g_clade_counts": {}
                 }
@@ -435,6 +436,7 @@ def get_sample_details(distribution, selected_sample):
             group["similarity"] += metrics["similarity"]
             if metrics["Mean coverage depth"] != "N/A":
                 group["read_coverage"] += metrics["Mean coverage depth"]
+                group["read_count"] += 1
             group["count"] += 1
             clade = metrics.get("clade", "")
             g_clade = metrics.get("G_clade", "")
@@ -449,11 +451,15 @@ def get_sample_details(distribution, selected_sample):
                 agg["coverage"] = round((agg["coverage"] / agg["count"]) * 100, 2)
                 agg["Ns"] = round(agg["Ns"] / agg["count"], 2)
                 agg["similarity"] = round(agg["similarity"] / agg["count"], 2)
-                agg["read_coverage"] = round(agg["read_coverage"] / agg["count"], 2)
+                
                 agg["clade"] = max(agg["clade_counts"], key=agg["clade_counts"].get) if agg["clade_counts"] else ""
                 agg["G_clade"] = max(agg["g_clade_counts"], key=agg["g_clade_counts"].get) if agg["g_clade_counts"] else ""
+                if agg["read_count"]!=0:
+                    agg["read_coverage"] = round(agg["read_coverage"] / agg["read_count"], 2)
+                else:
+                    agg["read_coverage"] = ""
             else:
-                agg["coverage"] = agg["Ns"] = agg["similarity"] = agg["read_coverage"] = 0
+                agg["coverage"] = agg["Ns"] = agg["similarity"] = agg["read_coverage"] = ""
                 agg["clade"] = agg["G_clade"] = ""
               
         if current_user.is_superuser():

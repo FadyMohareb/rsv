@@ -20,7 +20,7 @@ Important functions:
 :version: 0.0.1
 :date: 2025-02-20
 """
-import os, subprocess
+import os, subprocess, csv
 import click
 from flask.cli import FlaskGroup
 import redis
@@ -106,6 +106,16 @@ def seed_db():
         db.session.add(User(email="jill@gmail.com", username="jill", password=generate_password_hash("password2"),  organization=org_dict.get("WR090")))
         db.session.commit()
 
+        # Seed submission sequencing platform from WGM3 methods in csv file
+        mapping = {}
+        csv_path = "platform_seed.tsv"  # Adjust path accordingly
+        with open(csv_path, newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile, delimiter='\t')
+            for row in reader:
+                    lid = row["LAB"].strip()
+                    method_name = row["Platform"].strip()
+                    mapping[lid] = method_name
+
         # seed submissions (dummy sequencing types)
         default_user = User.query.filter_by(username="elonmusk").first()
         for dist_name, orgs in dist_org_sample_dict.items():
@@ -114,13 +124,14 @@ def seed_db():
             for org_name, samples in orgs.items():
                 # Get the Organization object from our dictionary
                 organization_obj = org_dict.get(org_name)
+                sequencing_method = mapping.get(org_name, "Unknown")
                 for sample in samples:
                     submission = Submission(
                         user_id=default_user.id if default_user else None,
                         organization_id=organization_obj.id if organization_obj else None,
                         distribution_id=distribution_obj.id if distribution_obj else None,
                         sample=sample,
-                        sequencing_type="Illumina MiSeq"  # Default sequencing type; adjust if needed
+                        sequencing_type=sequencing_method
                     )
                     db.session.add(submission)
         db.session.commit()

@@ -18,7 +18,7 @@ const SeqPlot = ({ sampleData, chartOrientation }) => {
     const safeParse = (value) => (value === "N/A" || value == null ? null : Number(value));
 
     // Extract and clean data
-    const anonymizedLabs = sampleData.map((row) => `${row.sequencing_type} (${row.count})`);
+    const anonymizedLabs = sampleData.map((row) => `${row.sequencing_platform} (${row.count})`);
     const genomeCoveragePercent = sampleData.map((row) => safeParse(row.coverage));
     const numNsPercent = sampleData.map((row) => safeParse(row.ns));
     const similarityPercent = sampleData.map((row) => safeParse(row.similarity));
@@ -113,14 +113,14 @@ const SeqPlot = ({ sampleData, chartOrientation }) => {
         y1: 90,
         line: { color: '#1E3A5F', width: 2, dash: 'dash' }, // Green dashed line at 90%
       },
-      // Horizontal line at 98%
+      // Horizontal line at 95%
       {
         type: 'line',
         x0: -1,
-        y0: 98,
+        y0: 95,
         x1: anonymizedLabs.length,
-        y1: 98,
-        line: { color: '#F57C00', width: 2, dash: 'dash' }, // Blue dashed line at 98%
+        y1: 95,
+        line: { color: '#F57C00', width: 2, dash: 'dash' }, // Blue dashed line at 95%
       },
       // Horizontal line at 50 read coverage of yaxis2
       {
@@ -165,7 +165,7 @@ const SeqPlot = ({ sampleData, chartOrientation }) => {
     shapes: [
       { type: 'line', x0: 2, y0: -1, x1: 2, y1: anonymizedLabs.length, line: { color: '#FBC02D', dash: 'dash' } },
       { type: 'line', x0: 90, y0: -1, x1: 90, y1: anonymizedLabs.length, line: { color: '#1E3A5F', dash: 'dash' } },
-      { type: 'line', x0: 98, y0: -1, x1: 98, y1: anonymizedLabs.length, line: { color: '#F57C00', dash: 'dash' } },
+      { type: 'line', x0: 95, y0: -1, x1: 95, y1: anonymizedLabs.length, line: { color: '#F57C00', dash: 'dash' } },
       { type: 'line', x0: 50, y0: -1, x1: 50, y1: anonymizedLabs.length, xref: 'x2', line: { color: 'black', dash: 'dash' } },
     ],
     legend: { x: 0.5, y: -0.2, orientation: 'h' },
