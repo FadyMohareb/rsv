@@ -1057,11 +1057,12 @@ def generate_docx_report(report_data, base_dir, role, user_lab, distribution):
             count = 1
             anonymized_data = {}
             for i, (lab, metrics) in enumerate(data.items()):
-                if lab == '9999' or lab == 'Reference':
+                '''if lab == '9999' or lab == 'Reference':
                     anonymized_data['9999'] = metrics  # Keep the reference lab as '9999'
                 else:
                     anonymized_data[f'{count:01d}'] = metrics  # Anonymize labs as single-digit numbers
-                    count += 1
+                    count += 1'''
+                anonymized_data[lab] = metrics
             # Replace the sample data with anonymized data
             sample_html_reports[sample] = anonymized_data
 
