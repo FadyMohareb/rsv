@@ -414,36 +414,38 @@ def get_sample_details(distribution, selected_sample):
                 .first()
             )
             if submission:
-                lab_seq_type = submission.sequencing_type
+                lab_seq_types = submission.sequencing_type.split(",")
             else:
-                lab_seq_type = "N/A"
-            if lab_seq_type not in seq_aggregates:
-                seq_aggregates[lab_seq_type] = {
-                    "coverage": 0,
-                    "Ns": 0,
-                    "similarity": 0,
-                    "read_coverage": 0,
-                    "count": 0,
-                    "read_count": 0,
-                    "clade_counts": {},
-                    "g_clade_counts": {}
-                }
-            if metrics["coverage"] == "N/A":
-                continue
-            group = seq_aggregates[lab_seq_type]
-            group["coverage"] += metrics["coverage"]
-            group["Ns"] += metrics["Ns"]
-            group["similarity"] += metrics["similarity"]
-            if metrics["Mean coverage depth"] != "N/A":
-                group["read_coverage"] += metrics["Mean coverage depth"]
-                group["read_count"] += 1
-            group["count"] += 1
-            clade = metrics.get("clade", "")
-            g_clade = metrics.get("G_clade", "")
-            if clade:
-                group["clade_counts"][clade] = group["clade_counts"].get(clade, 0) + 1
-            if g_clade:
-                group["g_clade_counts"][g_clade] = group["g_clade_counts"].get(g_clade, 0) + 1
+                lab_seq_types = "N/A"
+            for lab_seq_type in lab_seq_types:  # Iterate over each sequencing type
+                lab_seq_type = lab_seq_type.strip()  # Remove any extra spaces
+                if lab_seq_type not in seq_aggregates:
+                    seq_aggregates[lab_seq_type] = {
+                        "coverage": 0,
+                        "Ns": 0,
+                        "similarity": 0,
+                        "read_coverage": 0,
+                        "count": 0,
+                        "read_count": 0,
+                        "clade_counts": {},
+                        "g_clade_counts": {}
+                    }
+                if metrics["coverage"] == "N/A":
+                    continue
+                group = seq_aggregates[lab_seq_type]
+                group["coverage"] += metrics["coverage"]
+                group["Ns"] += metrics["Ns"]
+                group["similarity"] += metrics["similarity"]
+                if metrics["Mean coverage depth"] != "N/A":
+                    group["read_coverage"] += metrics["Mean coverage depth"]
+                    group["read_count"] += 1
+                group["count"] += 1
+                clade = metrics.get("clade", "")
+                g_clade = metrics.get("G_clade", "")
+                if clade:
+                    group["clade_counts"][clade] = group["clade_counts"].get(clade, 0) + 1
+                if g_clade:
+                    group["g_clade_counts"][g_clade] = group["g_clade_counts"].get(g_clade, 0) + 1
 
         # Finalize aggregated metrics per sequencing type
         for seq_type, agg in seq_aggregates.items():

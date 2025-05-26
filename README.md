@@ -114,3 +114,13 @@ Once the services are all deployed, run:
 This will create the documentation HTMLs in `services/web/project/docs/build/html` for both the backend using Sphinx. Start navigating via the `index.html`.
 
 For the frontend documentation, JSDoc is preferred over Sphinx, JSDoc HTMLs are found at `services/frontend/docs`. TO DO: these could be improved.
+
+# MOST IMPORTANT TO DOs
+
+- Update web application to reflect changes to output docx/pdf reports.
+- Proxy the URLs of bams and such files that are consumed by JBrowse2, for example with URLs saved to database that expire every 4 hours.
+- Make the admin's "Download all" a background task launched on Redis, as it takes long to complete: there is a timeout for the frontend and it does not return it. Nevertheless, reports can be found at web/project/static/reports.
+- Temporary files like images should preferrably be saved to these locations as well.
+- 'Settings' and 'About' views should have something meaningful, possibly a letterbox for user ideas/requests (saved to database).
+- Websocket for the notification system needs debugging in production.
+- Reverse proxy nginx needs configuration for https when rerouted.
